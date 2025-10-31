@@ -180,9 +180,18 @@
                     ctx.stroke();
                     ctx.restore();
                     
-                    // Evidenzia i punti
-                    [meta0, meta1, meta2].forEach((meta, datasetIndex) => {
-                        const point = meta.data[currentHighlightedIndex];
+                    // Evidenzia i punti e mostra i valori
+                    const datasets = [
+                        { meta: meta0, label: 'Q10', color: '#ff9f40' },
+                        { meta: meta1, label: 'Q90', color: '#ff9f40' },
+                        { meta: meta2, label: 'Q50', color: '#ff9f40' }
+                    ];
+                    
+                    datasets.forEach((dataset, idx) => {
+                        const point = dataset.meta.data[currentHighlightedIndex];
+                        const value = chart.data.datasets[idx].data[currentHighlightedIndex];
+                        
+                        // Disegna il cerchio
                         ctx.save();
                         ctx.beginPath();
                         ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
@@ -191,6 +200,34 @@
                         ctx.strokeStyle = '#ffffff';
                         ctx.lineWidth = 2;
                         ctx.stroke();
+                        ctx.restore();
+                        
+                        // Disegna il valore
+                        ctx.save();
+                        ctx.font = 'bold 12px Segoe UI';
+                        ctx.fillStyle = '#ffffff';
+                        ctx.strokeStyle = '#121212';
+                        ctx.lineWidth = 3;
+                        const text = `${dataset.label}: ${value.toFixed(2)}m`;
+                        const textWidth = ctx.measureText(text).width;
+                        
+                        // Posiziona il testo a destra o sinistra del punto
+                        let textX = point.x + 12;
+                        if (textX + textWidth > chart.chartArea.right) {
+                            textX = point.x - textWidth - 12;
+                        }
+                        
+                        // Posiziona verticalmente con offset
+                        let textY = point.y + (idx - 1) * 20;
+                        
+                        // Disegna sfondo per il testo
+                        ctx.fillStyle = 'rgba(18, 18, 18, 0.85)';
+                        ctx.fillRect(textX - 4, textY - 14, textWidth + 8, 18);
+                        
+                        // Disegna il testo con outline
+                        ctx.strokeText(text, textX, textY);
+                        ctx.fillStyle = '#00bcd4';
+                        ctx.fillText(text, textX, textY);
                         ctx.restore();
                     });
                 }
