@@ -6,7 +6,7 @@
     <title>Dashboard Livello Idrometrico</title>
     <style>
         body {
-            background-color: #121212; /* Sfondo leggermente più scuro */
+            background-color: #121212;
             color: #e0e0e0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -17,6 +17,15 @@
             text-align: center;
             color: #00bcd4;
             font-weight: 300;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 0;
+            margin-bottom: 25px;
         }
 
         .container {
@@ -36,13 +45,14 @@
         .chart-container {
             flex: 3;
             min-width: 600px;
-            height: 500px; /* Altezza fissa per il grafico */
+            height: 500px;
+            cursor: grab; /* Indica che l'area è interattiva */
         }
 
         .table-container {
             flex: 1;
             min-width: 300px;
-            max-height: 540px; /* Altezza allineata al grafico */
+            max-height: 540px;
             overflow-y: auto;
         }
 
@@ -71,7 +81,6 @@
             background-color: #1e1e1e;
         }
 
-        /* Scrollbar personalizzata per la tabella */
         .table-container::-webkit-scrollbar {
             width: 8px;
         }
@@ -84,12 +93,19 @@
             border: 2px solid #2c2c2c;
         }
     </style>
+    <!-- LIBRERIE CHART.JS E PAPAPARSE -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <!-- 1. INCLUSIONE DEL PLUGIN PER LO ZOOM -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
 </head>
 <body>
 
     <h1>Dashboard Livello Idrometrico - Sensore 1112 (Bettolelle)</h1>
+    <!-- 2. ISTRUZIONI PER L'UTENTE -->
+    <p class="subtitle">Usa la rotellina per zoomare. Tieni premuto 'Ctrl' e trascina per spostare il grafico. Doppio clic per resettare.</p>
+
 
     <div class="container">
         <div class="chart-container card">
@@ -123,8 +139,6 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     const data = results.data;
-                    
-                    // ERRORE CORRETTO QUI: Uso il nome corretto della colonna 'Timestamp Previsione'
                     const labels = data.map(row => row['Timestamp Previsione']);
                     
                     const parseAndFixDecimal = (value) => {
@@ -149,7 +163,6 @@
             tableBody.innerHTML = '';
             data.forEach(row => {
                 let tableRow = tableBody.insertRow();
-                // ERRORE CORRETTO QUI: Uso il nome corretto della colonna 'Timestamp Previsione'
                 tableRow.insertCell().textContent = row['Timestamp Previsione'];
                 tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
                 tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
@@ -168,61 +181,46 @@
                     labels: labels,
                     datasets: [
                     {
-                        label: 'Q10',
-                        data: q10,
-                        borderColor: 'rgba(255, 159, 64, 1)',
-                        borderDash: [5, 5],
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        fill: false 
+                        label: 'Q10', data: q10, borderColor: 'rgba(255, 159, 64, 1)',
+                        borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4
                     },
                     {
-                        label: 'Q90',
-                        data: q90,
-                        borderColor: 'rgba(255, 159, 64, 1)',
-                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                        borderDash: [5, 5],
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        fill: '-1'
+                        label: 'Q90', data: q90, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4
                     },
                     {
-                        label: 'Q50',
-                        data: q50,
-                        borderColor: 'rgba(255, 159, 64, 1)',
-                        borderWidth: 2.5,
-                        pointRadius: 0,
-                        fill: false
+                        label: 'Q50', data: q50, borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 2.5, fill: false, pointRadius: 0, tension: 0.4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: {
-                            display: true,
-                            text: 'Previsione Livello Idrometrico',
-                            color: '#e0e0e0',
-                            font: { size: 16 }
-                        },
-                        legend: {
-                            labels: { color: '#e0e0e0' }
+                        title: { display: true, text: 'Previsione Livello Idrometrico', color: '#e0e0e0', font: { size: 16 } },
+                        legend: { labels: { color: '#e0e0e0' } },
+                        
+                        // 3. CONFIGURAZIONE DELLO ZOOM
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'xy',
+                                modifierKey: 'ctrl', // Si sposta solo tenendo premuto CTRL
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'xy',
+                            }
                         }
                     },
                     scales: {
-                        x: {
-                            ticks: { color: '#999' },
-                            grid: { color: '#444' }
-                        },
-                        y: {
-                            ticks: { color: '#999' },
-                            grid: { color: '#444' },
-                            title: {
-                                display: true,
-                                text: 'Livello Idrometrico (m)',
-                                color: '#e0e0e0'
-                            }
-                        }
+                        x: { ticks: { color: '#999' }, grid: { color: '#444' } },
+                        y: { ticks: { color: '#999' }, grid: { color: '#444' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#e0e0e0' } }
                     }
                 }
             });
