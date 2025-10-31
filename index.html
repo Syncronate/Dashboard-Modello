@@ -12,100 +12,112 @@
             margin: 0;
             padding: 20px;
         }
-
-        h1 {
+        .header {
             text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
             color: #00bcd4;
             font-weight: 300;
             margin-bottom: 5px;
         }
-
         .subtitle {
-            text-align: center;
             color: #999;
             font-size: 0.9em;
             margin-top: 0;
-            margin-bottom: 25px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
-
+        #resetZoomBtn {
+            background-color: #00bcd4;
+            color: #121212;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        #resetZoomBtn:hover {
+            background-color: #0097a7;
+        }
         .container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
         }
-
         .card {
             background-color: #1e1e1e;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-
         .chart-container {
             flex: 3;
             min-width: 600px;
             height: 500px;
-            cursor: grab; /* Indica che l'area è interattiva */
+            cursor: grab;
         }
-
+        .chart-container:active {
+            cursor: grabbing;
+        }
         .table-container {
             flex: 1;
             min-width: 300px;
             max-height: 540px;
             overflow-y: auto;
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
         }
-
-        th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #333;
-            text-align: left;
+        th, td { 
+            padding: 12px 15px; 
+            border-bottom: 1px solid #333; 
+            text-align: left; 
         }
-
-        thead th {
-            background-color: #00bcd4;
-            color: #121212;
-            position: sticky;
-            top: 0;
+        thead th { 
+            background-color: #00bcd4; 
+            color: #121212; 
+            position: sticky; 
+            top: 0; 
         }
-
-        tbody tr {
-            background-color: #2c2c2c;
+        tbody tr { 
+            background-color: #2c2c2c; 
         }
-        tbody tr:nth-child(even) {
-            background-color: #1e1e1e;
+        tbody tr:nth-child(even) { 
+            background-color: #1e1e1e; 
         }
-
-        .table-container::-webkit-scrollbar {
-            width: 8px;
+        .table-container::-webkit-scrollbar { 
+            width: 8px; 
         }
-        .table-container::-webkit-scrollbar-track {
-            background: #2c2c2c;
+        .table-container::-webkit-scrollbar-track { 
+            background: #2c2c2c; 
         }
-        .table-container::-webkit-scrollbar-thumb {
-            background-color: #00bcd4;
-            border-radius: 10px;
-            border: 2px solid #2c2c2c;
+        .table-container::-webkit-scrollbar-thumb { 
+            background-color: #00bcd4; 
+            border-radius: 10px; 
+            border: 2px solid #2c2c2c; 
         }
     </style>
-    <!-- LIBRERIE CHART.JS E PAPAPARSE -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-    <!-- 1. INCLUSIONE DEL PLUGIN PER LO ZOOM -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-
 </head>
 <body>
 
-    <h1>Dashboard Livello Idrometrico - Sensore 1112 (Bettolelle)</h1>
-    <!-- 2. ISTRUZIONI PER L'UTENTE -->
-    <p class="subtitle">Usa la rotellina per zoomare. Tieni premuto 'Ctrl' e trascina per spostare il grafico. Doppio clic per resettare.</p>
-
+    <div class="header">
+        <h1>Dashboard Livello Idrometrico - Sensore 1112 (Bettolelle)</h1>
+        <p class="subtitle">
+            <b>Sposta:</b> Trascina il grafico con il mouse.
+            <b>Zoom:</b> Usa la rotellina. <br/>
+            <b>Zoom a selezione:</b> Tieni premuto 'Ctrl' e disegna un'area.
+        </p>
+        <button id="resetZoomBtn">Reset Zoom</button>
+    </div>
 
     <div class="container">
         <div class="chart-container card">
@@ -121,15 +133,13 @@
                         <th>Q90 (m)</th>
                     </tr>
                 </thead>
-                <tbody>
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
     </div>
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=752084732&single=true&output=csv';
-
         let myChart;
 
         function fetchDataAndDraw() {
@@ -140,18 +150,10 @@
                 complete: function(results) {
                     const data = results.data;
                     const labels = data.map(row => row['Timestamp Previsione']);
-                    
-                    const parseAndFixDecimal = (value) => {
-                        if (typeof value === 'string') {
-                            return parseFloat(value.replace(',', '.'));
-                        }
-                        return value;
-                    };
-
+                    const parseAndFixDecimal = (value) => (typeof value === 'string') ? parseFloat(value.replace(',', '.')) : value;
                     const q10 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
                     const q50 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
                     const q90 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
-
                     updateTable(data);
                     drawChart(labels, q10, q50, q90);
                 }
@@ -160,6 +162,7 @@
 
         function updateTable(data) {
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            if (!tableBody) return;
             tableBody.innerHTML = '';
             data.forEach(row => {
                 let tableRow = tableBody.insertRow();
@@ -180,36 +183,64 @@
                 data: {
                     labels: labels,
                     datasets: [
-                    {
-                        label: 'Q10', data: q10, borderColor: 'rgba(255, 159, 64, 1)',
-                        borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4
-                    },
-                    {
-                        label: 'Q90', data: q90, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                        borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4
-                    },
-                    {
-                        label: 'Q50', data: q50, borderColor: 'rgba(255, 159, 64, 1)',
-                        borderWidth: 2.5, fill: false, pointRadius: 0, tension: 0.4
-                    }]
+                        { 
+                            label: 'Q10', 
+                            data: q10, 
+                            borderColor: 'rgba(255, 159, 64, 1)', 
+                            borderDash: [5, 5], 
+                            borderWidth: 2, 
+                            fill: false, 
+                            pointRadius: 0, 
+                            tension: 0.4 
+                        },
+                        { 
+                            label: 'Q90', 
+                            data: q90, 
+                            borderColor: 'rgba(255, 159, 64, 1)', 
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)', 
+                            borderDash: [5, 5], 
+                            borderWidth: 2, 
+                            fill: '-1', 
+                            pointRadius: 0, 
+                            tension: 0.4 
+                        },
+                        { 
+                            label: 'Q50', 
+                            data: q50, 
+                            borderColor: 'rgba(255, 159, 64, 1)', 
+                            borderWidth: 2.5, 
+                            fill: false, 
+                            pointRadius: 0, 
+                            tension: 0.4 
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: { display: true, text: 'Previsione Livello Idrometrico', color: '#e0e0e0', font: { size: 16 } },
-                        legend: { labels: { color: '#e0e0e0' } },
-                        
-                        // 3. CONFIGURAZIONE DELLO ZOOM
+                        title: { 
+                            display: true, 
+                            text: 'Previsione Livello Idrometrico', 
+                            color: '#e0e0e0', 
+                            font: { size: 16 } 
+                        },
+                        legend: { 
+                            labels: { color: '#e0e0e0' } 
+                        },
                         zoom: {
                             pan: {
                                 enabled: true,
                                 mode: 'xy',
-                                modifierKey: 'ctrl', // Si sposta solo tenendo premuto CTRL
+                                modifierKey: null,
                             },
                             zoom: {
                                 wheel: {
                                     enabled: true,
+                                },
+                                drag: {
+                                    enabled: true,
+                                    modifierKey: 'ctrl',
                                 },
                                 pinch: {
                                     enabled: true
@@ -219,16 +250,32 @@
                         }
                     },
                     scales: {
-                        x: { ticks: { color: '#999' }, grid: { color: '#444' } },
-                        y: { ticks: { color: '#999' }, grid: { color: '#444' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#e0e0e0' } }
+                        x: { 
+                            ticks: { color: '#999' }, 
+                            grid: { color: '#444' } 
+                        },
+                        y: { 
+                            ticks: { color: '#999' }, 
+                            grid: { color: '#444' }, 
+                            title: { 
+                                display: true, 
+                                text: 'Livello Idrometrico (m)', 
+                                color: '#e0e0e0' 
+                            } 
+                        }
                     }
                 }
             });
         }
 
-        fetchDataAndDraw();
-        setInterval(fetchDataAndDraw, 300000); // 5 minuti
-    </script>
+        document.getElementById('resetZoomBtn').addEventListener('click', () => {
+            if (myChart) {
+                myChart.resetZoom();
+            }
+        });
 
+        fetchDataAndDraw();
+        setInterval(fetchDataAndDraw, 300000);
+    </script>
 </body>
 </html>
