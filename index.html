@@ -1229,7 +1229,7 @@
     <header class="top-header">
         <div class="header-left">
             <button class="menu-toggle" id="menu-toggle">☰</button>
-            <h1 class="header-title">🌤️ Dashboard Meteo Pro</h1>
+            <h1 class="header-title">Dashboard Meteo Thunder</h1>
         </div>
         <div class="header-right">
             <div class="status-indicator">
@@ -1249,7 +1249,7 @@
 
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
-        <h2>📊 Navigazione</h2>
+        <h2>Navigazione</h2>
         <ul>
             <li><a href="#overview" class="nav-link active">Dashboard</a></li>
             <li><a href="#previsioni" class="nav-link">Previsioni Idro</a></li>
@@ -1260,7 +1260,7 @@
         </ul>
         <div class="sidebar-footer">
             <p>Dashboard Meteo v2.1</p>
-            <p>© 2024 - Tutti i diritti riservati</p>
+            <p>Progettata e sviluppata da Alberto Bussaglia</p>
         </div>
     </nav>
 
@@ -1717,23 +1717,6 @@
                 </div>
 
                 <div class="card">
-                    <h3 style="color: var(--primary-color); margin-top: 0;">🌧️ Statistiche Pluviometri (Ultime 24h)</h3>
-                    <table class="stats-table" id="rain-stats-table">
-                        <thead>
-                            <tr>
-                                <th>Stazione</th>
-                                <th>Totale (mm)</th>
-                                <th>Intensità Max (mm/h)</th>
-                                <th>Durata Pioggia</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Caricamento dati...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="card">
                     <h3 style="color: var(--primary-color); margin-top: 0;">💨 Statistiche Anemometri (Ultime 24h)</h3>
                     <table class="stats-table" id="wind-stats-table">
                         <thead>
@@ -1749,13 +1732,6 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            <h2>🔗 Correlazioni</h2>
-            <div class="card">
-                <p style="color: var(--text-muted); text-align: center; padding: 40px;">
-                    Funzionalità di correlazione tra stazioni in arrivo...
-                </p>
             </div>
         </section>
 
@@ -1848,6 +1824,8 @@
         </div>
     </div>
 
+    <audio id="alert-sound" src="https://alby-bussaglia.s3.eu-north-1.amazonaws.com/notification.mp3" preload="auto"></audio>
+
     <script>
         // ==================== CONFIGURATION ====================
         // Configurazione di base, può essere sovrascritta dalle impostazioni salvate
@@ -1897,6 +1875,7 @@
             lastUpdate: null,
             isOnline: true,
             alerts: [],
+            hasActiveAlerts: false,
             updateIntervals: {
                 data: null,
                 forecast: null
@@ -2149,6 +2128,15 @@
         }
 
         function updateAlertsDisplay() {
+            const alertSound = document.getElementById('alert-sound');
+            const newAlertsPresent = STATE.alerts.length > 0;
+
+            if (newAlertsPresent && !STATE.hasActiveAlerts) {
+                alertSound.play().catch(error => console.error("Errore nella riproduzione del suono:", error));
+            }
+
+            STATE.hasActiveAlerts = newAlertsPresent;
+            
             const container = document.getElementById('alerts-container');
             
             if (STATE.alerts.length === 0) {
@@ -2322,11 +2310,35 @@
 
             // Active stations
             const totalStations = 15;
-            const activeCount = validHydro.length + validWind.length; // Simplified count
+            const activeStations = new Set();
+
+            // Aggiungi stazioni idrometriche attive
+            validHydro.forEach(s => activeStations.add(s.name));
+
+            // Aggiungi stazioni anemometriche attive (spesso coincidono con quelle pluvio)
+            validWind.forEach(s => activeStations.add(s.name));
+
+            // Aggiungi le stazioni pluviometriche per completezza
+            const rainStations = [
+                { name: 'Arcevia', value: parseAndFixDecimal(region['Arcevia - Pioggia TOT Oggi (mm)']) },
+                { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Pioggia TOT Oggi (mm)']) },
+                { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Pioggia TOT Oggi (mm)']) },
+                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']) },
+                { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Pioggia Giornaliera (mm)']) },
+                { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Pioggia Giornaliera (mm)"]) },
+                { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Pioggia Giornaliera (mm)']) }
+            ];
+            rainStations.forEach(s => {
+                if (!isNaN(s.value)) {
+                    activeStations.add(s.name);
+                }
+            });
+
+            const activeCount = activeStations.size;
             const stationsCard = document.getElementById('overview-stations');
             if (stationsCard) {
                 const valueEl = stationsCard.querySelector('.quick-stat-value');
-                valueEl.innerHTML = `${activeCount}<span class="quick-stat-unit">/${totalStations}</span>`;
+                valueEl.innerHTML = `${activeCount}/${totalStations}`;
             }
         }
 
