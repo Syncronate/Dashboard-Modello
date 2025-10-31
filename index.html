@@ -118,31 +118,65 @@
         .chart-container { flex: 3; min-width: 600px; height: 500px; cursor: grab; }
         .chart-container:active { cursor: grabbing; }
         
-        /* --- STILI GAUGE --- */
-        .gauge-container {
-            width: 280px;
-            height: 180px;
+        /* --- STILI WIDGET VENTO A BARRA (NUOVI) --- */
+        .wind-bar-widget {
+            flex: 1;
+            min-width: 280px;
+            max-width: 350px;
             background-color: var(--light-bg);
             border-radius: 8px;
-            position: relative;
             padding: 15px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            overflow: hidden;
+            gap: 15px; /* Spazio tra sezione vento e raffica */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        .gauge-arc { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); width: 220px; height: 110px; border-top-left-radius: 110px; border-top-right-radius: 110px; border: 15px solid #444; border-bottom: 0; box-sizing: border-box; z-index: 1; }
-        .gauge-needle, .gauge-gust-marker { position: absolute; bottom: 30px; left: 50%; width: 3px; height: 60px; background-color: var(--primary-color); transform-origin: bottom center; transition: transform 0.5s ease-out; z-index: 4; transform: translateX(-50%) rotate(-90deg); border-radius: 3px; }
-        .gauge-gust-marker { background-color: #ffc107; height: 65px; opacity: 0.7; }
-        .gauge-center-pivot { position: absolute; bottom: 22px; left: 50%; width: 15px; height: 15px; background: var(--dark-bg); border-radius: 50%; transform: translateX(-50%); z-index: 5; border: 2px solid var(--primary-color); }
-        .gauge-speed-value { position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%); font-size: 2.5em; font-weight: bold; color: #fff; }
-        .gauge-speed-label { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); font-size: 0.9em; color: var(--text-muted); }
-        .gauge-min-max { position: absolute; bottom: 10px; width: 240px; left: 50%; transform: translateX(-50%); display: flex; justify-content: space-between; font-size: 0.8em; color: var(--text-muted); }
-        .gauge-gust-box { position: absolute; top: 10px; left: 10px; background-color: #28a745; color: #fff; padding: 5px 10px; border-radius: 5px; font-weight: bold; }
-        .gauge-gust-box .value { font-size: 1.2em; }
-        .gauge-gust-box .title { font-size: 0.7em; display: block; }
+        .wind-bar-widget .widget-title {
+            color: var(--text-color);
+            text-align: center;
+            margin: 0 0 5px 0;
+            font-weight: 500;
+            font-size: 1.2em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .wind-bar-widget .bar-section {
+            width: 100%;
+        }
+        .wind-bar-widget .bar-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+        .wind-bar-widget .bar-value {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+        .wind-bar-widget .progress-bar-bg {
+            width: 100%;
+            height: 20px;
+            background-color: var(--medium-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .wind-bar-widget .progress-bar-fill {
+            height: 100%;
+            width: 0%; /* Inizializzato a 0 */
+            border-radius: 10px;
+            transition: width 0.5s ease-out;
+        }
+        .wind-bar-widget .progress-bar-fill.wind {
+            background-color: var(--primary-color); /* Colore per il vento */
+        }
+        .wind-bar-widget .progress-bar-fill.gust {
+            background-color: #ffc107; /* Colore per le raffiche */
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
@@ -224,11 +258,76 @@
         
         <section id="anemometri" class="page-section">
             <h2>Anemometri - Stazioni Weatherlink</h2>
+            <!-- ### INIZIO SEZIONE MODIFICATA ### -->
             <div class="data-groups-container">
-                <div class="gauge-container"><div class="gauge-gust-box"><span class="title">Raffica Montignano</span><span class="value" id="gust-value-montignano">--</span></div><div class="gauge-arc"></div><div class="gauge-needle" id="gauge-needle-montignano"></div><div class="gauge-gust-marker" id="gauge-gust-marker-montignano"></div><div class="gauge-center-pivot"></div><div class="gauge-speed-value" id="speed-value-montignano">--</div><div class="gauge-speed-label">Velocità Vento (km/h)</div><div class="gauge-min-max"><span>0</span><span>80</span></div></div>
-                <div class="gauge-container"><div class="gauge-gust-box"><span class="title">Raffica Sant'Angelo</span><span class="value" id="gust-value-santangelo">--</span></div><div class="gauge-arc"></div><div class="gauge-needle" id="gauge-needle-santangelo"></div><div class="gauge-gust-marker" id="gauge-gust-marker-santangelo"></div><div class="gauge-center-pivot"></div><div class="gauge-speed-value" id="speed-value-santangelo">--</div><div class="gauge-speed-label">Velocità Vento (km/h)</div><div class="gauge-min-max"><span>0</span><span>80</span></div></div>
-                <div class="gauge-container"><div class="gauge-gust-box"><span class="title">Raffica Scapezzano</span><span class="value" id="gust-value-scapezzano">--</span></div><div class="gauge-arc"></div><div class="gauge-needle" id="gauge-needle-scapezzano"></div><div class="gauge-gust-marker" id="gauge-gust-marker-scapezzano"></div><div class="gauge-center-pivot"></div><div class="gauge-speed-value" id="speed-value-scapezzano">--</div><div class="gauge-speed-label">Velocità Vento (km/h)</div><div class="gauge-min-max"><span>0</span><span>80</span></div></div>
+                <!-- Widget Montignano -->
+                <div class="wind-bar-widget">
+                    <h3 class="widget-title">Montignano</h3>
+                    <div class="bar-section">
+                        <div class="bar-label">
+                            <span>Vento</span>
+                            <span class="bar-value" id="speed-value-montignano">-- km/h</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill wind" id="speed-bar-montignano"></div>
+                        </div>
+                    </div>
+                    <div class="bar-section">
+                        <div class="bar-label">
+                            <span>Raffica</span>
+                            <span class="bar-value" id="gust-value-montignano">-- km/h</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill gust" id="gust-bar-montignano"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Widget Sant'Angelo -->
+                <div class="wind-bar-widget">
+                    <h3 class="widget-title">Sant'Angelo</h3>
+                    <div class="bar-section">
+                        <div class="bar-label">
+                            <span>Vento</span>
+                            <span class="bar-value" id="speed-value-santangelo">-- km/h</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill wind" id="speed-bar-santangelo"></div>
+                        </div>
+                    </div>
+                    <div class="bar-section">
+                        <div class="bar-label">
+                            <span>Raffica</span>
+                            <span class="bar-value" id="gust-value-santangelo">-- km/h</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill gust" id="gust-bar-santangelo"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Widget Scapezzano -->
+                <div class="wind-bar-widget">
+                    <h3 class="widget-title">Scapezzano</h3>
+                    <div class="bar-section">
+                        <div class="bar-label">
+                            <span>Vento</span>
+                            <span class="bar-value" id="speed-value-scapezzano">-- km/h</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill wind" id="speed-bar-scapezzano"></div>
+                        </div>
+                    </div>
+                    <div class="bar-section">
+                        <div class="bar-label">
+                            <span>Raffica</span>
+                            <span class="bar-value" id="gust-value-scapezzano">-- km/h</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill gust" id="gust-bar-scapezzano"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <!-- ### FINE SEZIONE MODIFICATA ### -->
             <div class="filter-container">
                 <label for="start-time-wind">Da:</label><input type="datetime-local" id="start-time-wind">
                 <label for="end-time-wind">A:</label><input type="datetime-local" id="end-time-wind">
@@ -250,7 +349,7 @@
         
         // --- CONFIG ---
         const DEFAULT_TIME_WINDOW_HOURS = 6;
-        const GAUGE_MAX_SPEED = 80;
+        const GAUGE_MAX_SPEED = 80; // Massima velocità per il calcolo della barra (km/h)
         const CHART_COLORS = ['#00bcd4', '#ffc107', '#9c27b0', '#f44336', '#4caf50', '#ff9800', '#3f51b5', '#e91e63'];
         
         // --- GLOBAL VARS ---
@@ -307,15 +406,22 @@
             }
         }
 
-        function updateGauge(station, speed, gust) {
+        // ### FUNZIONE MODIFICATA ###
+        function updateWindBar(station, speed, gust) {
             const cleanSpeed = parseAndFixDecimal(speed) || 0;
             const cleanGust = parseAndFixDecimal(gust) || 0;
-            document.getElementById(`speed-value-${station}`).textContent = cleanSpeed.toFixed(1);
-            document.getElementById(`gust-value-${station}`).textContent = cleanGust.toFixed(1);
-            const speedRotation = (Math.min(cleanSpeed, GAUGE_MAX_SPEED) / GAUGE_MAX_SPEED) * 180 - 90;
-            const gustRotation = (Math.min(cleanGust, GAUGE_MAX_SPEED) / GAUGE_MAX_SPEED) * 180 - 90;
-            document.getElementById(`gauge-needle-${station}`).style.transform = `translateX(-50%) rotate(${speedRotation}deg)`;
-            document.getElementById(`gauge-gust-marker-${station}`).style.transform = `translateX(-50%) rotate(${gustRotation}deg)`;
+
+            // Aggiorna i valori testuali
+            document.getElementById(`speed-value-${station}`).textContent = `${cleanSpeed.toFixed(1)} km/h`;
+            document.getElementById(`gust-value-${station}`).textContent = `${cleanGust.toFixed(1)} km/h`;
+
+            // Calcola la percentuale per la larghezza della barra
+            const speedPercent = (Math.min(cleanSpeed, GAUGE_MAX_SPEED) / GAUGE_MAX_SPEED) * 100;
+            const gustPercent = (Math.min(cleanGust, GAUGE_MAX_SPEED) / GAUGE_MAX_SPEED) * 100;
+
+            // Aggiorna la larghezza delle barre
+            document.getElementById(`speed-bar-${station}`).style.width = `${speedPercent}%`;
+            document.getElementById(`gust-bar-${station}`).style.width = `${gustPercent}%`;
         }
 
         // --- DATA FETCH & CARD UPDATES ---
@@ -331,16 +437,11 @@
                     updateStatCard('hydro-serra-dei-conti', d['Serra dei Conti - Livello Misa (mt)'], 'm');
                     updateStatCard('hydro-cesano', d['Cesano - Livello Cesano (mt)'], 'm');
                     
-                    // CORRETTO: Funzione helper per convertire mm/min in mm/hr
                     const convertToHourRate = (rawValue) => {
                         const intensityMin = parseAndFixDecimal(rawValue);
-                        if (!isNaN(intensityMin)) {
-                            return intensityMin * 60;
-                        }
-                        return NaN; // Restituisce NaN se il valore non è valido
+                        return !isNaN(intensityMin) ? intensityMin * 60 : NaN;
                     };
 
-                    // CORRETTO: Nomi esatti delle colonne e conversione in mm/hr
                     updateStatCard('rain-arcevia', convertToHourRate(d['Arcevia - Intensita di pioggia (mm/min)']), 'mm/hr');
                     updateStatCard('rain-barbara', convertToHourRate(d['Barbara - Intensita di pioggia (mm/min)']), 'mm/hr');
                     updateStatCard('rain-corinaldo', convertToHourRate(d['Corinaldo - Intensita di pioggia (mm/min)']), 'mm/hr');
@@ -353,9 +454,11 @@
                 complete: (results) => {
                     if (!results.data || !results.data.length) return;
                     const d = results.data[0];
-                    updateGauge('montignano', d['Montignano - Velocità Vento (km/h)'], d['Montignano - Raffica Vento 10 min (km/h)']);
-                    updateGauge('santangelo', d["Sant'Angelo - Velocità Vento (km/h)"], d["Sant'Angelo - Raffica Vento 10 min (km/h)"]);
-                    updateGauge('scapezzano', d['Scapezzano - Velocità Vento (km/h)'], d['Scapezzano - Raffica Vento 10 min (km/h)']);
+                    // ### CHIAMATA ALLA FUNZIONE MODIFICATA ###
+                    updateWindBar('montignano', d['Montignano - Velocità Vento (km/h)'], d['Montignano - Raffica Vento 10 min (km/h)']);
+                    updateWindBar('santangelo', d["Sant'Angelo - Velocità Vento (km/h)"], d["Sant'Angelo - Raffica Vento 10 min (km/h)"]);
+                    updateWindBar('scapezzano', d['Scapezzano - Velocità Vento (km/h)'], d['Scapezzano - Raffica Vento 10 min (km/h)']);
+                    
                     updateStatCard('rain-montignano', d['Montignano - Intensità Pioggia (mm/hr)'], 'mm/hr');
                     updateStatCard('rain-santangelo', d["Sant'Angelo - Intensità Pioggia (mm/hr)"], 'mm/hr');
                     updateStatCard('rain-scapezzano', d['Scapezzano - Intensità Pioggia (mm/hr)'], 'mm/hr');
