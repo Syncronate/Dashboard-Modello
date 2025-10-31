@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF--8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Livello Idrometrico</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00bcd4;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .chart-container {
+            flex: 3;
+            min-width: 600px;
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .table-container {
+            flex: 1;
+            min-width: 300px;
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #444;
+            text-align: left;
+        }
+
+        th {
+            background-color: #00bcd4;
+            color: #1a1a1a;
+        }
+
+        tr:nth-child(even) {
+            background-color: #333;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+</head>
+<body>
+
+    <h1>Dashboard Livello Idrometrico - Sensore 1112 (Bettolelle)</h1>
+
+    <div class="container">
+        <div class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Q10 (m)</th>
+                        <th>Q50 (m)</th>
+                        <th>Q90 (m)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=752084732&single=true&output=csv';
+
+        let myChart;
+
+        function fetchDataAndDraw() {
+            Papa.parse(csvUrl, {
+                download: true,
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    const data = results.data;
+                    const labels = data.map(row => row.Timestamp);
+                    const q10 = data.map(row => row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']);
+                    const q50 = data.map(row => row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']);
+                    const q90 = data.map(row => row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']);
+
+                    updateTable(data);
+                    drawChart(labels, q10, q50, q90);
+                }
+            });
+        }
+
+        function updateTable(data) {
+            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            data.forEach(row => {
+                let tableRow = tableBody.insertRow();
+                let cell1 = tableRow.insertCell();
+                let cell2 = tableRow.insertCell();
+                let cell3 = tableRow.insertCell();
+                let cell4 = tableRow.insertCell();
+                cell1.textContent = row.Timestamp;
+                cell2.textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
+                cell3.textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
+                cell4.textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)'];
+            });
+        }
+
+        function drawChart(labels, q10, q50, q90) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            if (myChart) {
+                myChart.destroy();
+            }
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Q90',
+                        data: q90,
+                        borderColor: 'rgba(255, 99, 132, 0)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 1
+                    }, {
+                        label: 'Q50',
+                        data: q50,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        fill: '-1',
+                        borderWidth: 2
+                    }, {
+                        label: 'Q10',
+                        data: q10,
+                        borderColor: 'rgba(255, 206, 86, 0)',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                        fill: '-1',
+                        pointRadius: 0,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Previsione Livello Idrometrico',
+                            color: '#f0f0f0',
+                            font: {
+                                size: 18
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                color: '#f0f0f0'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#f0f0f0'
+                            },
+                            grid: {
+                                color: '#444'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#f0f0f0'
+                            },
+                            grid: {
+                                color: '#444'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Livello Idrometrico (m)',
+                                color: '#f0f0f0'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        fetchDataAndDraw();
+
+        setInterval(fetchDataAndDraw, 300000); // 300000 ms = 5 minuti
+    </script>
+
+</body>
+</html>
