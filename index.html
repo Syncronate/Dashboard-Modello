@@ -6,8 +6,8 @@
     <title>Dashboard Livello Idrometrico</title>
     <style>
         body {
-            background-color: #1a1a1a;
-            color: #f0f0f0;
+            background-color: #121212; /* Sfondo leggermente più scuro */
+            color: #e0e0e0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
@@ -16,31 +16,33 @@
         h1 {
             text-align: center;
             color: #00bcd4;
+            font-weight: 300;
         }
 
         .container {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
         .chart-container {
             flex: 3;
             min-width: 600px;
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            height: 500px; /* Altezza fissa per il grafico */
         }
 
         .table-container {
             flex: 1;
             min-width: 300px;
-            background-color: #2a2a2a;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-            max-height: 500px;
+            max-height: 540px; /* Altezza allineata al grafico */
             overflow-y: auto;
         }
 
@@ -50,18 +52,36 @@
         }
 
         th, td {
-            padding: 12px;
-            border-bottom: 1px solid #444;
+            padding: 12px 15px;
+            border-bottom: 1px solid #333;
             text-align: left;
         }
 
-        th {
+        thead th {
             background-color: #00bcd4;
-            color: #1a1a1a;
+            color: #121212;
+            position: sticky;
+            top: 0;
         }
 
-        tr:nth-child(even) {
-            background-color: #333;
+        tbody tr {
+            background-color: #2c2c2c;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #1e1e1e;
+        }
+
+        /* Scrollbar personalizzata per la tabella */
+        .table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #2c2c2c;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background-color: #00bcd4;
+            border-radius: 10px;
+            border: 2px solid #2c2c2c;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -72,10 +92,10 @@
     <h1>Dashboard Livello Idrometrico - Sensore 1112 (Bettolelle)</h1>
 
     <div class="container">
-        <div class="chart-container">
+        <div class="chart-container card">
             <canvas id="myChart"></canvas>
         </div>
-        <div class="table-container">
+        <div class="table-container card">
             <table id="dataTable">
                 <thead>
                     <tr>
@@ -103,18 +123,17 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     const data = results.data;
-                    const labels = data.map(row => row.Timestamp);
                     
-                    // FUNZIONE DI CORREZIONE per convertire la virgola in punto
+                    // ERRORE CORRETTO QUI: Uso il nome corretto della colonna 'Timestamp Previsione'
+                    const labels = data.map(row => row['Timestamp Previsione']);
+                    
                     const parseAndFixDecimal = (value) => {
                         if (typeof value === 'string') {
-                            // Sostituisce la virgola con il punto e converte in numero
                             return parseFloat(value.replace(',', '.'));
                         }
                         return value;
                     };
 
-                    // Applica la correzione a ogni valore numerico
                     const q10 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
                     const q50 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
                     const q90 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
@@ -130,7 +149,8 @@
             tableBody.innerHTML = '';
             data.forEach(row => {
                 let tableRow = tableBody.insertRow();
-                tableRow.insertCell().textContent = row.Timestamp;
+                // ERRORE CORRETTO QUI: Uso il nome corretto della colonna 'Timestamp Previsione'
+                tableRow.insertCell().textContent = row['Timestamp Previsione'];
                 tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
                 tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
                 tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)'];
@@ -146,33 +166,32 @@
                 type: 'line',
                 data: {
                     labels: labels,
-                    // NUOVA STRUTTURA dei dataset per un riempimento corretto
                     datasets: [
                     {
-                        label: 'Q10', // Linea inferiore tratteggiata
+                        label: 'Q10',
                         data: q10,
                         borderColor: 'rgba(255, 159, 64, 1)',
                         borderDash: [5, 5],
-                        borderWidth: 1.5,
+                        borderWidth: 2,
                         pointRadius: 0,
                         fill: false 
                     },
                     {
-                        label: 'Q90', // Linea superiore tratteggiata
+                        label: 'Q90',
                         data: q90,
                         borderColor: 'rgba(255, 159, 64, 1)',
-                        backgroundColor: 'rgba(255, 159, 64, 0.2)', // Colore dell'area
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
                         borderDash: [5, 5],
-                        borderWidth: 1.5,
+                        borderWidth: 2,
                         pointRadius: 0,
-                        fill: '-1' // Riempie l'area fino al dataset precedente (Q10)
+                        fill: '-1'
                     },
                     {
-                        label: 'Q50', // Linea centrale piena
+                        label: 'Q50',
                         data: q50,
                         borderColor: 'rgba(255, 159, 64, 1)',
                         borderWidth: 2.5,
-                        pointRadius: 1, // Aggiungo un piccolo punto per visibilità
+                        pointRadius: 0,
                         fill: false
                     }]
                 },
@@ -183,25 +202,25 @@
                         title: {
                             display: true,
                             text: 'Previsione Livello Idrometrico',
-                            color: '#f0f0f0',
-                            font: { size: 18 }
+                            color: '#e0e0e0',
+                            font: { size: 16 }
                         },
                         legend: {
-                            labels: { color: '#f0f0f0' }
+                            labels: { color: '#e0e0e0' }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#f0f0f0' },
+                            ticks: { color: '#999' },
                             grid: { color: '#444' }
                         },
                         y: {
-                            ticks: { color: '#f0f0f0' },
+                            ticks: { color: '#999' },
                             grid: { color: '#444' },
                             title: {
                                 display: true,
                                 text: 'Livello Idrometrico (m)',
-                                color: '#f0f0f0'
+                                color: '#e0e0e0'
                             }
                         }
                     }
@@ -210,7 +229,7 @@
         }
 
         fetchDataAndDraw();
-        setInterval(fetchDataAndDraw, 300000); // 300000 ms = 5 minuti
+        setInterval(fetchDataAndDraw, 300000); // 5 minuti
     </script>
 
 </body>
