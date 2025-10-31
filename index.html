@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Livello Idrometrico</title>
+    <title>Dashboard Idrometrica e Dati Real-Time</title>
     <style>
         body {
             background-color: #121212;
@@ -19,7 +19,32 @@
         h1 {
             color: #00bcd4;
             font-weight: 300;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .toggle-btn {
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #00bcd4;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: background-color 0.3s;
+        }
+        .toggle-btn:hover {
+            background-color: #0097a7;
+        }
+        .instructions {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin-top 0.5s ease-out;
+            margin-top: 0;
+        }
+        .instructions.visible {
+            max-height: 200px;
+            opacity: 1;
+            margin-top: 10px;
         }
         .subtitle {
             color: #999;
@@ -28,6 +53,7 @@
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
+            line-height: 1.6;
         }
         #resetZoomBtn {
             background-color: #00bcd4;
@@ -37,12 +63,72 @@
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 10px;
+            margin-top: 15px;
             transition: background-color 0.3s;
         }
         #resetZoomBtn:hover {
             background-color: #0097a7;
         }
+        
+        /* Stili per i gruppi di dati */
+        .data-groups-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .data-group {
+            flex: 1;
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            min-width: 350px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .group-title {
+            color: #00bcd4;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 400;
+            font-size: 1.1em;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        /* Stili per i box dei dati */
+        .stat-card {
+            background-color: #2c2c2c;
+            padding: 12px 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            flex-grow: 1;
+            min-width: 150px;
+        }
+        .stat-card .title {
+            font-size: 0.8em;
+            color: #999;
+            margin-bottom: 5px;
+        }
+        .stat-card .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00bcd4;
+        }
+        .stat-card .unit {
+            font-size: 0.7em;
+            color: #00bcd4;
+            margin-left: 4px;
+        }
+
         .container {
             display: flex;
             flex-wrap: wrap;
@@ -55,65 +141,19 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-        .chart-container {
-            flex: 3;
-            min-width: 600px;
-            height: 500px;
-            cursor: grab;
-        }
-        .chart-container:active {
-            cursor: grabbing;
-        }
-        .table-container {
-            flex: 1;
-            min-width: 300px;
-            max-height: 540px;
-            overflow-y: auto;
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-        }
-        th, td { 
-            padding: 12px 15px; 
-            border-bottom: 1px solid #333; 
-            text-align: left; 
-        }
-        thead th { 
-            background-color: #00bcd4; 
-            color: #121212; 
-            position: sticky; 
-            top: 0; 
-        }
-        tbody tr { 
-            background-color: #2c2c2c;
-            transition: background-color 0.2s, transform 0.2s;
-            cursor: pointer;
-        }
-        tbody tr:nth-child(even) { 
-            background-color: #1e1e1e; 
-        }
-        tbody tr:hover {
-            background-color: #00bcd4 !important;
-            color: #121212;
-            transform: scale(1.02);
-        }
-        tbody tr.highlighted {
-            background-color: #00bcd4 !important;
-            color: #121212;
-            font-weight: bold;
-        }
-        .table-container::-webkit-scrollbar { 
-            width: 8px; 
-        }
-        .table-container::-webkit-scrollbar-track { 
-            background: #2c2c2c; 
-        }
-        .table-container::-webkit-scrollbar-thumb { 
-            background-color: #00bcd4; 
-            border-radius: 10px; 
-            border: 2px solid #2c2c2c; 
-        }
+        .chart-container { flex: 3; min-width: 600px; height: 500px; cursor: grab; }
+        .chart-container:active { cursor: grabbing; }
+        .table-container { flex: 1; min-width: 300px; max-height: 540px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #333; text-align: left; }
+        thead th { background-color: #00bcd4; color: #121212; position: sticky; top: 0; }
+        tbody tr { background-color: #2c2c2c; transition: background-color 0.2s, transform 0.2s; cursor: pointer; }
+        tbody tr:nth-child(even) { background-color: #1e1e1e; }
+        tbody tr:hover { background-color: #00bcd4 !important; color: #121212; transform: scale(1.02); }
+        tbody tr.highlighted { background-color: #00bcd4 !important; color: #121212; font-weight: bold; }
+        .table-container::-webkit-scrollbar { width: 8px; }
+        .table-container::-webkit-scrollbar-track { background: #2c2c2c; }
+        .table-container::-webkit-scrollbar-thumb { background-color: #00bcd4; border-radius: 10px; border: 2px solid #2c2c2c; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
@@ -122,120 +162,159 @@
 <body>
 
     <div class="header">
-        <h1>Dashboard Livello Idrometrico - Sensore 1112 (Bettolelle)</h1>
-        <p class="subtitle">
-            <b>Sposta:</b> Trascina il grafico con il mouse.
-            <b>Zoom:</b> Usa la rotellina. <br/>
-            <b>Zoom a selezione:</b> Tieni premuto 'Ctrl' e disegna un'area.<br/>
-            <b>Interazione:</b> Passa il mouse sulle righe della tabella per evidenziare i punti nel grafico.
-        </p>
-        <button id="resetZoomBtn">Reset Zoom</button>
+        <h1>Dashboard Idrometrica e Dati Real-Time</h1>
+        <button id="toggle-instructions-btn" class="toggle-btn">Mostra Istruzioni</button>
+        <div id="instructions-container" class="instructions">
+            <p class="subtitle">
+                <b>Sposta:</b> Trascina il grafico con il mouse.<br/>
+                <b>Zoom:</b> Usa la rotellina del mouse.<br/>
+                <b>Zoom a selezione:</b> Tieni premuto 'Ctrl' e disegna un'area.<br/>
+                <b>Interazione:</b> Passa il mouse sulla tabella per evidenziare i punti.
+            </p>
+            <button id="resetZoomBtn">Reset Zoom Grafico</button>
+        </div>
     </div>
 
-    <div class="container">
-        <div class="chart-container card">
-            <canvas id="myChart"></canvas>
+    <!-- SEZIONE DATI PUNTUALI DIVISA IN GRUPPI -->
+    <div class="data-groups-container">
+        <!-- Colonna Dati Idrometrici -->
+        <div class="data-group">
+            <h3 class="group-title">Dati Idrometrici</h3>
+            <div class="stats-container">
+                <div class="stat-card" id="misa-livello"><div class="title">Misa (Bettolelle)</div><div class="value">--<span class="unit">m</span></div></div>
+                <div class="stat-card" id="misa-pianello"><div class="title">Misa (Pianello Ostra)</div><div class="value">--<span class="unit">m</span></div></div>
+                <div class="stat-card" id="misa-ponte-garibaldi"><div class="title">Misa (Ponte Garibaldi)</div><div class="value">--<span class="unit">m</span></div></div>
+                <div class="stat-card" id="cesano-livello"><div class="title">Cesano</div><div class="value">--<span class="unit">m</span></div></div>
+                <div class="stat-card" id="cesano-foce"><div class="title">Foce Cesano</div><div class="value">--<span class="unit">m</span></div></div>
+            </div>
         </div>
+        <!-- Colonna Dati Pioggia -->
+        <div class="data-group">
+            <h3 class="group-title">Dati Pioggia</h3>
+            <div class="stats-container">
+                <!-- Arcevia -->
+                <div class="stat-card" id="arcevia-pioggia-tot"><div class="title">Pioggia Oggi (Arcevia)</div><div class="value">--<span class="unit">mm</span></div></div>
+                <div class="stat-card" id="arcevia-pioggia-int"><div class="title">Intensità (Arcevia)</div><div class="value">--<span class="unit">mm/min</span></div></div>
+                <!-- Barbara -->
+                <div class="stat-card" id="barbara-pioggia-tot"><div class="title">Pioggia Oggi (Barbara)</div><div class="value">--<span class="unit">mm</span></div></div>
+                <div class="stat-card" id="barbara-pioggia-int"><div class="title">Intensità (Barbara)</div><div class="value">--<span class="unit">mm/min</span></div></div>
+                <!-- Bettolelle -->
+                <div class="stat-card" id="bettolelle-pioggia-tot"><div class="title">Pioggia Oggi (Bettolelle)</div><div class="value">--<span class="unit">mm</span></div></div>
+                <div class="stat-card" id="bettolelle-pioggia-int"><div class="title">Intensità (Bettolelle)</div><div class="value">--<span class="unit">mm/min</span></div></div>
+                <!-- Corinaldo -->
+                <div class="stat-card" id="corinaldo-pioggia-tot"><div class="title">Pioggia Oggi (Corinaldo)</div><div class="value">--<span class="unit">mm</span></div></div>
+                <div class="stat-card" id="corinaldo-pioggia-int"><div class="title">Intensità (Corinaldo)</div><div class="value">--<span class="unit">mm/min</span></div></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="chart-container card"><canvas id="myChart"></canvas></div>
         <div class="table-container card">
             <table id="dataTable">
-                <thead>
-                    <tr>
-                        <th>Timestamp</th>
-                        <th>Q10 (m)</th>
-                        <th>Q50 (m)</th>
-                        <th>Q90 (m)</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Timestamp</th><th>Q10 (m)</th><th>Q50 (m)</th><th>Q90 (m)</th></tr></thead>
                 <tbody></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=752084732&single=true&output=csv';
+        const forecastCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=752084732&single=true&output=csv';
+        const realTimeCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1216509518&single=true&output=csv';
+        
         let myChart;
         let currentHighlightedIndex = -1;
+        
+        function updateStatCard(cardId, value, unit, fallback = '--') {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+            const valueEl = card.querySelector('.value');
+            let finalValue = fallback;
+            if (value !== undefined && value !== null && String(value).trim() !== '' && String(value).trim().toLowerCase() !== 'n/a') {
+                const numValue = parseFloat(String(value).replace(',', '.'));
+                if (!isNaN(numValue)) {
+                    finalValue = numValue.toFixed(2);
+                }
+            }
+            valueEl.innerHTML = `${finalValue}<span class="unit">${unit}</span>`;
+        }
 
-        // Plugin personalizzato per evidenziare punti specifici
+        function fetchRealTimeData() {
+            const cacheBusterUrl = realTimeCsvUrl + '&t=' + new Date().getTime();
+            Papa.parse(cacheBusterUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (!results.data || results.data.length === 0) {
+                        console.error("Dati real-time non disponibili o vuoti.");
+                        return;
+                    }
+                    const latestData = results.data[0];
+                    
+                    // Dati Idrometrici
+                    updateStatCard('misa-livello', latestData['Misa - Livello Misa (mt)'], 'm');
+                    updateStatCard('misa-pianello', latestData['Pianello di Ostra - Livello Misa (mt)'], 'm');
+                    updateStatCard('misa-ponte-garibaldi', latestData['Ponte Garibaldi - Livello Misa 2 (mt)'], 'm');
+                    updateStatCard('cesano-livello', latestData['Cesano - Livello Cesano (mt)'], 'm');
+                    updateStatCard('cesano-foce', latestData['Foce Cesano - Livello Cesano (mt)'], 'm');
+                    
+                    // Dati Pioggia
+                    updateStatCard('arcevia-pioggia-tot', latestData['Arcevia - Pioggia TOT Oggi (mm)'], 'mm');
+                    updateStatCard('arcevia-pioggia-int', latestData['Arcevia - Intensita di pioggia (mm/min)'], 'mm/min');
+                    updateStatCard('barbara-pioggia-tot', latestData['Barbara - Pioggia TOT Oggi (mm)'], 'mm');
+                    updateStatCard('barbara-pioggia-int', latestData['Barbara - Intensita di pioggia (mm/min)'], 'mm/min');
+                    updateStatCard('bettolelle-pioggia-tot', latestData['Misa - Pioggia TOT Oggi (mm)'], 'mm');
+                    updateStatCard('bettolelle-pioggia-int', latestData['Misa - Intensita Pioggia (mm/min)'], 'mm/min');
+                    updateStatCard('corinaldo-pioggia-tot', latestData['Corinaldo - Pioggia TOT Oggi (mm)'], 'mm');
+                    updateStatCard('corinaldo-pioggia-int', latestData['Corinaldo - Intensita di pioggia (mm/min)'], 'mm/min');
+                },
+                error: function(err) {
+                    console.error("Errore nel caricamento dei dati real-time:", err);
+                    document.querySelectorAll('.stat-card .value').forEach(el => el.innerHTML = 'Errore');
+                }
+            });
+        }
+
         const highlightPlugin = {
             id: 'highlightPlugin',
             afterDraw: (chart) => {
                 if (currentHighlightedIndex === -1) return;
-                
                 const ctx = chart.ctx;
-                const meta0 = chart.getDatasetMeta(0);
-                const meta1 = chart.getDatasetMeta(1);
-                const meta2 = chart.getDatasetMeta(2);
-                
-                if (currentHighlightedIndex < meta0.data.length) {
-                    // Disegna una linea verticale
-                    const x = meta0.data[currentHighlightedIndex].x;
+                const meta = chart.getDatasetMeta(0);
+                if (currentHighlightedIndex >= meta.data.length) return;
+
+                const point = meta.data[currentHighlightedIndex];
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = '#00bcd4';
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(point.x, chart.chartArea.top);
+                ctx.lineTo(point.x, chart.chartArea.bottom);
+                ctx.stroke();
+                ctx.restore();
+
+                chart.data.datasets.forEach((dataset, i) => {
+                    const datasetMeta = chart.getDatasetMeta(i);
+                    const pointAtIndex = datasetMeta.data[currentHighlightedIndex];
+                    
                     ctx.save();
                     ctx.beginPath();
-                    ctx.strokeStyle = '#00bcd4';
+                    ctx.arc(pointAtIndex.x, pointAtIndex.y, 7, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#00bcd4';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 2;
-                    ctx.setLineDash([5, 5]);
-                    ctx.moveTo(x, chart.chartArea.top);
-                    ctx.lineTo(x, chart.chartArea.bottom);
                     ctx.stroke();
                     ctx.restore();
-                    
-                    // Evidenzia i punti e mostra i valori
-                    const datasets = [
-                        { meta: meta0, label: 'Q10', color: '#ff9f40' },
-                        { meta: meta1, label: 'Q90', color: '#ff9f40' },
-                        { meta: meta2, label: 'Q50', color: '#ff9f40' }
-                    ];
-                    
-                    datasets.forEach((dataset, idx) => {
-                        const point = dataset.meta.data[currentHighlightedIndex];
-                        const value = chart.data.datasets[idx].data[currentHighlightedIndex];
-                        
-                        // Disegna il cerchio
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
-                        ctx.fillStyle = '#00bcd4';
-                        ctx.fill();
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 2;
-                        ctx.stroke();
-                        ctx.restore();
-                        
-                        // Disegna il valore
-                        ctx.save();
-                        ctx.font = 'bold 12px Segoe UI';
-                        ctx.fillStyle = '#ffffff';
-                        ctx.strokeStyle = '#121212';
-                        ctx.lineWidth = 3;
-                        const text = `${dataset.label}: ${value.toFixed(2)}m`;
-                        const textWidth = ctx.measureText(text).width;
-                        
-                        // Posiziona il testo a destra o sinistra del punto
-                        let textX = point.x + 12;
-                        if (textX + textWidth > chart.chartArea.right) {
-                            textX = point.x - textWidth - 12;
-                        }
-                        
-                        // Posiziona verticalmente con offset
-                        let textY = point.y + (idx - 1) * 20;
-                        
-                        // Disegna sfondo per il testo
-                        ctx.fillStyle = 'rgba(18, 18, 18, 0.85)';
-                        ctx.fillRect(textX - 4, textY - 14, textWidth + 8, 18);
-                        
-                        // Disegna il testo con outline
-                        ctx.strokeText(text, textX, textY);
-                        ctx.fillStyle = '#00bcd4';
-                        ctx.fillText(text, textX, textY);
-                        ctx.restore();
-                    });
-                }
+                });
             }
         };
 
-        function fetchDataAndDraw() {
-            Papa.parse(csvUrl, {
+        function fetchDataAndDrawChart() {
+            const cacheBusterUrl = forecastCsvUrl + '&t=' + new Date().getTime();
+            Papa.parse(cacheBusterUrl, {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
@@ -248,132 +327,65 @@
                     const q90 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
                     updateTable(data);
                     drawChart(labels, q10, q50, q90);
+                },
+                error: function(err) {
+                    console.error("Errore nel caricamento dei dati di previsione:", err);
                 }
             });
         }
 
         function updateTable(data) {
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-            if (!tableBody) return;
             tableBody.innerHTML = '';
-            
             data.forEach((row, index) => {
-                let tableRow = tableBody.insertRow();
-                tableRow.dataset.index = index;
-                tableRow.insertCell().textContent = row['Timestamp Previsione'];
-                tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
-                tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
-                tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)'];
+                let tr = tableBody.insertRow();
+                tr.dataset.index = index;
+                tr.insertCell().textContent = row['Timestamp Previsione'];
+                tr.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
+                tr.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
+                tr.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)'];
                 
-                // Aggiungi interazione hover
-                tableRow.addEventListener('mouseenter', function() {
+                tr.addEventListener('mouseenter', () => {
                     currentHighlightedIndex = index;
-                    this.classList.add('highlighted');
-                    if (myChart) {
-                        myChart.update('none'); // Update senza animazione
-                    }
+                    document.querySelectorAll('#dataTable tbody tr').forEach(r => r.classList.remove('highlighted'));
+                    tr.classList.add('highlighted');
+                    if (myChart) myChart.update('none');
                 });
-                
-                tableRow.addEventListener('mouseleave', function() {
+                tr.addEventListener('mouseleave', () => {
                     currentHighlightedIndex = -1;
-                    this.classList.remove('highlighted');
-                    if (myChart) {
-                        myChart.update('none');
-                    }
+                    tr.classList.remove('highlighted');
+                    if (myChart) myChart.update('none');
                 });
             });
         }
 
         function drawChart(labels, q10, q50, q90) {
             const ctx = document.getElementById('myChart').getContext('2d');
-            if (myChart) {
-                myChart.destroy();
-            }
+            if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { 
-                            label: 'Q10', 
-                            data: q10, 
-                            borderColor: 'rgba(255, 159, 64, 1)', 
-                            borderDash: [5, 5], 
-                            borderWidth: 2, 
-                            fill: false, 
-                            pointRadius: 0, 
-                            tension: 0.4 
-                        },
-                        { 
-                            label: 'Q90', 
-                            data: q90, 
-                            borderColor: 'rgba(255, 159, 64, 1)', 
-                            backgroundColor: 'rgba(255, 159, 64, 0.2)', 
-                            borderDash: [5, 5], 
-                            borderWidth: 2, 
-                            fill: '-1', 
-                            pointRadius: 0, 
-                            tension: 0.4 
-                        },
-                        { 
-                            label: 'Q50', 
-                            data: q50, 
-                            borderColor: 'rgba(255, 159, 64, 1)', 
-                            borderWidth: 2.5, 
-                            fill: false, 
-                            pointRadius: 0, 
-                            tension: 0.4 
-                        }
+                        { label: 'Q10', data: q10, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q90', data: q90, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
+                        { label: 'Q50 (Mediana)', data: q50, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        title: { 
-                            display: true, 
-                            text: 'Previsione Livello Idrometrico', 
-                            color: '#e0e0e0', 
-                            font: { size: 16 } 
-                        },
-                        legend: { 
-                            labels: { color: '#e0e0e0' } 
-                        },
+                        title: { display: true, text: 'Previsione Livello Idrometrico - Sensore 1112 (Bettolelle)', color: '#e0e0e0', font: { size: 16 } },
+                        legend: { labels: { color: '#e0e0e0' } },
                         zoom: {
-                            pan: {
-                                enabled: true,
-                                mode: 'xy',
-                                modifierKey: null,
-                            },
-                            zoom: {
-                                wheel: {
-                                    enabled: true,
-                                },
-                                drag: {
-                                    enabled: true,
-                                    modifierKey: 'ctrl',
-                                },
-                                pinch: {
-                                    enabled: true
-                                },
-                                mode: 'xy',
-                            }
+                            pan: { enabled: true, mode: 'x', modifierKey: null },
+                            zoom: { wheel: { enabled: true }, drag: { enabled: true, modifierKey: 'ctrl' }, pinch: { enabled: true }, mode: 'x' }
                         }
                     },
                     scales: {
-                        x: { 
-                            ticks: { color: '#999' }, 
-                            grid: { color: '#444' } 
-                        },
-                        y: { 
-                            ticks: { color: '#999' }, 
-                            grid: { color: '#444' }, 
-                            title: { 
-                                display: true, 
-                                text: 'Livello Idrometrico (m)', 
-                                color: '#e0e0e0' 
-                            } 
-                        }
+                        x: { ticks: { color: '#999' }, grid: { color: '#444' } },
+                        y: { ticks: { color: '#999' }, grid: { color: '#444' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#e0e0e0' } }
                     }
                 },
                 plugins: [highlightPlugin]
@@ -381,13 +393,20 @@
         }
 
         document.getElementById('resetZoomBtn').addEventListener('click', () => {
-            if (myChart) {
-                myChart.resetZoom();
-            }
+            if (myChart) myChart.resetZoom();
         });
 
-        fetchDataAndDraw();
-        setInterval(fetchDataAndDraw, 300000);
+        document.getElementById('toggle-instructions-btn').addEventListener('click', function() {
+            const instructionsDiv = document.getElementById('instructions-container');
+            const isVisible = instructionsDiv.classList.toggle('visible');
+            this.textContent = isVisible ? 'Nascondi Istruzioni' : 'Mostra Istruzioni';
+        });
+
+        fetchDataAndDrawChart();
+        fetchRealTimeData();
+        
+        setInterval(fetchDataAndDrawChart, 300000);
+        setInterval(fetchRealTimeData, 60000);
     </script>
 </body>
 </html>
