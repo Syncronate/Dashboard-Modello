@@ -2124,6 +2124,34 @@
                 }
             });
 
+            // Analisi dei dati di previsione
+            if (STATE.forecastData && STATE.forecastData.length > 0) {
+                let maxPredictedLevel = -Infinity;
+                let peakTimestamp = null;
+                const forecastColumn = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)';
+
+                STATE.forecastData.forEach(record => {
+                    const level = parseAndFixDecimal(record[forecastColumn]);
+                    if (!isNaN(level) && level > maxPredictedLevel) {
+                        maxPredictedLevel = level;
+                        peakTimestamp = record['Timestamp Previsione'];
+                    }
+                });
+
+                if (maxPredictedLevel > -Infinity) {
+                    const forecastLevel = getAlertLevel(maxPredictedLevel, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+                    if (forecastLevel !== 'normal') {
+                        STATE.alerts.push({
+                            type: 'hydro-forecast',
+                            level: forecastLevel,
+                            station: 'Misa (Bettolelle) - Previsione',
+                            value: maxPredictedLevel,
+                            message: `PREVISIONE DI ${forecastLevel === 'critical' ? 'CRITICITÀ' : 'ATTENZIONE'}: Previsto picco di ${maxPredictedLevel.toFixed(2)} m intorno alle ore ${peakTimestamp}`
+                        });
+                    }
+                }
+            }
+
             updateAlertsDisplay();
         }
 
@@ -2147,7 +2175,7 @@
             container.innerHTML = STATE.alerts.map(alert => `
                 <div class="alert-item ${alert.level}">
                     <div class="alert-icon">
-                        ${alert.type === 'hydro' ? '💧' : alert.type === 'rain' ? '🌧️' : '💨'}
+                        ${alert.type === 'hydro-forecast' ? 'PREV' : (alert.type === 'hydro' ? '💧' : alert.type === 'rain' ? '🌧️' : '💨')}
                     </div>
                     <div class="alert-content">
                         <div class="alert-title">${alert.station}</div>
