@@ -3,179 +3,1134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Meteo Avanzata</title>
+    <title>Dashboard Meteo Professionale</title>
     <style>
         :root {
             --primary-color: #00bcd4;
+            --primary-dark: #0097a7;
+            --secondary-color: #ffc107;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --danger-color: #f44336;
             --dark-bg: #121212;
             --medium-bg: #1e1e1e;
             --light-bg: #2c2c2c;
             --text-color: #e0e0e0;
             --text-muted: #999;
             --border-color: #333;
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        * { box-sizing: border-box; }
+        
         body {
             background-color: var(--dark-bg);
             color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            display: flex;
+            overflow-x: hidden;
         }
+
+        /* === TOP HEADER === */
+        .top-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, var(--medium-bg) 0%, var(--dark-bg) 100%);
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1001;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .header-title {
+            font-size: 1.3em;
+            font-weight: 300;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85em;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online { background-color: var(--success-color); }
+        .status-dot.offline { background-color: var(--danger-color); animation: none; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .last-update {
+            font-size: 0.85em;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 16px;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary-color);
+            color: var(--dark-bg);
+            transform: scale(1.1);
+        }
+
+        /* === SIDEBAR === */
         .sidebar {
-            width: 250px;
+            width: 260px;
             background-color: var(--medium-bg);
             padding: 20px;
-            height: 100vh;
+            height: calc(100vh - 60px);
             position: fixed;
             left: 0;
-            top: 0;
+            top: 60px;
             box-shadow: 2px 0 5px rgba(0,0,0,0.5);
             z-index: 1000;
+            overflow-y: auto;
+            transition: var(--transition);
         }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
         .sidebar h2 {
             color: var(--primary-color);
             text-align: center;
+            margin-bottom: 25px;
+            font-weight: 300;
+            font-size: 1.2em;
         }
+
         .sidebar ul {
             list-style-type: none;
             padding: 0;
+            margin: 0;
         }
-        .sidebar ul li a {
-            display: block;
-            color: var(--text-color);
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
+
+        .sidebar ul li {
             margin-bottom: 5px;
-            transition: background-color 0.3s, color 0.3s;
         }
+
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-color);
+            padding: 12px 15px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-size: 0.95em;
+        }
+
+        .sidebar ul li a:before {
+            content: '▪';
+            color: var(--primary-color);
+            font-size: 1.2em;
+        }
+
         .sidebar ul li a:hover, .sidebar ul li a.active {
-            background-color: var(--primary-color);
-            color: var(--dark-bg);
-            font-weight: bold;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            font-weight: 500;
+            transform: translateX(5px);
         }
+
+        .sidebar-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--text-muted);
+        }
+
+        /* === MAIN CONTENT === */
         #main-content {
-            margin-left: 270px; /* sidebar width + padding */
-            padding: 20px;
-            width: calc(100% - 290px);
+            margin-left: 260px;
+            margin-top: 60px;
+            padding: 25px;
+            transition: var(--transition);
+            min-height: calc(100vh - 60px);
         }
-        .page-section { display: none; }
-        .page-section.active { display: block; }
+
+        #main-content.expanded {
+            margin-left: 0;
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === LOADING SPINNER === */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(18, 18, 18, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* === TOAST NOTIFICATIONS === */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--medium-bg);
+            border-left: 4px solid var(--primary-color);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            min-width: 300px;
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toast.success { border-left-color: var(--success-color); }
+        .toast.warning { border-left-color: var(--warning-color); }
+        .toast.error { border-left-color: var(--danger-color); }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast-message {
+            flex: 1;
+            font-size: 0.9em;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+        }
+
+        /* === CARDS & TYPOGRAPHY === */
         h1, h2 {
             color: var(--primary-color);
             font-weight: 300;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
-        
+
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.6em; }
+
         .card {
             background-color: var(--medium-bg);
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid transparent;
         }
 
-        /* Stili Filtri */
-        .filter-container {
-            background-color: var(--medium-bg);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        /* === QUICK STATS (OVERVIEW) === */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .quick-stat-card {
+            background: linear-gradient(135deg, var(--medium-bg), var(--light-bg));
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
             display: flex;
-            gap: 10px;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 15px;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
         }
-        .filter-container input, .filter-container button, .filter-container select {
-            background-color: var(--light-bg);
+
+        .quick-stat-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-color);
+        }
+
+        .quick-stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .quick-stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .quick-stat-content {
+            flex: 1;
+        }
+
+        .quick-stat-label {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .quick-stat-value {
+            font-size: 1.8em;
+            font-weight: 600;
             color: var(--text-color);
-            border: 1px solid var(--primary-color);
-            padding: 8px;
-            border-radius: 5px;
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
         }
-        .filter-container button {
-            cursor: pointer;
-            font-weight: bold;
-            background-color: var(--primary-color);
+
+        .quick-stat-unit {
+            font-size: 0.5em;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .quick-stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+
+        .trend-up {
+            color: var(--danger-color);
+        }
+
+        .trend-down {
+            color: var(--success-color);
+        }
+
+        .trend-neutral {
+            color: var(--text-muted);
+        }
+
+        .alert-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .alert-badge.normal {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .alert-badge.warning {
+            background: var(--warning-color);
             color: var(--dark-bg);
         }
-        .filter-container button:hover { background-color: #0097a7; }
 
-        /* Stili Gruppi Dati */
-        .data-groups-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-bottom: 25px; }
-        .data-group { flex: 1; background-color: var(--medium-bg); padding: 15px; border-radius: 8px; min-width: 350px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-        .group-title { color: var(--primary-color); text-align: center; margin: 0 0 20px 0; font-weight: 400; font-size: 1.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        .stats-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        
-        /* Stili Card Dati */
-        .stat-card { background-color: var(--light-bg); padding: 12px 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); text-align: center; flex-grow: 1; min-width: 150px; }
-        .stat-card .title { font-size: 0.8em; color: var(--text-muted); margin-bottom: 5px; }
-        .stat-card .value { font-size: 1.5em; font-weight: bold; color: var(--primary-color); }
-        .stat-card .unit { font-size: 0.7em; color: var(--primary-color); margin-left: 4px; }
-        
-        /* Stili Grafici e Tabelle */
-        .container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-        .chart-container { flex: 3; min-width: 600px; height: 500px; cursor: grab; }
-        .chart-container:active { cursor: grabbing; }
-        
-        /* --- STILI WIDGET VENTO A BARRA (NUOVI) --- */
-        .wind-bar-widget {
-            flex: 1;
-            min-width: 280px;
-            max-width: 350px;
-            background-color: var(--light-bg);
-            border-radius: 8px;
-            padding: 15px;
-            box-sizing: border-box;
+        .alert-badge.critical {
+            background: var(--danger-color);
+            color: white;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* === FILTERS === */
+        .filter-container {
+            background-color: var(--medium-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 15px; /* Spazio tra sezione vento e raffica */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            gap: 5px;
         }
+
+        .filter-group label {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .filter-container input,
+        .filter-container button,
+        .filter-container select {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-size: 0.9em;
+        }
+
+        .filter-container input:focus,
+        .filter-container select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
+        }
+
+        .filter-container button {
+            cursor: pointer;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .filter-container button:active {
+            transform: translateY(0);
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .quick-filter-btn {
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: var(--transition);
+        }
+
+        .quick-filter-btn:hover,
+        .quick-filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* === DATA GROUPS === */
+        .data-groups-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .data-group {
+            background: linear-gradient(135deg, var(--medium-bg), var(--light-bg));
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .data-group:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .group-title {
+            color: var(--primary-color);
+            text-align: center;
+            margin: 0 0 20px 0;
+            font-weight: 400;
+            font-size: 1.2em;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        /* === STAT CARDS === */
+        .stat-card {
+            background-color: var(--dark-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary-color);
+        }
+
+        .stat-card .title {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .stat-card .value {
+            font-size: 1.6em;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .stat-card .unit {
+            font-size: 0.6em;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        /* === WIND BAR WIDGET === */
+        .wind-bar-widget {
+            background: linear-gradient(135deg, var(--light-bg), var(--medium-bg));
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .wind-bar-widget:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
         .wind-bar-widget .widget-title {
             color: var(--text-color);
             text-align: center;
             margin: 0 0 5px 0;
             font-weight: 500;
             font-size: 1.2em;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 12px;
         }
+
         .wind-bar-widget .bar-section {
             width: 100%;
         }
+
         .wind-bar-widget .bar-label {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 0.9em;
             color: var(--text-muted);
         }
+
         .wind-bar-widget .bar-value {
-            font-weight: bold;
-            font-size: 1.1em;
+            font-weight: 700;
+            font-size: 1.15em;
             color: var(--text-color);
         }
+
         .wind-bar-widget .progress-bar-bg {
             width: 100%;
-            height: 20px;
-            background-color: var(--medium-bg);
-            border-radius: 10px;
+            height: 24px;
+            background-color: var(--dark-bg);
+            border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--border-color);
+            position: relative;
         }
+
         .wind-bar-widget .progress-bar-fill {
             height: 100%;
-            width: 0%; /* Inizializzato a 0 */
-            border-radius: 10px;
-            transition: width 0.5s ease-out;
+            width: 0%;
+            border-radius: 12px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
+
+        .wind-bar-widget .progress-bar-fill:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
         .wind-bar-widget .progress-bar-fill.wind {
-            background-color: var(--primary-color); /* Colore per il vento */
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
         }
+
         .wind-bar-widget .progress-bar-fill.gust {
-            background-color: #ffc107; /* Colore per le raffiche */
+            background: linear-gradient(90deg, var(--warning-color), #ff6f00);
+        }
+
+        /* === CHARTS === */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            min-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .chart-title {
+            font-size: 1.1em;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-btn {
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chart-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .chart-container {
+            min-height: 500px;
+            cursor: grab;
+            position: relative;
+        }
+
+        .chart-container:active {
+            cursor: grabbing;
+        }
+
+        .chart-container.fullscreen {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9998;
+            background: var(--dark-bg);
+            padding: 20px;
+            min-height: auto;
+            height: calc(100vh - 80px);
+        }
+
+        /* === STATISTICS TABLE === */
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stats-table th {
+            background: var(--light-bg);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .stats-table tr:hover {
+            background: var(--light-bg);
+        }
+
+        /* === DATA TABLE === */
+        .table-container {
+            flex: 1;
+            min-width: 300px;
+            max-height: 540px;
+            overflow-y: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        thead th {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+            z-index: 10;
+        }
+
+        tbody tr {
+            background-color: var(--light-bg);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--medium-bg);
+        }
+
+        tbody tr:hover {
+            background-color: var(--primary-color) !important;
+            color: white;
+            transform: scale(1.01);
+        }
+
+        tbody tr.highlighted {
+            background-color: var(--primary-color) !important;
+            color: white;
+            font-weight: 600;
+        }
+
+        .table-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: var(--light-bg);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+            border: 2px solid var(--light-bg);
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* === FORECAST PAGE === */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, var(--light-bg), var(--medium-bg));
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .toggle-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .instructions {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin-top 0.5s ease-out;
+            margin-top: 0;
+        }
+
+        .instructions.visible {
+            max-height: 300px;
+            opacity: 1;
+            margin-top: 15px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95em;
+            margin-top: 0;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.8;
+            background: var(--medium-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        #resetZoomBtn {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: var(--transition);
+        }
+
+        #resetZoomBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1024px) {
+            .quick-stats {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .data-groups-container {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-wrapper {
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            #main-content {
+                margin-left: 0;
+            }
+
+            .header-title {
+                font-size: 1em;
+            }
+
+            .header-actions {
+                gap: 5px;
+            }
+
+            .status-indicator,
+            .last-update {
+                display: none;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .chart-container {
+                min-height: 350px;
+            }
+        }
+
+        /* === EXPORT MODAL === */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10001;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--medium-bg);
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--primary-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-option {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: var(--light-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .modal-option:hover {
+            border-color: var(--primary-color);
+            background: var(--dark-bg);
+        }
+
+        .checkbox-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .checkbox-container label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--light-bg);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9em;
+        }
+
+        .checkbox-container label:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            cursor: pointer;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -183,89 +1138,368 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 </head>
 <body>
-    <nav class="sidebar">
-        <h2>Dashboard Meteo</h2>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="header-left">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <h1 class="header-title">🌤️ Dashboard Meteo Pro</h1>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <span class="status-dot online" id="status-dot"></span>
+                <span id="status-text">Online</span>
+            </div>
+            <div class="last-update" id="last-update">
+                Ultimo aggiornamento: --:--
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" id="refresh-btn" title="Aggiorna dati">🔄</button>
+                <button class="icon-btn" id="export-btn" title="Esporta dati">📥</button>
+                <button class="icon-btn" id="settings-btn" title="Impostazioni">⚙️</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <h2>📊 Navigazione</h2>
         <ul>
-            <li><a href="#previsioni" class="nav-link active">Previsioni Idro</a></li>
+            <li><a href="#overview" class="nav-link active">Dashboard</a></li>
+            <li><a href="#previsioni" class="nav-link">Previsioni Idro</a></li>
             <li><a href="#idrometri" class="nav-link">Idrometri</a></li>
             <li><a href="#pluviometri" class="nav-link">Pluviometri</a></li>
             <li><a href="#anemometri" class="nav-link">Anemometri</a></li>
+            <li><a href="#analisi" class="nav-link">Analisi Avanzata</a></li>
         </ul>
+        <div class="sidebar-footer">
+            <p>Dashboard Meteo v2.0</p>
+            <p>© 2024 - Tutti i diritti riservati</p>
+        </div>
     </nav>
+
+    <!-- Main Content -->
     <main id="main-content">
-        <section id="previsioni" class="page-section active">
-             <h1>Sezione Previsioni non implementata in questa versione</h1>
+        
+        <!-- OVERVIEW PAGE -->
+        <section id="overview" class="page-section active">
+            <h1>📊 Panoramica Generale</h1>
+            
+            <div class="quick-stats">
+                <div class="quick-stat-card" id="overview-hydro-max">
+                    <div class="quick-stat-icon">💧</div>
+                    <div class="quick-stat-content">
+                        <div class="quick-stat-label">Livello Idro Max</div>
+                        <div class="quick-stat-value">--<span class="quick-stat-unit">m</span></div>
+                        <div class="quick-stat-trend trend-neutral">
+                            <span>--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-stat-card" id="overview-rain-total">
+                    <div class="quick-stat-icon">🌧️</div>
+                    <div class="quick-stat-content">
+                        <div class="quick-stat-label">Pioggia Totale Oggi</div>
+                        <div class="quick-stat-value">--<span class="quick-stat-unit">mm</span></div>
+                        <div class="quick-stat-trend trend-neutral">
+                            <span>--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-stat-card" id="overview-wind-max">
+                    <div class="quick-stat-icon">💨</div>
+                    <div class="quick-stat-content">
+                        <div class="quick-stat-label">Raffica Max</div>
+                        <div class="quick-stat-value">--<span class="quick-stat-unit">km/h</span></div>
+                        <div class="quick-stat-trend trend-neutral">
+                            <span>--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-stat-card" id="overview-stations">
+                    <div class="quick-stat-icon">📡</div>
+                    <div class="quick-stat-content">
+                        <div class="quick-stat-label">Stazioni Attive</div>
+                        <div class="quick-stat-value">--<span class="quick-stat-unit">/15</span></div>
+                        <div class="quick-stat-trend trend-neutral">
+                            <span>Monitoraggio attivo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>🔴 Allerte e Situazioni Critiche</h2>
+            <div class="card" id="alerts-container">
+                <p style="color: var(--text-muted); text-align: center;">Nessuna allerta al momento</p>
+            </div>
+
+            <h2>📈 Grafici Principali</h2>
+            <div class="data-groups-container">
+                <div class="card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">Livelli Idrometrici</h3>
+                    <canvas id="overviewHydroChart" style="max-height: 300px;"></canvas>
+                </div>
+                <div class="card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">Intensità Pioggia</h3>
+                    <canvas id="overviewRainChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
         </section>
 
+        <!-- PREVISIONI IDRO PAGE -->
+        <section id="previsioni" class="page-section">
+            <div class="header">
+                <h1>🔮 Previsione Idrometrica Misa (Bettolelle)</h1>
+                <button id="toggle-instructions-btn" class="toggle-btn">📖 Mostra Istruzioni</button>
+                <div id="instructions-container" class="instructions">
+                    <p class="subtitle">
+                        <b>🖱️ Sposta:</b> Trascina il grafico con il mouse per spostarti nel tempo.<br/>
+                        <b>🔍 Zoom:</b> Usa la rotellina del mouse per ingrandire/rimpicciolire.<br/>
+                        <b>🔄 Reset:</b> Clicca "Reset Zoom" per tornare alla vista completa.<br/>
+                        <b>✨ Interazione:</b> Passa il mouse sulla tabella per evidenziare i punti corrispondenti sul grafico.<br/>
+                        <b>📊 Quantili:</b> Q10 (minimo), Q50 (mediana), Q90 (massimo) rappresentano la fascia di previsione.
+                    </p>
+                    <button id="resetZoomBtn">🔄 Reset Zoom Grafico</button>
+                </div>
+            </div>
+            
+            <div class="container">
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <span class="chart-title">Andamento Previsto</span>
+                        <div class="chart-actions">
+                            <button class="chart-btn" id="download-forecast-chart">📷 Scarica</button>
+                            <button class="chart-btn" id="fullscreen-forecast">⛶ Fullscreen</button>
+                        </div>
+                    </div>
+                    <div class="chart-container card">
+                        <canvas id="forecastChart"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
+                        <table class="stats-table" id="forecast-stats-table">
+                            <tr>
+                                <th>Metrica</th>
+                                <th>Q10 (min)</th>
+                                <th>Q50 (med)</th>
+                                <th>Q90 (max)</th>
+                            </tr>
+                            <tr>
+                                <td>Livello Medio</td>
+                                <td id="q10-avg">--</td>
+                                <td id="q50-avg">--</td>
+                                <td id="q90-avg">--</td>
+                            </tr>
+                            <tr>
+                                <td>Picco Massimo</td>
+                                <td id="q10-max">--</td>
+                                <td id="q50-max">--</td>
+                                <td id="q90-max">--</td>
+                            </tr>
+                            <tr>
+                                <td>Valore Minimo</td>
+                                <td id="q10-min">--</td>
+                                <td id="q50-min">--</td>
+                                <td id="q90-min">--</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-container card">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>🕐 Timestamp</th>
+                                <th>Q10 (m)</th>
+                                <th>Q50 (m)</th>
+                                <th>Q90 (m)</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- IDROMETRI PAGE -->
         <section id="idrometri" class="page-section">
-            <h2>Idrometri - Dati in Tempo Reale e Storici</h2>
+            <h1>💧 Idrometri - Monitoraggio Livelli Idrici</h1>
+            
             <div class="data-groups-container">
                 <div class="data-group">
                     <h3 class="group-title">Livelli Idrometrici Attuali</h3>
                     <div class="stats-container">
-                        <div class="stat-card" id="hydro-misa-bettolelle"><div class="title">Misa (Bettolelle)</div><div class="value">--<span class="unit">m</span></div></div>
-                        <div class="stat-card" id="hydro-pianello-ostra"><div class="title">Misa (Pianello Ostra)</div><div class="value">--<span class="unit">m</span></div></div>
-                        <div class="stat-card" id="hydro-ponte-garibaldi"><div class="title">Misa (P. Garibaldi)</div><div class="value">--<span class="unit">m</span></div></div>
-                        <div class="stat-card" id="hydro-serra-dei-conti"><div class="title">Misa (Serra dei Conti)</div><div class="value">--<span class="unit">m</span></div></div>
-                        <div class="stat-card" id="hydro-cesano"><div class="title">Cesano</div><div class="value">--<span class="unit">m</span></div></div>
+                        <div class="stat-card" id="hydro-misa-bettolelle">
+                            <div class="title">Misa (Bettolelle)</div>
+                            <div class="value">--<span class="unit">m</span></div>
+                        </div>
+                        <div class="stat-card" id="hydro-pianello-ostra">
+                            <div class="title">Misa (Pianello Ostra)</div>
+                            <div class="value">--<span class="unit">m</span></div>
+                        </div>
+                        <div class="stat-card" id="hydro-ponte-garibaldi">
+                            <div class="title">Misa (P. Garibaldi)</div>
+                            <div class="value">--<span class="unit">m</span></div>
+                        </div>
+                        <div class="stat-card" id="hydro-serra-dei-conti">
+                            <div class="title">Misa (Serra dei Conti)</div>
+                            <div class="value">--<span class="unit">m</span></div>
+                        </div>
+                        <div class="stat-card" id="hydro-cesano">
+                            <div class="title">Cesano</div>
+                            <div class="value">--<span class="unit">m</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div class="filter-container">
-                <label for="start-time-hydro">Da:</label><input type="datetime-local" id="start-time-hydro">
-                <label for="end-time-hydro">A:</label><input type="datetime-local" id="end-time-hydro">
-                <button id="filter-hydro">Filtra</button>
+                <div class="filter-group">
+                    <label>Filtri Rapidi</label>
+                    <div class="quick-filters">
+                        <button class="quick-filter-btn" data-hours="6">6 ore</button>
+                        <button class="quick-filter-btn active" data-hours="12">12 ore</button>
+                        <button class="quick-filter-btn" data-hours="24">24 ore</button>
+                        <button class="quick-filter-btn" data-hours="72">3 giorni</button>
+                        <button class="quick-filter-btn" data-hours="168">7 giorni</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="start-time-hydro">Da:</label>
+                    <input type="datetime-local" id="start-time-hydro">
+                </div>
+                <div class="filter-group">
+                    <label for="end-time-hydro">A:</label>
+                    <input type="datetime-local" id="end-time-hydro">
+                </div>
+                <button id="filter-hydro">🔍 Filtra</button>
+                <button id="export-hydro-data">📥 Esporta CSV</button>
             </div>
-            <div class="chart-container card">
-                <canvas id="hydroHistoryChart"></canvas>
+
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <span class="chart-title">Andamento Storico Livelli</span>
+                    <div class="chart-actions">
+                        <button class="chart-btn" id="download-hydro-chart">📷 Scarica</button>
+                        <button class="chart-btn" id="fullscreen-hydro">⛶ Fullscreen</button>
+                    </div>
+                </div>
+                <div class="chart-container card">
+                    <canvas id="hydroHistoryChart"></canvas>
+                </div>
             </div>
         </section>
 
+        <!-- PLUVIOMETRI PAGE -->
         <section id="pluviometri" class="page-section">
-            <h2>Pluviometri - Dati in Tempo Reale e Storici</h2>
-             <div class="data-groups-container">
+            <h1>🌧️ Pluviometri - Monitoraggio Precipitazioni</h1>
+            
+            <div class="data-groups-container">
                 <div class="data-group">
                     <h3 class="group-title">Intensità Pioggia Attuale</h3>
                     <div class="stats-container">
-                        <div class="stat-card" id="rain-arcevia"><div class="title">Arcevia (Intensità)</div><div class="value">--<span class="unit">mm/hr</span></div></div>
-                        <div class="stat-card" id="rain-barbara"><div class="title">Barbara (Intensità)</div><div class="value">--<span class="unit">mm/hr</span></div></div>
-                        <div class="stat-card" id="rain-corinaldo"><div class="title">Corinaldo (Intensità)</div><div class="value">--<span class="unit">mm/hr</span></div></div>
-                        <div class="stat-card" id="rain-misa"><div class="title">Misa (Intensità)</div><div class="value">--<span class="unit">mm/hr</span></div></div>
-                        <div class="stat-card" id="rain-montignano"><div class="title">Montignano (Intensità)</div><div class="value">--<span class="unit">mm/hr</span></div></div>
-                        <div class="stat-card" id="rain-santangelo"><div class="title">S.Angelo (Intensità)</div><div class="value">--<span class="unit">mm/hr</span></div></div>
-                        <div class="stat-card" id="rain-scapezzano"><div class="title">Scapezzano (Intensità)</div><div class="value">--<span class="unit">mm/hr</span></div></div>
+                        <div class="stat-card" id="rain-arcevia">
+                            <div class="title">Arcevia</div>
+                            <div class="value">--<span class="unit">mm/hr</span></div>
+                        </div>
+                        <div class="stat-card" id="rain-barbara">
+                            <div class="title">Barbara</div>
+                            <div class="value">--<span class="unit">mm/hr</span></div>
+                        </div>
+                        <div class="stat-card" id="rain-corinaldo">
+                            <div class="title">Corinaldo</div>
+                            <div class="value">--<span class="unit">mm/hr</span></div>
+                        </div>
+                        <div class="stat-card" id="rain-misa">
+                            <div class="title">Misa</div>
+                            <div class="value">--<span class="unit">mm/hr</span></div>
+                        </div>
+                        <div class="stat-card" id="rain-montignano">
+                            <div class="title">Montignano</div>
+                            <div class="value">--<span class="unit">mm/hr</span></div>
+                        </div>
+                        <div class="stat-card" id="rain-santangelo">
+                            <div class="title">S.Angelo</div>
+                            <div class="value">--<span class="unit">mm/hr</span></div>
+                        </div>
+                        <div class="stat-card" id="rain-scapezzano">
+                            <div class="title">Scapezzano</div>
+                            <div class="value">--<span class="unit">mm/hr</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div class="filter-container">
-                 <label for="start-time-rain">Da:</label><input type="datetime-local" id="start-time-rain">
-                 <label for="end-time-rain">A:</label><input type="datetime-local" id="end-time-rain">
-                 <button id="filter-rain">Filtra</button>
-                 <div id="station-selection-rain" style="margin-top: 10px; border-left: 2px solid var(--primary-color); padding-left: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
-                     <label><input type="checkbox" name="station-rain" value="Arcevia - Pioggia TOT Oggi (mm)" checked> Arcevia</label>
-                     <label><input type="checkbox" name="station-rain" value="Barbara - Pioggia TOT Oggi (mm)" checked> Barbara</label>
-                     <label><input type="checkbox" name="station-rain" value="Corinaldo - Pioggia TOT Oggi (mm)" checked> Corinaldo</label>
-                     <label><input type="checkbox" name="station-rain" value="Misa - Pioggia TOT Oggi (mm)" checked> Misa (Bettolelle)</label>
-                     <label><input type="checkbox" name="station-rain" value="Montignano - Pioggia Giornaliera (mm)" checked> Montignano</label>
-                     <label><input type="checkbox" name="station-rain" value="Sant'Angelo - Pioggia Giornaliera (mm)" checked> Sant'Angelo</label>
-                     <label><input type="checkbox" name="station-rain" value="Scapezzano - Pioggia Giornaliera (mm)" checked> Scapezzano</label>
-                 </div>
+                <div class="filter-group">
+                    <label>Filtri Rapidi</label>
+                    <div class="quick-filters">
+                        <button class="quick-filter-btn" data-hours="6">6 ore</button>
+                        <button class="quick-filter-btn active" data-hours="12">12 ore</button>
+                        <button class="quick-filter-btn" data-hours="24">24 ore</button>
+                        <button class="quick-filter-btn" data-hours="72">3 giorni</button>
+                        <button class="quick-filter-btn" data-hours="168">7 giorni</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="start-time-rain">Da:</label>
+                    <input type="datetime-local" id="start-time-rain">
+                </div>
+                <div class="filter-group">
+                    <label for="end-time-rain">A:</label>
+                    <input type="datetime-local" id="end-time-rain">
+                </div>
+                <button id="filter-rain">🔍 Filtra</button>
+                <button id="export-rain-data">📥 Esporta CSV</button>
+                
+                <div style="width: 100%; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <label style="font-weight: 600; margin-bottom: 10px; display: block;">Seleziona Stazioni:</label>
+                    <div class="checkbox-container" id="station-selection-rain">
+                        <label><input type="checkbox" name="station-rain" value="Arcevia - Pioggia TOT Oggi (mm)" checked> Arcevia</label>
+                        <label><input type="checkbox" name="station-rain" value="Barbara - Pioggia TOT Oggi (mm)" checked> Barbara</label>
+                        <label><input type="checkbox" name="station-rain" value="Corinaldo - Pioggia TOT Oggi (mm)" checked> Corinaldo</label>
+                        <label><input type="checkbox" name="station-rain" value="Misa - Pioggia TOT Oggi (mm)" checked> Misa</label>
+                        <label><input type="checkbox" name="station-rain" value="Montignano - Pioggia Giornaliera (mm)" checked> Montignano</label>
+                        <label><input type="checkbox" name="station-rain" value="Sant'Angelo - Pioggia Giornaliera (mm)" checked> Sant'Angelo</label>
+                        <label><input type="checkbox" name="station-rain" value="Scapezzano - Pioggia Giornaliera (mm)" checked> Scapezzano</label>
+                    </div>
+                </div>
             </div>
-            <div class="chart-container card">
-                <canvas id="rainHistoryChart"></canvas>
+
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <span class="chart-title">Andamento Storico Pioggia Cumulata</span>
+                    <div class="chart-actions">
+                        <button class="chart-btn" id="download-rain-chart">📷 Scarica</button>
+                        <button class="chart-btn" id="fullscreen-rain">⛶ Fullscreen</button>
+                    </div>
+                </div>
+                <div class="chart-container card">
+                    <canvas id="rainHistoryChart"></canvas>
+                </div>
             </div>
         </section>
-        
+
+        <!-- ANEMOMETRI PAGE -->
         <section id="anemometri" class="page-section">
-            <h2>Anemometri - Stazioni Weatherlink</h2>
-            <!-- ### INIZIO SEZIONE MODIFICATA ### -->
+            <h1>💨 Anemometri - Monitoraggio Vento</h1>
+            
             <div class="data-groups-container">
-                <!-- Widget Montignano -->
                 <div class="wind-bar-widget">
                     <h3 class="widget-title">Montignano</h3>
                     <div class="bar-section">
                         <div class="bar-label">
-                            <span>Vento</span>
+                            <span>Velocità Vento</span>
                             <span class="bar-value" id="speed-value-montignano">-- km/h</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -274,7 +1508,7 @@
                     </div>
                     <div class="bar-section">
                         <div class="bar-label">
-                            <span>Raffica</span>
+                            <span>Raffica Max</span>
                             <span class="bar-value" id="gust-value-montignano">-- km/h</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -282,12 +1516,12 @@
                         </div>
                     </div>
                 </div>
-                <!-- Widget Sant'Angelo -->
+
                 <div class="wind-bar-widget">
                     <h3 class="widget-title">Sant'Angelo</h3>
                     <div class="bar-section">
                         <div class="bar-label">
-                            <span>Vento</span>
+                            <span>Velocità Vento</span>
                             <span class="bar-value" id="speed-value-santangelo">-- km/h</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -296,7 +1530,7 @@
                     </div>
                     <div class="bar-section">
                         <div class="bar-label">
-                            <span>Raffica</span>
+                            <span>Raffica Max</span>
                             <span class="bar-value" id="gust-value-santangelo">-- km/h</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -304,12 +1538,12 @@
                         </div>
                     </div>
                 </div>
-                <!-- Widget Scapezzano -->
+
                 <div class="wind-bar-widget">
                     <h3 class="widget-title">Scapezzano</h3>
                     <div class="bar-section">
                         <div class="bar-label">
-                            <span>Vento</span>
+                            <span>Velocità Vento</span>
                             <span class="bar-value" id="speed-value-scapezzano">-- km/h</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -318,7 +1552,7 @@
                     </div>
                     <div class="bar-section">
                         <div class="bar-label">
-                            <span>Raffica</span>
+                            <span>Raffica Max</span>
                             <span class="bar-value" id="gust-value-scapezzano">-- km/h</span>
                         </div>
                         <div class="progress-bar-bg">
@@ -327,36 +1561,192 @@
                     </div>
                 </div>
             </div>
-            <!-- ### FINE SEZIONE MODIFICATA ### -->
+
             <div class="filter-container">
-                <label for="start-time-wind">Da:</label><input type="datetime-local" id="start-time-wind">
-                <label for="end-time-wind">A:</label><input type="datetime-local" id="end-time-wind">
-                <button id="filter-wind">Filtra</button>
-                <select id="station-selection-wind" style="margin-left: 10px;"><option value="Montignano" selected>Montignano</option><option value="Sant'Angelo">Sant'Angelo</option><option value="Scapezzano">Scapezzano</option></select>
+                <div class="filter-group">
+                    <label>Filtri Rapidi</label>
+                    <div class="quick-filters">
+                        <button class="quick-filter-btn" data-hours="6">6 ore</button>
+                        <button class="quick-filter-btn active" data-hours="12">12 ore</button>
+                        <button class="quick-filter-btn" data-hours="24">24 ore</button>
+                        <button class="quick-filter-btn" data-hours="72">3 giorni</button>
+                        <button class="quick-filter-btn" data-hours="168">7 giorni</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="start-time-wind">Da:</label>
+                    <input type="datetime-local" id="start-time-wind">
+                </div>
+                <div class="filter-group">
+                    <label for="end-time-wind">A:</label>
+                    <input type="datetime-local" id="end-time-wind">
+                </div>
+                <div class="filter-group">
+                    <label for="station-selection-wind">Stazione:</label>
+                    <select id="station-selection-wind">
+                        <option value="Montignano" selected>Montignano</option>
+                        <option value="Sant'Angelo">Sant'Angelo</option>
+                        <option value="Scapezzano">Scapezzano</option>
+                    </select>
+                </div>
+                <button id="filter-wind">🔍 Filtra</button>
+                <button id="export-wind-data">📥 Esporta CSV</button>
             </div>
-            <div class="chart-container card">
-                <canvas id="windHistoryChart"></canvas>
+
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <span class="chart-title">Andamento Storico Vento</span>
+                    <div class="chart-actions">
+                        <button class="chart-btn" id="download-wind-chart">📷 Scarica</button>
+                        <button class="chart-btn" id="fullscreen-wind">⛶ Fullscreen</button>
+                    </div>
+                </div>
+                <div class="chart-container card">
+                    <canvas id="windHistoryChart"></canvas>
+                </div>
             </div>
         </section>
+
+        <!-- ANALISI PAGE -->
+        <section id="analisi" class="page-section">
+            <h1>📊 Analisi Avanzata</h1>
+            
+            <div class="data-groups-container">
+                <div class="card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">📈 Statistiche Idrometri (Ultime 24h)</h3>
+                    <table class="stats-table" id="hydro-stats-table">
+                        <thead>
+                            <tr>
+                                <th>Stazione</th>
+                                <th>Minimo (m)</th>
+                                <th>Massimo (m)</th>
+                                <th>Media (m)</th>
+                                <th>Variazione</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Caricamento dati...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">🌧️ Statistiche Pluviometri (Ultime 24h)</h3>
+                    <table class="stats-table" id="rain-stats-table">
+                        <thead>
+                            <tr>
+                                <th>Stazione</th>
+                                <th>Totale (mm)</th>
+                                <th>Intensità Max (mm/h)</th>
+                                <th>Durata Pioggia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Caricamento dati...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">💨 Statistiche Anemometri (Ultime 24h)</h3>
+                    <table class="stats-table" id="wind-stats-table">
+                        <thead>
+                            <tr>
+                                <th>Stazione</th>
+                                <th>Velocità Media (km/h)</th>
+                                <th>Raffica Max (km/h)</th>
+                                <th>Direzione Prevalente</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Caricamento dati...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <h2>🔗 Correlazioni</h2>
+            <div class="card">
+                <p style="color: var(--text-muted); text-align: center; padding: 40px;">
+                    Funzionalità di correlazione tra stazioni in arrivo...
+                </p>
+            </div>
+        </section>
+
     </main>
 
-    <script>
-        // --- URLS ---
-        const regionLatestUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1216509518&single=true&output=csv';
-        const weatherlinkLatestUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=377471478&single=true&output=csv';
-        const regionHistoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1332614523&single=true&output=csv';
-        const weatherlinkHistoryUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=277108921&single=true&output=csv';
-        
-        // --- CONFIG ---
-        const DEFAULT_TIME_WINDOW_HOURS = 6;
-        const GAUGE_MAX_SPEED = 80; // Massima velocità per il calcolo della barra (km/h)
-        const CHART_COLORS = ['#00bcd4', '#ffc107', '#9c27b0', '#f44336', '#4caf50', '#ff9800', '#3f51b5', '#e91e63'];
-        
-        // --- GLOBAL VARS ---
-        let regionHistoryData = [], weatherlinkHistoryData = [];
-        let hydroHistoryChart, rainHistoryChart, windHistoryChart;
+    <!-- Export Modal -->
+    <div class="modal" id="export-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📥 Esporta Dati</h2>
+                <button class="modal-close" id="close-export-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-option" id="export-current-view">
+                    <h4 style="margin: 0 0 5px 0;">📊 Vista Corrente</h4>
+                    <p style="margin: 0; font-size: 0.9em; color: var(--text-muted);">Esporta i dati della sezione attualmente visualizzata</p>
+                </div>
+                <div class="modal-option" id="export-all-data">
+                    <h4 style="margin: 0 0 5px 0;">📦 Tutti i Dati</h4>
+                    <p style="margin: 0; font-size: 0.9em; color: var(--text-muted);">Esporta l'intero dataset disponibile</p>
+                </div>
+                <div class="modal-option" id="export-custom">
+                    <h4 style="margin: 0 0 5px 0;">⚙️ Personalizzato</h4>
+                    <p style="margin: 0; font-size: 0.9em; color: var(--text-muted);">Seleziona periodo e stazioni specifiche</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // --- UTILITY FUNCTIONS ---
+    <script>
+        // ==================== CONFIGURATION ====================
+        const CONFIG = {
+            urls: {
+                forecast: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=752084732&single=true&output=csv',
+                regionLatest: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1216509518&single=true&output=csv',
+                weatherlinkLatest: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=377471478&single=true&output=csv',
+                regionHistory: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1332614523&single=true&output=csv',
+                weatherlinkHistory: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=277108921&single=true&output=csv'
+            },
+            intervals: {
+                dataUpdate: 60000,      // 1 minuto
+                forecastUpdate: 300000  // 5 minuti
+            },
+            defaults: {
+                timeWindow: 12,         // ore
+                gaugeMaxSpeed: 80,      // km/h
+                chartColors: ['#00bcd4', '#ffc107', '#9c27b0', '#f44336', '#4caf50', '#ff9800', '#3f51b5', '#e91e63']
+            },
+            thresholds: {
+                hydroWarning: 2.0,      // metri
+                hydroCritical: 3.0,     // metri
+                rainWarning: 20,        // mm/h
+                rainCritical: 40,       // mm/h
+                windWarning: 40,        // km/h
+                windCritical: 60        // km/h
+            }
+        };
+
+        // ==================== GLOBAL STATE ====================
+        const STATE = {
+            regionHistoryData: [],
+            weatherlinkHistoryData: [],
+            forecastData: [],
+            charts: {
+                forecast: null,
+                hydroHistory: null,
+                rainHistory: null,
+                windHistory: null,
+                overviewHydro: null,
+                overviewRain: null
+            },
+            currentHighlightedIndex: -1,
+            lastUpdate: null,
+            isOnline: true
+        };
+
+        // ==================== UTILITY FUNCTIONS ====================
         function parseAndFixDecimal(value) {
             if (value === null || value === undefined || value === 'N/A' || String(value).trim() === '') return NaN;
             return parseFloat(String(value).replace(',', '.'));
@@ -369,18 +1759,32 @@
             if (parts.length < 5) return null;
             const [d, m, y, h, min] = parts;
             const date = new Date(y, m - 1, d, h, min, parts[5] || 0);
-            if (isNaN(date.getTime())) { console.warn(`Data non valida: "${dateString}"`); return null; }
+            if (isNaN(date.getTime())) {
+                console.warn(`Data non valida: "${dateString}"`);
+                return null;
+            }
             return date;
         }
-        
+
+        function formatDateTime(date) {
+            if (!date) return '--:--';
+            const pad = (n) => String(n).padStart(2, '0');
+            return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+
         function filterDataByTime(data, timeColumn, start, end) {
             const startTime = start ? new Date(start).getTime() : null;
             const endTime = end ? new Date(end).getTime() : null;
+            
             if (!startTime && !endTime) {
                 const now = new Date();
-                const defaultStart = now.getTime() - DEFAULT_TIME_WINDOW_HOURS * 3600000;
-                return data.filter(r => { const d = parseCustomDate(r[timeColumn]); return d ? d.getTime() >= defaultStart : false; });
+                const defaultStart = now.getTime() - CONFIG.defaults.timeWindow * 3600000;
+                return data.filter(r => {
+                    const d = parseCustomDate(r[timeColumn]);
+                    return d ? d.getTime() >= defaultStart : false;
+                });
             }
+            
             return data.filter(r => {
                 const d = parseCustomDate(r[timeColumn]);
                 if (!d) return false;
@@ -390,15 +1794,93 @@
                 return true;
             });
         }
-        
-        // --- UI UPDATE FUNCTIONS ---
+
+        function calculateStats(values) {
+            const validValues = values.filter(v => !isNaN(v) && v !== null);
+            if (validValues.length === 0) return { min: null, max: null, avg: null };
+            
+            return {
+                min: Math.min(...validValues),
+                max: Math.max(...validValues),
+                avg: validValues.reduce((a, b) => a + b, 0) / validValues.length
+            };
+        }
+
+        function getAlertLevel(value, warningThreshold, criticalThreshold) {
+            if (value >= criticalThreshold) return 'critical';
+            if (value >= warningThreshold) return 'warning';
+            return 'normal';
+        }
+
+        // ==================== UI FUNCTIONS ====================
+        function showLoading() {
+            document.getElementById('loading-overlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('active');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type] || icons.info}</span>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close">×</button>
+            `;
+            
+            container.appendChild(toast);
+            
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                toast.remove();
+            });
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        function updateLastUpdate() {
+            STATE.lastUpdate = new Date();
+            document.getElementById('last-update').textContent = `Ultimo aggiornamento: ${formatDateTime(STATE.lastUpdate)}`;
+        }
+
+        function updateConnectionStatus(online) {
+            STATE.isOnline = online;
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            
+            if (online) {
+                dot.className = 'status-dot online';
+                text.textContent = 'Online';
+            } else {
+                dot.className = 'status-dot offline';
+                text.textContent = 'Offline';
+            }
+        }
+
         function updateStatCard(cardId, value, unit, fallback = '--') {
             const card = document.getElementById(cardId);
             if (!card) return;
+            
             const valueEl = card.querySelector('.value');
             let finalValue = fallback;
             const numValue = parseAndFixDecimal(value);
-            if (!isNaN(numValue)) { finalValue = numValue.toFixed(2); }
+            
+            if (!isNaN(numValue)) {
+                finalValue = numValue.toFixed(2);
+            }
+            
             const unitEl = valueEl.querySelector('.unit');
             if (unitEl) {
                 unitEl.textContent = unit;
@@ -406,153 +1888,1072 @@
             }
         }
 
-        // ### FUNZIONE MODIFICATA ###
         function updateWindBar(station, speed, gust) {
             const cleanSpeed = parseAndFixDecimal(speed) || 0;
             const cleanGust = parseAndFixDecimal(gust) || 0;
-
-            // Aggiorna i valori testuali
+            
             document.getElementById(`speed-value-${station}`).textContent = `${cleanSpeed.toFixed(1)} km/h`;
             document.getElementById(`gust-value-${station}`).textContent = `${cleanGust.toFixed(1)} km/h`;
-
-            // Calcola la percentuale per la larghezza della barra
-            const speedPercent = (Math.min(cleanSpeed, GAUGE_MAX_SPEED) / GAUGE_MAX_SPEED) * 100;
-            const gustPercent = (Math.min(cleanGust, GAUGE_MAX_SPEED) / GAUGE_MAX_SPEED) * 100;
-
-            // Aggiorna la larghezza delle barre
+            
+            const speedPercent = (Math.min(cleanSpeed, CONFIG.defaults.gaugeMaxSpeed) / CONFIG.defaults.gaugeMaxSpeed) * 100;
+            const gustPercent = (Math.min(cleanGust, CONFIG.defaults.gaugeMaxSpeed) / CONFIG.defaults.gaugeMaxSpeed) * 100;
+            
             document.getElementById(`speed-bar-${station}`).style.width = `${speedPercent}%`;
             document.getElementById(`gust-bar-${station}`).style.width = `${gustPercent}%`;
         }
 
-        // --- DATA FETCH & CARD UPDATES ---
-        function updateAllLatestData() {
-            Papa.parse(`${regionLatestUrl}&t=${Date.now()}`, {
-                download: true, header: true, skipEmptyLines: true,
+        // ==================== DATA FETCHING ====================
+        function fetchData(url, callback) {
+            Papa.parse(`${url}&t=${Date.now()}`, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
                 complete: (results) => {
-                    if (!results.data || !results.data.length) return;
-                    const d = results.data[0];
-                    updateStatCard('hydro-misa-bettolelle', d['Misa - Livello Misa (mt)'], 'm');
-                    updateStatCard('hydro-pianello-ostra', d['Pianello di Ostra - Livello Misa (mt)'], 'm');
-                    updateStatCard('hydro-ponte-garibaldi', d['Ponte Garibaldi - Livello Misa 2 (mt)'], 'm');
-                    updateStatCard('hydro-serra-dei-conti', d['Serra dei Conti - Livello Misa (mt)'], 'm');
-                    updateStatCard('hydro-cesano', d['Cesano - Livello Cesano (mt)'], 'm');
-                    
-                    const convertToHourRate = (rawValue) => {
-                        const intensityMin = parseAndFixDecimal(rawValue);
-                        return !isNaN(intensityMin) ? intensityMin * 60 : NaN;
-                    };
-
-                    updateStatCard('rain-arcevia', convertToHourRate(d['Arcevia - Intensita di pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-barbara', convertToHourRate(d['Barbara - Intensita di pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-corinaldo', convertToHourRate(d['Corinaldo - Intensita di pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-misa', convertToHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr');
-                }
-            });
-
-            Papa.parse(`${weatherlinkLatestUrl}&t=${Date.now()}`, {
-                download: true, header: true, skipEmptyLines: true,
-                complete: (results) => {
-                    if (!results.data || !results.data.length) return;
-                    const d = results.data[0];
-                    // ### CHIAMATA ALLA FUNZIONE MODIFICATA ###
-                    updateWindBar('montignano', d['Montignano - Velocità Vento (km/h)'], d['Montignano - Raffica Vento 10 min (km/h)']);
-                    updateWindBar('santangelo', d["Sant'Angelo - Velocità Vento (km/h)"], d["Sant'Angelo - Raffica Vento 10 min (km/h)"]);
-                    updateWindBar('scapezzano', d['Scapezzano - Velocità Vento (km/h)'], d['Scapezzano - Raffica Vento 10 min (km/h)']);
-                    
-                    updateStatCard('rain-montignano', d['Montignano - Intensità Pioggia (mm/hr)'], 'mm/hr');
-                    updateStatCard('rain-santangelo', d["Sant'Angelo - Intensità Pioggia (mm/hr)"], 'mm/hr');
-                    updateStatCard('rain-scapezzano', d['Scapezzano - Intensità Pioggia (mm/hr)'], 'mm/hr');
+                    if (results.errors.length > 0) {
+                        console.error('Errori nel parsing CSV:', results.errors);
+                        updateConnectionStatus(false);
+                    } else {
+                        updateConnectionStatus(true);
+                    }
+                    callback(results.data);
+                },
+                error: (error) => {
+                    console.error('Errore nel caricamento dati:', error);
+                    updateConnectionStatus(false);
+                    showToast('Errore nel caricamento dei dati', 'error');
                 }
             });
         }
 
-        // --- CHART DRAWING FUNCTIONS ---
-        function drawChart(canvasId, existingChart, chartConfig) {
+        function updateAllLatestData() {
+            fetchData(CONFIG.urls.regionLatest, (data) => {
+                if (!data || !data.length) return;
+                const d = data[0];
+                
+                // Idrometri
+                updateStatCard('hydro-misa-bettolelle', d['Misa - Livello Misa (mt)'], 'm');
+                updateStatCard('hydro-pianello-ostra', d['Pianello di Ostra - Livello Misa (mt)'], 'm');
+                updateStatCard('hydro-ponte-garibaldi', d['Ponte Garibaldi - Livello Misa 2 (mt)'], 'm');
+                updateStatCard('hydro-serra-dei-conti', d['Serra dei Conti - Livello Misa (mt)'], 'm');
+                updateStatCard('hydro-cesano', d['Cesano - Livello Cesano (mt)'], 'm');
+                
+                // Pluviometri (converti da mm/min a mm/hr)
+                const convertToHourRate = (rawValue) => {
+                    const val = parseAndFixDecimal(rawValue);
+                    return !isNaN(val) ? val * 60 : NaN;
+                };
+                
+                updateStatCard('rain-arcevia', convertToHourRate(d['Arcevia - Intensita di pioggia (mm/min)']), 'mm/hr');
+                updateStatCard('rain-barbara', convertToHourRate(d['Barbara - Intensita di pioggia (mm/min)']), 'mm/hr');
+                updateStatCard('rain-corinaldo', convertToHourRate(d['Corinaldo - Intensita di pioggia (mm/min)']), 'mm/hr');
+                updateStatCard('rain-misa', convertToHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr');
+                
+                updateLastUpdate();
+                updateOverviewStats();
+            });
+
+            fetchData(CONFIG.urls.weatherlinkLatest, (data) => {
+                if (!data || !data.length) return;
+                const d = data[0];
+                
+                updateWindBar('montignano', d['Montignano - Velocità Vento (km/h)'], d['Montignano - Raffica Vento 10 min (km/h)']);
+                updateWindBar('santangelo', d["Sant'Angelo - Velocità Vento (km/h)"], d["Sant'Angelo - Raffica Vento 10 min (km/h)"]);
+                updateWindBar('scapezzano', d['Scapezzano - Velocità Vento (km/h)'], d['Scapezzano - Raffica Vento 10 min (km/h)']);
+                
+                updateStatCard('rain-montignano', d['Montignano - Intensità Pioggia (mm/hr)'], 'mm/hr');
+                updateStatCard('rain-santangelo', d["Sant'Angelo - Intensità Pioggia (mm/hr)"], 'mm/hr');
+                updateStatCard('rain-scapezzano', d['Scapezzano - Intensità Pioggia (mm/hr)'], 'mm/hr');
+            });
+        }
+
+        // ==================== CHART FUNCTIONS ====================
+        function createChart(canvasId, config) {
+            const existingChart = STATE.charts[canvasId];
             if (existingChart) existingChart.destroy();
+            
             const ctx = document.getElementById(canvasId).getContext('2d');
-            return new Chart(ctx, chartConfig);
+            return new Chart(ctx, config);
+        }
+
+        const highlightPlugin = {
+            id: 'highlightPlugin',
+            afterDraw: (chart) => {
+                if (STATE.currentHighlightedIndex === -1) return;
+                const ctx = chart.ctx;
+                const meta = chart.getDatasetMeta(0);
+                if (!meta || STATE.currentHighlightedIndex >= meta.data.length) return;
+
+                const point = meta.data[STATE.currentHighlightedIndex];
+                
+                // Vertical line
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(0, 188, 212, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(point.x, chart.chartArea.top);
+                ctx.lineTo(point.x, chart.chartArea.bottom);
+                ctx.stroke();
+                ctx.restore();
+
+                // Highlight points
+                chart.data.datasets.forEach((dataset, i) => {
+                    const pointAtIndex = chart.getDatasetMeta(i).data[STATE.currentHighlightedIndex];
+                    ctx.save();
+                    
+                    ctx.beginPath();
+                    ctx.arc(pointAtIndex.x, pointAtIndex.y, 8, 0, 2 * Math.PI);
+                    ctx.fillStyle = dataset.borderColor;
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    const value = dataset.data[STATE.currentHighlightedIndex];
+                    if (value !== null && !isNaN(value)) {
+                        const text = value.toFixed(2);
+                        ctx.font = 'bold 12px Segoe UI';
+                        ctx.textAlign = 'center';
+                        
+                        const textMetrics = ctx.measureText(text);
+                        const padding = 6;
+                        const rectX = pointAtIndex.x - (textMetrics.width / 2) - padding;
+                        const rectY = pointAtIndex.y - 32;
+                        const rectWidth = textMetrics.width + (padding * 2);
+                        const rectHeight = 20;
+                        
+                        ctx.fillStyle = 'rgba(30, 30, 30, 0.9)';
+                        ctx.fillRect(rectX, rectY, rectWidth, rectHeight);
+                        
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillText(text, pointAtIndex.x, pointAtIndex.y - 16);
+                    }
+                    ctx.restore();
+                });
+            }
+        };
+
+        function drawForecastChart(labels, q10, q50, q90) {
+            // Calculate statistics
+            const stats = {
+                q10: calculateStats(q10),
+                q50: calculateStats(q50),
+                q90: calculateStats(q90)
+            };
+            
+            // Update stats table
+            document.getElementById('q10-avg').textContent = stats.q10.avg ? stats.q10.avg.toFixed(3) + ' m' : '--';
+            document.getElementById('q10-max').textContent = stats.q10.max ? stats.q10.max.toFixed(3) + ' m' : '--';
+            document.getElementById('q10-min').textContent = stats.q10.min ? stats.q10.min.toFixed(3) + ' m' : '--';
+            
+            document.getElementById('q50-avg').textContent = stats.q50.avg ? stats.q50.avg.toFixed(3) + ' m' : '--';
+            document.getElementById('q50-max').textContent = stats.q50.max ? stats.q50.max.toFixed(3) + ' m' : '--';
+            document.getElementById('q50-min').textContent = stats.q50.min ? stats.q50.min.toFixed(3) + ' m' : '--';
+            
+            document.getElementById('q90-avg').textContent = stats.q90.avg ? stats.q90.avg.toFixed(3) + ' m' : '--';
+            document.getElementById('q90-max').textContent = stats.q90.max ? stats.q90.max.toFixed(3) + ' m' : '--';
+            document.getElementById('q90-min').textContent = stats.q90.min ? stats.q90.min.toFixed(3) + ' m' : '--';
+
+            STATE.charts.forecast = createChart('forecastChart', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Q10 (Minimo)',
+                            data: q10,
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 0,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Q90 (Massimo)',
+                            data: q90,
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: '-1',
+                            pointRadius: 0,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Q50 (Mediana)',
+                            data: q50,
+                            borderColor: 'rgba(255, 205, 86, 1)',
+                            backgroundColor: 'rgba(255, 205, 86, 0.1)',
+                            borderWidth: 3,
+                            fill: false,
+                            pointRadius: 0,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Previsione Livello Idrometrico - Sensore 1112 (Bettolelle)',
+                            color: '#FFFFFF',
+                            font: { size: 16, weight: '300' }
+                        },
+                        legend: {
+                            labels: { color: '#E0E0E0', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#E0E0E0',
+                            borderColor: '#00bcd4',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(3) + ' m';
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'x'
+                            },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#E0E0E0', maxRotation: 45, minRotation: 45 },
+                            grid: { color: 'rgba(224, 224, 224, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#E0E0E0' },
+                            grid: { color: 'rgba(224, 224, 224, 0.1)' },
+                            title: {
+                                display: true,
+                                text: 'Livello Idrometrico (m)',
+                                color: '#FFFFFF',
+                                font: { size: 14 }
+                            }
+                        }
+                    }
+                },
+                plugins: [highlightPlugin]
+            });
+        }
+
+        function updateForecastTable(data) {
+            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            
+            data.forEach((row, index) => {
+                let tr = tableBody.insertRow();
+                tr.dataset.index = index;
+                tr.insertCell().textContent = row['Timestamp Previsione'];
+                tr.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
+                tr.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
+                tr.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)'];
+                
+                tr.addEventListener('mouseenter', () => {
+                    STATE.currentHighlightedIndex = index;
+                    document.querySelectorAll('#dataTable tbody tr').forEach(r => r.classList.remove('highlighted'));
+                    tr.classList.add('highlighted');
+                    if (STATE.charts.forecast) STATE.charts.forecast.update('none');
+                });
+                
+                tr.addEventListener('mouseleave', () => {
+                    STATE.currentHighlightedIndex = -1;
+                    tr.classList.remove('highlighted');
+                    if (STATE.charts.forecast) STATE.charts.forecast.update('none');
+                });
+            });
+        }
+
+        function fetchForecastData() {
+            fetchData(CONFIG.urls.forecast, (data) => {
+                const filteredData = data.filter(row => row && row['Timestamp Previsione']);
+                STATE.forecastData = filteredData;
+                
+                const labels = filteredData.map(row => row['Timestamp Previsione']);
+                const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
+                const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
+                const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
+                
+                updateForecastTable(filteredData);
+                drawForecastChart(labels, q10, q50, q90);
+            });
         }
 
         function drawHydroHistoryChart() {
-            const filteredData = filterDataByTime(regionHistoryData, 'Data_Ora', document.getElementById('start-time-hydro').value, document.getElementById('end-time-hydro').value);
+            const filteredData = filterDataByTime(
+                STATE.regionHistoryData,
+                'Data_Ora',
+                document.getElementById('start-time-hydro').value,
+                document.getElementById('end-time-hydro').value
+            );
+            
             const labels = filteredData.map(r => r['Data_Ora']);
+            
             const datasets = [
-                { col: 'Misa - Livello Misa (mt)', lbl: 'Misa (Bettolelle)' }, { col: 'Pianello di Ostra - Livello Misa (m)', lbl: 'Misa (Pianello Ostra)' },
-                { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', lbl: 'Misa (P. Garibaldi)' }, { col: 'Serra dei Conti - Livello Misa (mt)', lbl: 'Misa (Serra dei Conti)' },
-                { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' },
-            ].map((s, i) => ({ label: s.lbl, data: filteredData.map(r => parseAndFixDecimal(r[s.col])), borderColor: CHART_COLORS[i], fill: false, tension: 0.4, pointRadius: 0, spanGaps: true }));
-            hydroHistoryChart = drawChart('hydroHistoryChart', hydroHistoryChart, { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Andamento Storico Idrometri' } } } });
-        }
-        
-        function drawRainHistoryChart() {
-            const filteredRegion = filterDataByTime(regionHistoryData, 'Data_Ora', document.getElementById('start-time-rain').value, document.getElementById('end-time-rain').value);
-            const filteredWeather = filterDataByTime(weatherlinkHistoryData, 'Data_Ora', document.getElementById('start-time-rain').value, document.getElementById('end-time-rain').value);
-            const selected = Array.from(document.querySelectorAll('#station-selection-rain input:checked')).map(i => i.value);
-            const labels = [...new Set([...filteredRegion.map(r => r.Data_Ora), ...filteredWeather.map(r => r.Data_Ora)])].sort((a, b) => parseCustomDate(a) - parseCustomDate(b));
-            const mapRegion = new Map(filteredRegion.map(r => [r.Data_Ora, r]));
-            const mapWeather = new Map(filteredWeather.map(r => [r.Data_Ora, r]));
-            const datasets = selected.map((col, i) => {
-                const name = col.split(' - ')[0];
-                const isWeatherlink = ['Montignano', 'Sant\'Angelo', 'Scapezzano'].includes(name);
-                const sourceMap = isWeatherlink ? mapWeather : mapRegion;
-                return { label: name, data: labels.map(l => { const row = sourceMap.get(l); return row ? parseAndFixDecimal(row[col]) : null; }), borderColor: CHART_COLORS[i], fill: false, tension: 0.3, pointRadius: 1, spanGaps: true };
-            });
-            rainHistoryChart = drawChart('rainHistoryChart', rainHistoryChart, { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Andamento Storico Pioggia Cumulata' } }, scales: { y: { beginAtZero: true } } } });
-        }
-        
-        function drawWindHistoryChart() {
-            const filteredData = filterDataByTime(weatherlinkHistoryData, 'Data_Ora', document.getElementById('start-time-wind').value, document.getElementById('end-time-wind').value);
-            const station = document.getElementById('station-selection-wind').value;
-            const labels = filteredData.map(r => r['Data_Ora']);
-            const datasets = [
-                { label: `Velocità (${station})`, data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Velocità Vento (km/h)`])), borderColor: CHART_COLORS[0], fill: false, tension: 0.4, pointRadius: 0, spanGaps: true },
-                { label: `Raffica (${station})`, data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Raffica Vento 10 min (km/h)`])), borderColor: CHART_COLORS[1], borderDash: [5, 5], fill: false, tension: 0.4, pointRadius: 0, spanGaps: true }
-            ];
-            windHistoryChart = drawChart('windHistoryChart', windHistoryChart, { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Andamento Storico Vento' } } } });
-        }
+                { col: 'Misa - Livello Misa (mt)', lbl: 'Misa (Bettolelle)' },
+                { col: 'Pianello di Ostra - Livello Misa (m)', lbl: 'Misa (Pianello Ostra)' },
+                { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', lbl: 'Misa (P. Garibaldi)' },
+                { col: 'Serra dei Conti - Livello Misa (mt)', lbl: 'Misa (Serra dei Conti)' },
+                { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' }
+            ].map((s, i) => ({
+                label: s.lbl,
+                data: filteredData.map(r => parseAndFixDecimal(r[s.col])),
+                borderColor: CONFIG.defaults.chartColors[i],
+                backgroundColor: CONFIG.defaults.chartColors[i] + '20',
+                fill: false,
+                tension: 0.4,
+                pointRadius: 0,
+                spanGaps: true,
+                borderWidth: 2
+            }));
 
-        // --- NAVIGATION & INITIALIZATION ---
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                document.querySelectorAll('.nav-link, .page-section').forEach(el => el.classList.remove('active'));
-                this.classList.add('active');
-                const targetId = this.getAttribute('href');
-                document.querySelector(targetId).classList.add('active');
-                switch(targetId) {
-                    case '#idrometri': if(regionHistoryData.length) drawHydroHistoryChart(); break;
-                    case '#pluviometri': if(regionHistoryData.length && weatherlinkHistoryData.length) drawRainHistoryChart(); break;
-                    case '#anemometri': if(weatherlinkHistoryData.length) drawWindHistoryChart(); break;
+            STATE.charts.hydroHistory = createChart('hydroHistoryChart', {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Andamento Storico Livelli Idrometrici',
+                            color: '#FFFFFF',
+                            font: { size: 16, weight: '300' }
+                        },
+                        legend: {
+                            labels: { color: '#E0E0E0', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#E0E0E0',
+                            borderColor: '#00bcd4',
+                            borderWidth: 1
+                        },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#E0E0E0', maxRotation: 45 },
+                            grid: { color: 'rgba(224, 224, 224, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#E0E0E0' },
+                            grid: { color: 'rgba(224, 224, 224, 0.1)' },
+                            title: {
+                                display: true,
+                                text: 'Livello (m)',
+                                color: '#FFFFFF'
+                            }
+                        }
+                    }
                 }
             });
-        });
-
-        function initializeDashboard() {
-            let loaded = 0;
-            const onDataLoaded = () => {
-                loaded++;
-                if (loaded < 2) return;
-                const activeId = document.querySelector('.page-section.active')?.id;
-                if (activeId === 'idrometri') drawHydroHistoryChart();
-                else if (activeId === 'pluviometri') drawRainHistoryChart();
-                else if (activeId === 'anemometri') drawWindHistoryChart();
-            };
-            Papa.parse(regionHistoryUrl, { download: true, header: true, skipEmptyLines: true, complete: r => { regionHistoryData = r.data.filter(row => row && row.Data_Ora); onDataLoaded(); } });
-            Papa.parse(weatherlinkHistoryUrl, { download: true, header: true, skipEmptyLines: true, complete: r => { weatherlinkHistoryData = r.data.filter(row => row && row.Data_Ora); onDataLoaded(); } });
         }
 
-        // --- EVENT LISTENERS ---
-        document.getElementById('filter-hydro').addEventListener('click', drawHydroHistoryChart);
-        document.getElementById('filter-rain').addEventListener('click', drawRainHistoryChart);
-        document.getElementById('filter-wind').addEventListener('click', drawWindHistoryChart);
-        document.getElementById('station-selection-wind').addEventListener('change', drawWindHistoryChart);
-        document.querySelectorAll('#station-selection-rain input').forEach(el => el.addEventListener('change', drawRainHistoryChart));
+        function drawRainHistoryChart() {
+            const filteredRegion = filterDataByTime(
+                STATE.regionHistoryData,
+                'Data_Ora',
+                document.getElementById('start-time-rain').value,
+                document.getElementById('end-time-rain').value
+            );
+            
+            const filteredWeather = filterDataByTime(
+                STATE.weatherlinkHistoryData,
+                'Data_Ora',
+                document.getElementById('start-time-rain').value,
+                document.getElementById('end-time-rain').value
+            );
+            
+            const selected = Array.from(document.querySelectorAll('#station-selection-rain input:checked')).map(i => i.value);
+            
+            const labels = [...new Set([
+                ...filteredRegion.map(r => r.Data_Ora),
+                ...filteredWeather.map(r => r.Data_Ora)
+            ])].sort((a, b) => parseCustomDate(a) - parseCustomDate(b));
+            
+            const mapRegion = new Map(filteredRegion.map(r => [r.Data_Ora, r]));
+            const mapWeather = new Map(filteredWeather.map(r => [r.Data_Ora, r]));
+            
+            const datasets = selected.map((col, i) => {
+                const name = col.split(' - ')[0];
+                const isWeatherlink = ['Montignano', "Sant'Angelo", 'Scapezzano'].includes(name);
+                const sourceMap = isWeatherlink ? mapWeather : mapRegion;
+                
+                return {
+                    label: name,
+                    data: labels.map(l => {
+                        const row = sourceMap.get(l);
+                        return row ? parseAndFixDecimal(row[col]) : null;
+                    }),
+                    borderColor: CONFIG.defaults.chartColors[i % CONFIG.defaults.chartColors.length],
+                    backgroundColor: CONFIG.defaults.chartColors[i % CONFIG.defaults.chartColors.length] + '20',
+                    fill: false,
+                    tension: 0.3,
+                    pointRadius: 1,
+                    spanGaps: true,
+                    borderWidth: 2
+                };
+            });
 
-        // --- START APP ---
+            STATE.charts.rainHistory = createChart('rainHistoryChart', {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Andamento Storico Pioggia Cumulata',
+                            color: '#FFFFFF',
+                            font: { size: 16, weight: '300' }
+                        },
+                        legend: {
+                            labels: { color: '#E0E0E0', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#E0E0E0',
+                            borderColor: '#00bcd4',
+                            borderWidth: 1
+                        },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#E0E0E0', maxRotation: 45 },
+                            grid: { color: 'rgba(224, 224, 224, 0.1)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#E0E0E0' },
+                            grid: { color: 'rgba(224, 224, 224, 0.1)' },
+                            title: {
+                                display: true,
+                                text: 'Pioggia (mm)',
+                                color: '#FFFFFF'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function drawWindHistoryChart() {
+            const filteredData = filterDataByTime(
+                STATE.weatherlinkHistoryData,
+                'Data_Ora',
+                document.getElementById('start-time-wind').value,
+                document.getElementById('end-time-wind').value
+            );
+            
+            const station = document.getElementById('station-selection-wind').value;
+            const labels = filteredData.map(r => r['Data_Ora']);
+            
+            const datasets = [
+                {
+                    label: `Velocità (${station})`,
+                    data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Velocità Vento (km/h)`])),
+                    borderColor: CONFIG.defaults.chartColors[0],
+                    backgroundColor: CONFIG.defaults.chartColors[0] + '20',
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    spanGaps: true,
+                    borderWidth: 2
+                },
+                {
+                    label: `Raffica (${station})`,
+                    data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Raffica Vento 10 min (km/h)`])),
+                    borderColor: CONFIG.defaults.chartColors[1],
+                    backgroundColor: CONFIG.defaults.chartColors[1] + '20',
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    spanGaps: true,
+                    borderWidth: 2
+                }
+            ];
+
+            STATE.charts.windHistory = createChart('windHistoryChart', {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Andamento Storico Vento - ${station}`,
+                            color: '#FFFFFF',
+                            font: { size: 16, weight: '300' }
+                        },
+                        legend: {
+                            labels: { color: '#E0E0E0', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#E0E0E0',
+                            borderColor: '#00bcd4',
+                            borderWidth: 1
+                        },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: {
+                                wheel: { enabled: true },
+                                pinch: { enabled: true },
+                                mode: 'x'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#E0E0E0', maxRotation: 45 },
+                            grid: { color: 'rgba(224, 224, 224, 0.1)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#E0E0E0' },
+                            grid: { color: 'rgba(224, 224, 224, 0.1)' },
+                            title: {
+                                display: true,
+                                text: 'Velocità (km/h)',
+                                color: '#FFFFFF'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==================== OVERVIEW FUNCTIONS ====================
+        function updateOverviewStats() {
+            // Questa funzione verrà popolata con dati reali
+            // Per ora è un placeholder
+        }
+
+        function drawOverviewCharts() {
+            // Small charts for overview page
+            const ctx1 = document.getElementById('overviewHydroChart');
+            const ctx2 = document.getElementById('overviewRainChart');
+            
+            if (ctx1 && STATE.regionHistoryData.length > 0) {
+                const recentData = STATE.regionHistoryData.slice(-20);
+                const labels = recentData.map(r => r['Data_Ora']);
+                
+                STATE.charts.overviewHydro = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Misa (Bettolelle)',
+                            data: recentData.map(r => parseAndFixDecimal(r['Misa - Livello Misa (mt)'])),
+                            borderColor: CONFIG.defaults.chartColors[0],
+                            tension: 0.4,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: true }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { 
+                                ticks: { color: '#E0E0E0' },
+                                grid: { color: 'rgba(224, 224, 224, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // ==================== STATISTICS FUNCTIONS ====================
+        function updateStatisticsTables() {
+            // Calculate statistics for the last 24 hours
+            const now = new Date();
+            const yesterday = new Date(now.getTime() - 24 * 3600000);
+            
+            // Filter data for last 24h
+            const recentRegion = STATE.regionHistoryData.filter(r => {
+                const d = parseCustomDate(r.Data_Ora);
+                return d && d >= yesterday;
+            });
+            
+            const recentWeather = STATE.weatherlinkHistoryData.filter(r => {
+                const d = parseCustomDate(r.Data_Ora);
+                return d && d >= yesterday;
+            });
+            
+            // Hydro stats
+            updateHydroStatsTable(recentRegion);
+            
+            // Rain stats
+            updateRainStatsTable(recentRegion, recentWeather);
+            
+            // Wind stats
+            updateWindStatsTable(recentWeather);
+        }
+
+        function updateHydroStatsTable(data) {
+            const tbody = document.querySelector('#hydro-stats-table tbody');
+            if (!tbody || data.length === 0) return;
+            
+            const stations = [
+                { col: 'Misa - Livello Misa (mt)', name: 'Misa (Bettolelle)' },
+                { col: 'Pianello di Ostra - Livello Misa (m)', name: 'Pianello di Ostra' },
+                { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', name: 'Ponte Garibaldi' },
+                { col: 'Serra dei Conti - Livello Misa (mt)', name: 'Serra dei Conti' },
+                { col: 'Cesano - Livello Cesano (mt)', name: 'Cesano' }
+            ];
+            
+            tbody.innerHTML = '';
+            
+            stations.forEach(station => {
+                const values = data.map(r => parseAndFixDecimal(r[station.col])).filter(v => !isNaN(v));
+                if (values.length === 0) return;
+                
+                const stats = calculateStats(values);
+                const variation = ((stats.max - stats.min) / stats.min * 100).toFixed(1);
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${station.name}</td>
+                    <td>${stats.min.toFixed(3)} m</td>
+                    <td>${stats.max.toFixed(3)} m</td>
+                    <td>${stats.avg.toFixed(3)} m</td>
+                    <td>${variation}%</td>
+                `;
+            });
+        }
+
+        function updateRainStatsTable(regionData, weatherData) {
+            const tbody = document.querySelector('#rain-stats-table tbody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            // Placeholder - implementation would be similar to hydro stats
+            const row = tbody.insertRow();
+            row.innerHTML = '<td colspan="4" style="text-align: center; color: var(--text-muted);">Statistiche in elaborazione...</td>';
+        }
+
+        function updateWindStatsTable(data) {
+            const tbody = document.querySelector('#wind-stats-table tbody');
+            if (!tbody || data.length === 0) return;
+            
+            const stations = ['Montignano', "Sant'Angelo", 'Scapezzano'];
+            
+            tbody.innerHTML = '';
+            
+            stations.forEach(station => {
+                const speeds = data.map(r => parseAndFixDecimal(r[`${station} - Velocità Vento (km/h)`])).filter(v => !isNaN(v));
+                const gusts = data.map(r => parseAndFixDecimal(r[`${station} - Raffica Vento 10 min (km/h)`])).filter(v => !isNaN(v));
+                
+                if (speeds.length === 0) return;
+                
+                const avgSpeed = (speeds.reduce((a, b) => a + b, 0) / speeds.length).toFixed(1);
+                const maxGust = Math.max(...gusts).toFixed(1);
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${station}</td>
+                    <td>${avgSpeed} km/h</td>
+                    <td>${maxGust} km/h</td>
+                    <td>N/D</td>
+                `;
+            });
+        }
+
+        // ==================== EXPORT FUNCTIONS ====================
+        function exportToCSV(data, filename) {
+            const csv = Papa.unparse(data);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast('Dati esportati con successo', 'success');
+        }
+
+        function downloadChartImage(chartId, filename) {
+            const canvas = document.getElementById(chartId);
+            if (!canvas) return;
+            
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+                showToast('Grafico scaricato con successo', 'success');
+            });
+        }
+
+        // ==================== NAVIGATION ====================
+        function initNavigation() {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update active states
+                    document.querySelectorAll('.nav-link, .page-section').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    
+                    this.classList.add('active');
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    
+                    if (targetSection) {
+                        targetSection.classList.add('active');
+                        
+                        // Load section-specific data
+                        switch(targetId) {
+                            case '#overview':
+                                drawOverviewCharts();
+                                break;
+                            case '#previsioni':
+                                if (!STATE.charts.forecast) fetchForecastData();
+                                break;
+                            case '#idrometri':
+                                if (STATE.regionHistoryData.length) drawHydroHistoryChart();
+                                break;
+                            case '#pluviometri':
+                                if (STATE.regionHistoryData.length && STATE.weatherlinkHistoryData.length) {
+                                    drawRainHistoryChart();
+                                }
+                                break;
+                            case '#anemometri':
+                                if (STATE.weatherlinkHistoryData.length) drawWindHistoryChart();
+                                break;
+                            case '#analisi':
+                                updateStatisticsTables();
+                                break;
+                        }
+                    }
+                });
+            });
+        }
+
+        // ==================== QUICK FILTERS ====================
+        function initQuickFilters() {
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active from siblings
+                    this.parentElement.querySelectorAll('.quick-filter-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const hours = parseInt(this.dataset.hours);
+                    const now = new Date();
+                    const start = new Date(now.getTime() - hours * 3600000);
+                    
+                    // Find the relevant datetime inputs
+                    const section = this.closest('.page-section');
+                    const startInput = section.querySelector('input[type="datetime-local"]:first-of-type');
+                    const endInput = section.querySelector('input[type="datetime-local"]:last-of-type');
+                    
+                    if (startInput && endInput) {
+                        startInput.value = start.toISOString().slice(0, 16);
+                        endInput.value = now.toISOString().slice(0, 16);
+                        
+                        // Trigger filter
+                        const filterBtn = section.querySelector('button[id^="filter-"]');
+                        if (filterBtn) filterBtn.click();
+                    }
+                });
+            });
+        }
+
+        // ==================== UI INTERACTIONS ====================
+        function initUIInteractions() {
+            // Menu toggle for mobile
+            document.getElementById('menu-toggle').addEventListener('click', () => {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('main-content');
+                
+                sidebar.classList.toggle('open');
+                if (window.innerWidth <= 768) {
+                    mainContent.classList.toggle('expanded');
+                }
+            });
+            
+            // Refresh button
+            document.getElementById('refresh-btn').addEventListener('click', () => {
+                showLoading();
+                updateAllLatestData();
+                fetchForecastData();
+                setTimeout(hideLoading, 1000);
+                showToast('Dati aggiornati', 'success');
+            });
+            
+            // Export button - open modal
+            document.getElementById('export-btn').addEventListener('click', () => {
+                document.getElementById('export-modal').classList.add('active');
+            });
+            
+            // Close export modal
+            document.getElementById('close-export-modal').addEventListener('click', () => {
+                document.getElementById('export-modal').classList.remove('active');
+            });
+            
+            // Export options
+            document.getElementById('export-current-view').addEventListener('click', () => {
+                const activeSection = document.querySelector('.page-section.active');
+                if (!activeSection) return;
+                
+                const sectionId = activeSection.id;
+                let data = [];
+                let filename = 'export.csv';
+                
+                switch(sectionId) {
+                    case 'idrometri':
+                        data = STATE.regionHistoryData;
+                        filename = 'idrometri_export.csv';
+                        break;
+                    case 'pluviometri':
+                        data = [...STATE.regionHistoryData, ...STATE.weatherlinkHistoryData];
+                        filename = 'pluviometri_export.csv';
+                        break;
+                    case 'anemometri':
+                        data = STATE.weatherlinkHistoryData;
+                        filename = 'anemometri_export.csv';
+                        break;
+                    case 'previsioni':
+                        data = STATE.forecastData;
+                        filename = 'previsioni_export.csv';
+                        break;
+                }
+                
+                if (data.length > 0) {
+                    exportToCSV(data, filename);
+                }
+                
+                document.getElementById('export-modal').classList.remove('active');
+            });
+            
+            // Forecast instructions toggle
+            document.getElementById('toggle-instructions-btn').addEventListener('click', function() {
+                const instructionsDiv = document.getElementById('instructions-container');
+                const isVisible = instructionsDiv.classList.toggle('visible');
+                this.textContent = isVisible ? '📖 Nascondi Istruzioni' : '📖 Mostra Istruzioni';
+            });
+            
+            // Reset zoom button
+            document.getElementById('resetZoomBtn').addEventListener('click', () => {
+                if (STATE.charts.forecast) {
+                    STATE.charts.forecast.resetZoom();
+                    showToast('Zoom resettato', 'info');
+                }
+            });
+            
+            // Chart download buttons
+            document.getElementById('download-forecast-chart')?.addEventListener('click', () => {
+                downloadChartImage('forecastChart', 'previsioni_grafico.png');
+            });
+            
+            document.getElementById('download-hydro-chart')?.addEventListener('click', () => {
+                downloadChartImage('hydroHistoryChart', 'idrometri_grafico.png');
+            });
+            
+            document.getElementById('download-rain-chart')?.addEventListener('click', () => {
+                downloadChartImage('rainHistoryChart', 'pluviometri_grafico.png');
+            });
+            
+            document.getElementById('download-wind-chart')?.addEventListener('click', () => {
+                downloadChartImage('windHistoryChart', 'anemometri_grafico.png');
+            });
+            
+            // Fullscreen buttons
+            const setupFullscreen = (btnId, chartContainerId) => {
+                document.getElementById(btnId)?.addEventListener('click', function() {
+                    const container = document.getElementById(chartContainerId).parentElement;
+                    container.classList.toggle('fullscreen');
+                    this.textContent = container.classList.contains('fullscreen') ? '✕ Esci' : '⛶ Fullscreen';
+                    
+                    // Resize chart
+                    const chartKey = chartContainerId.replace('Chart', 'History').replace('forecast', 'forecast');
+                    if (STATE.charts[chartKey]) {
+                        setTimeout(() => STATE.charts[chartKey].resize(), 300);
+                    }
+                });
+            };
+            
+            setupFullscreen('fullscreen-forecast', 'forecastChart');
+            setupFullscreen('fullscreen-hydro', 'hydroHistoryChart');
+            setupFullscreen('fullscreen-rain', 'rainHistoryChart');
+            setupFullscreen('fullscreen-wind', 'windHistoryChart');
+            
+            // Export data buttons
+            document.getElementById('export-hydro-data')?.addEventListener('click', () => {
+                exportToCSV(STATE.regionHistoryData, 'idrometri_dati.csv');
+            });
+            
+            document.getElementById('export-rain-data')?.addEventListener('click', () => {
+                exportToCSV([...STATE.regionHistoryData, ...STATE.weatherlinkHistoryData], 'pluviometri_dati.csv');
+            });
+            
+            document.getElementById('export-wind-data')?.addEventListener('click', () => {
+                exportToCSV(STATE.weatherlinkHistoryData, 'anemometri_dati.csv');
+            });
+        }
+
+        // ==================== INITIALIZATION ====================
+        function initDashboard() {
+            showLoading();
+            
+            let loadedCount = 0;
+            const totalToLoad = 2;
+            
+            const onDataLoaded = () => {
+                loadedCount++;
+                if (loadedCount < totalToLoad) return;
+                
+                hideLoading();
+                
+                // Initialize overview charts
+                drawOverviewCharts();
+                
+                // Update statistics
+                updateStatisticsTables();
+                
+                showToast('Dashboard caricata con successo', 'success');
+            };
+            
+            // Load historical data
+            fetchData(CONFIG.urls.regionHistory, (data) => {
+                STATE.regionHistoryData = data.filter(row => row && row.Data_Ora);
+                onDataLoaded();
+            });
+            
+            fetchData(CONFIG.urls.weatherlinkHistory, (data) => {
+                STATE.weatherlinkHistoryData = data.filter(row => row && row.Data_Ora);
+                onDataLoaded();
+            });
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        function initEventListeners() {
+            // Filter buttons
+            document.getElementById('filter-hydro').addEventListener('click', drawHydroHistoryChart);
+            document.getElementById('filter-rain').addEventListener('click', drawRainHistoryChart);
+            document.getElementById('filter-wind').addEventListener('click', drawWindHistoryChart);
+            
+            // Station selection
+            document.getElementById('station-selection-wind').addEventListener('change', drawWindHistoryChart);
+            document.querySelectorAll('#station-selection-rain input').forEach(el => {
+                el.addEventListener('change', drawRainHistoryChart);
+            });
+        }
+
+        // ==================== START APPLICATION ====================
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Inizializzazione Dashboard Meteo Pro...');
+            
+            // Initialize UI
+            initNavigation();
+            initQuickFilters();
+            initUIInteractions();
+            initEventListeners();
+            
+            // Load data
             updateAllLatestData();
-            initializeDashboard();
-            setInterval(updateAllLatestData, 60000); 
+            fetchForecastData();
+            initDashboard();
+            
+            // Set up auto-refresh intervals
+            setInterval(updateAllLatestData, CONFIG.intervals.dataUpdate);
+            setInterval(fetchForecastData, CONFIG.intervals.forecastUpdate);
+            
+            console.log('✅ Dashboard pronta!');
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('main-content').classList.remove('expanded');
+            }
+        });
+
+        // Handle online/offline status
+        window.addEventListener('online', () => {
+            updateConnectionStatus(true);
+            showToast('Connessione ripristinata', 'success');
+        });
+        
+        window.addEventListener('offline', () => {
+            updateConnectionStatus(false);
+            showToast('Connessione persa', 'error');
         });
     </script>
 </body>
