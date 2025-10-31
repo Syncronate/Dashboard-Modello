@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF--8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Livello Idrometrico</title>
     <style>
@@ -100,14 +100,24 @@
             Papa.parse(csvUrl, {
                 download: true,
                 header: true,
-                dynamicTyping: true,
                 skipEmptyLines: true,
                 complete: function(results) {
                     const data = results.data;
                     const labels = data.map(row => row.Timestamp);
-                    const q10 = data.map(row => row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']);
-                    const q50 = data.map(row => row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']);
-                    const q90 = data.map(row => row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']);
+                    
+                    // FUNZIONE DI CORREZIONE per convertire la virgola in punto
+                    const parseAndFixDecimal = (value) => {
+                        if (typeof value === 'string') {
+                            // Sostituisce la virgola con il punto e converte in numero
+                            return parseFloat(value.replace(',', '.'));
+                        }
+                        return value;
+                    };
+
+                    // Applica la correzione a ogni valore numerico
+                    const q10 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
+                    const q50 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
+                    const q90 = data.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
 
                     updateTable(data);
                     drawChart(labels, q10, q50, q90);
@@ -120,14 +130,10 @@
             tableBody.innerHTML = '';
             data.forEach(row => {
                 let tableRow = tableBody.insertRow();
-                let cell1 = tableRow.insertCell();
-                let cell2 = tableRow.insertCell();
-                let cell3 = tableRow.insertCell();
-                let cell4 = tableRow.insertCell();
-                cell1.textContent = row.Timestamp;
-                cell2.textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
-                cell3.textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
-                cell4.textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)'];
+                tableRow.insertCell().textContent = row.Timestamp;
+                tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
+                tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
+                tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)'];
             });
         }
 
@@ -140,29 +146,34 @@
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Q90',
-                        data: q90,
-                        borderColor: 'rgba(255, 99, 132, 0)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        fill: false,
-                        pointRadius: 0,
-                        borderWidth: 1
-                    }, {
-                        label: 'Q50',
-                        data: q50,
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        fill: '-1',
-                        borderWidth: 2
-                    }, {
-                        label: 'Q10',
+                    // NUOVA STRUTTURA dei dataset per un riempimento corretto
+                    datasets: [
+                    {
+                        label: 'Q10', // Linea inferiore tratteggiata
                         data: q10,
-                        borderColor: 'rgba(255, 206, 86, 0)',
-                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                        fill: '-1',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderDash: [5, 5],
+                        borderWidth: 1.5,
                         pointRadius: 0,
-                        borderWidth: 1
+                        fill: false 
+                    },
+                    {
+                        label: 'Q90', // Linea superiore tratteggiata
+                        data: q90,
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)', // Colore dell'area
+                        borderDash: [5, 5],
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        fill: '-1' // Riempie l'area fino al dataset precedente (Q10)
+                    },
+                    {
+                        label: 'Q50', // Linea centrale piena
+                        data: q50,
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 2.5,
+                        pointRadius: 1, // Aggiungo un piccolo punto per visibilità
+                        fill: false
                     }]
                 },
                 options: {
@@ -173,32 +184,20 @@
                             display: true,
                             text: 'Previsione Livello Idrometrico',
                             color: '#f0f0f0',
-                            font: {
-                                size: 18
-                            }
+                            font: { size: 18 }
                         },
                         legend: {
-                            labels: {
-                                color: '#f0f0f0'
-                            }
+                            labels: { color: '#f0f0f0' }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: {
-                                color: '#f0f0f0'
-                            },
-                            grid: {
-                                color: '#444'
-                            }
+                            ticks: { color: '#f0f0f0' },
+                            grid: { color: '#444' }
                         },
                         y: {
-                            ticks: {
-                                color: '#f0f0f0'
-                            },
-                            grid: {
-                                color: '#444'
-                            },
+                            ticks: { color: '#f0f0f0' },
+                            grid: { color: '#444' },
                             title: {
                                 display: true,
                                 text: 'Livello Idrometrico (m)',
@@ -211,7 +210,6 @@
         }
 
         fetchDataAndDraw();
-
         setInterval(fetchDataAndDraw, 300000); // 300000 ms = 5 minuti
     </script>
 
