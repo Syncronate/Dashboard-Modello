@@ -86,10 +86,22 @@
             top: 0; 
         }
         tbody tr { 
-            background-color: #2c2c2c; 
+            background-color: #2c2c2c;
+            transition: background-color 0.2s, transform 0.2s;
+            cursor: pointer;
         }
         tbody tr:nth-child(even) { 
             background-color: #1e1e1e; 
+        }
+        tbody tr:hover {
+            background-color: #00bcd4 !important;
+            color: #121212;
+            transform: scale(1.02);
+        }
+        tbody tr.highlighted {
+            background-color: #00bcd4 !important;
+            color: #121212;
+            font-weight: bold;
         }
         .table-container::-webkit-scrollbar { 
             width: 8px; 
@@ -114,7 +126,8 @@
         <p class="subtitle">
             <b>Sposta:</b> Trascina il grafico con il mouse.
             <b>Zoom:</b> Usa la rotellina. <br/>
-            <b>Zoom a selezione:</b> Tieni premuto 'Ctrl' e disegna un'area.
+            <b>Zoom a selezione:</b> Tieni premuto 'Ctrl' e disegna un'area.<br/>
+            <b>Interazione:</b> Passa il mouse sulle righe della tabella per evidenziare i punti nel grafico.
         </p>
         <button id="resetZoomBtn">Reset Zoom</button>
     </div>
@@ -141,6 +154,48 @@
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=752084732&single=true&output=csv';
         let myChart;
+        let currentHighlightedIndex = -1;
+
+        // Plugin personalizzato per evidenziare punti specifici
+        const highlightPlugin = {
+            id: 'highlightPlugin',
+            afterDraw: (chart) => {
+                if (currentHighlightedIndex === -1) return;
+                
+                const ctx = chart.ctx;
+                const meta0 = chart.getDatasetMeta(0);
+                const meta1 = chart.getDatasetMeta(1);
+                const meta2 = chart.getDatasetMeta(2);
+                
+                if (currentHighlightedIndex < meta0.data.length) {
+                    // Disegna una linea verticale
+                    const x = meta0.data[currentHighlightedIndex].x;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#00bcd4';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.moveTo(x, chart.chartArea.top);
+                    ctx.lineTo(x, chart.chartArea.bottom);
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Evidenzia i punti
+                    [meta0, meta1, meta2].forEach((meta, datasetIndex) => {
+                        const point = meta.data[currentHighlightedIndex];
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 8, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#00bcd4';
+                        ctx.fill();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        ctx.restore();
+                    });
+                }
+            }
+        };
 
         function fetchDataAndDraw() {
             Papa.parse(csvUrl, {
@@ -164,12 +219,31 @@
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
             if (!tableBody) return;
             tableBody.innerHTML = '';
-            data.forEach(row => {
+            
+            data.forEach((row, index) => {
                 let tableRow = tableBody.insertRow();
+                tableRow.dataset.index = index;
                 tableRow.insertCell().textContent = row['Timestamp Previsione'];
                 tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)'];
                 tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)'];
                 tableRow.insertCell().textContent = row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)'];
+                
+                // Aggiungi interazione hover
+                tableRow.addEventListener('mouseenter', function() {
+                    currentHighlightedIndex = index;
+                    this.classList.add('highlighted');
+                    if (myChart) {
+                        myChart.update('none'); // Update senza animazione
+                    }
+                });
+                
+                tableRow.addEventListener('mouseleave', function() {
+                    currentHighlightedIndex = -1;
+                    this.classList.remove('highlighted');
+                    if (myChart) {
+                        myChart.update('none');
+                    }
+                });
             });
         }
 
@@ -264,7 +338,8 @@
                             } 
                         }
                     }
-                }
+                },
+                plugins: [highlightPlugin]
             });
         }
 
