@@ -2894,23 +2894,26 @@ passwordInput.focus();
                 }
             }
 
-             const rainTotals = [
-                parseAndFixDecimal(region['Arcevia - Pioggia TOT Oggi (mm)']),
-                parseAndFixDecimal(region['Barbara - Pioggia TOT Oggi (mm)']),
-                parseAndFixDecimal(region['Corinaldo - Pioggia TOT Oggi (mm)']),
-                parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']),
-                parseAndFixDecimal(weather['Montignano - Pioggia Giornaliera (mm)']),
-                parseAndFixDecimal(weather["Sant'Angelo - Pioggia Giornaliera (mm)"]),
-                parseAndFixDecimal(weather['Scapezzano - Pioggia Giornaliera (mm)'])
-            ].filter(v => !isNaN(v));
+            const rainStationsData = [
+                { name: 'Arcevia', value: parseAndFixDecimal(region['Arcevia - Pioggia TOT Oggi (mm)']) },
+                { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Pioggia TOT Oggi (mm)']) },
+                { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Pioggia TOT Oggi (mm)']) },
+                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']) },
+                { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Pioggia Giornaliera (mm)']) },
+                { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Pioggia Giornaliera (mm)"]) },
+                { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Pioggia Giornaliera (mm)']) }
+            ];
 
-            const maxRain = rainTotals.length > 0 ? Math.max(...rainTotals) : NaN;
+            const validRainStations = rainStationsData.filter(s => !isNaN(s.value));
+            const maxRainStation = validRainStations.length > 0 ? validRainStations.reduce((max, s) => s.value > max.value ? s : max) : { value: NaN, name: '--'};
             
             const rainCard = document.getElementById('overview-rain-total');
             if(rainCard){
                 const valueEl = rainCard.querySelector('.quick-stat-value');
-                if (!isNaN(maxRain)) {
-                    valueEl.innerHTML = `${maxRain.toFixed(1)}<span class="quick-stat-unit">mm</span>`;
+                const trendEl = rainCard.querySelector('.quick-stat-trend span');
+                if (!isNaN(maxRainStation.value)) {
+                    valueEl.innerHTML = `${maxRainStation.value.toFixed(1)}<span class="quick-stat-unit">mm</span>`;
+                    trendEl.textContent = `Stazione: ${maxRainStation.name}`;
                 }
             }
 
