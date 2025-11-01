@@ -3706,9 +3706,8 @@ passwordInput.focus();
                 
                 // Crea l'icona a cerchio
                 const iconHtml = `
-                    <div style="background-color: ${iconColor}; color: white; width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 14px; font-weight: bold; box-shadow: var(--shadow-lg);">
-                        <div>${station.name.substring(0, 3).toUpperCase()}</div>
-                        <div style="font-size: 12px; font-weight: normal;">${valueStr}</div>
+                    <div style="background-color: ${iconColor}; color: white; width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 18px; font-weight: bold; box-shadow: var(--shadow-lg);">
+                        ${valueStr}
                     </div>`;
                 marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [50, 50], iconAnchor: [25, 25] }));
 
