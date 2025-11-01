@@ -33,6 +33,35 @@
             overflow-x: hidden;
         }
 
+        /* === FEATHER ICONS STYLING === */
+        .feather-icon {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            vertical-align: middle;
+        }
+
+        .icon-btn .feather-icon,
+        .chart-btn .feather-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .quick-stat-icon .feather-icon {
+            width: 28px;
+            height: 28px;
+            stroke-width: 2.5;
+        }
+
+        .alert-icon .feather-icon {
+            width: 24px;
+            height: 24px;
+        }
+
         /* === TOP HEADER === */
         .top-header {
             position: fixed;
@@ -224,6 +253,79 @@
         .page-section.active {
             display: block;
         }
+        
+        /* === MAP CONTAINER === */
+        #map-container {
+            width: 100%;
+            height: 600px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        /* Stile personalizzato per i popup di Leaflet */
+        .leaflet-popup-content-wrapper {
+            background: var(--medium-bg);
+            color: var(--text-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .leaflet-popup-content {
+            margin: 15px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .leaflet-popup-content h3 {
+            color: var(--primary-color);
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .leaflet-popup-content p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+
+        .leaflet-popup-content a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            transition: var(--transition);
+        }
+
+        .leaflet-popup-content a:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .leaflet-popup-tip {
+            background: var(--medium-bg);
+        }
+
+        /* Override del tema scuro per i controlli Leaflet */
+        .leaflet-control-zoom a {
+            background-color: var(--medium-bg) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        .leaflet-bar {
+            border: 1px solid var(--border-color) !important;
+        }
+
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -318,6 +420,9 @@
             color: var(--primary-color);
             font-weight: 300;
             margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         h1 { font-size: 2em; }
@@ -844,6 +949,37 @@
             min-height: auto;
             height: calc(100vh - 80px);
         }
+        
+        /* === FULLSCREEN EXIT BUTTON === */
+        .fullscreen-exit-btn {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 9999;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .fullscreen-exit-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .fullscreen-exit-btn:active {
+            transform: scale(0.95);
+        }
 
         /* === STATISTICS TABLE === */
         .stats-table {
@@ -957,6 +1093,9 @@
             margin-bottom: 15px;
             transition: var(--transition);
             font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .toggle-btn:hover {
@@ -1155,6 +1294,12 @@
             border-color: var(--primary-color);
             background: var(--dark-bg);
         }
+        
+        .modal-option h4 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
         .checkbox-container {
             display: flex;
@@ -1215,6 +1360,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <!-- Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -1239,10 +1394,19 @@
             <div class="last-update" id="last-update">
                 Ultimo aggiornamento: --:--
             </div>
+            <div class="last-update" id="next-update">
+                Prossimo aggiornamento: --
+            </div>
             <div class="header-actions">
-                <button class="icon-btn" id="refresh-btn" title="Aggiorna dati">🔄</button>
-                <button class="icon-btn" id="export-btn" title="Esporta dati">📥</button>
-                <button class="icon-btn" id="settings-btn" title="Impostazioni">⚙️</button>
+                <button class="icon-btn" id="refresh-btn" title="Aggiorna dati">
+                    <i data-feather="refresh-cw" class="feather-icon"></i>
+                </button>
+                <button class="icon-btn" id="export-btn" title="Esporta dati">
+                    <i data-feather="download" class="feather-icon"></i>
+                </button>
+                <button class="icon-btn" id="settings-btn" title="Impostazioni">
+                    <i data-feather="settings" class="feather-icon"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -1256,6 +1420,7 @@
             <li><a href="#idrometri" class="nav-link">Idrometri</a></li>
             <li><a href="#pluviometri" class="nav-link">Pluviometri</a></li>
             <li><a href="#anemometri" class="nav-link">Anemometri</a></li>
+            <li><a href="#mappa" class="nav-link">Mappa Stazioni</a></li>
             <li><a href="#analisi" class="nav-link">Analisi Avanzata</a></li>
         </ul>
         <div class="sidebar-footer">
@@ -1269,11 +1434,13 @@
         
         <!-- OVERVIEW PAGE -->
         <section id="overview" class="page-section active">
-            <h1>📊 Panoramica Generale</h1>
+            <h1><i data-feather="bar-chart-2" class="feather-icon"></i> Panoramica Generale</h1>
             
             <div class="quick-stats" id="overview-quick-stats">
                 <div class="quick-stat-card" id="overview-hydro-max">
-                    <div class="quick-stat-icon">💧</div>
+                    <div class="quick-stat-icon">
+                        <i data-feather="droplet" class="feather-icon"></i>
+                    </div>
                     <div class="quick-stat-content">
                         <div class="quick-stat-label">Livello Idro Max</div>
                         <div class="quick-stat-value">--<span class="quick-stat-unit">m</span></div>
@@ -1285,7 +1452,9 @@
                 </div>
 
                 <div class="quick-stat-card" id="overview-rain-total">
-                    <div class="quick-stat-icon">🌧️</div>
+                    <div class="quick-stat-icon">
+                        <i data-feather="cloud-rain" class="feather-icon"></i>
+                    </div>
                     <div class="quick-stat-content">
                         <div class="quick-stat-label">Pioggia Max Oggi</div>
                         <div class="quick-stat-value">--<span class="quick-stat-unit">mm</span></div>
@@ -1297,7 +1466,9 @@
                 </div>
 
                 <div class="quick-stat-card" id="overview-wind-max">
-                    <div class="quick-stat-icon">💨</div>
+                    <div class="quick-stat-icon">
+                        <i data-feather="wind" class="feather-icon"></i>
+                    </div>
                     <div class="quick-stat-content">
                         <div class="quick-stat-label">Raffica Max</div>
                         <div class="quick-stat-value">--<span class="quick-stat-unit">km/h</span></div>
@@ -1309,7 +1480,9 @@
                 </div>
 
                 <div class="quick-stat-card" id="overview-stations">
-                    <div class="quick-stat-icon">📡</div>
+                    <div class="quick-stat-icon">
+                        <i data-feather="radio" class="feather-icon"></i>
+                    </div>
                     <div class="quick-stat-content">
                         <div class="quick-stat-label">Stazioni Attive</div>
                         <div class="quick-stat-value">--<span class="quick-stat-unit">/15</span></div>
@@ -1320,12 +1493,12 @@
                 </div>
             </div>
 
-            <h2>🔴 Allerte e Situazioni Critiche</h2>
+            <h2><i data-feather="alert-circle" class="feather-icon"></i> Allerte e Situazioni Critiche</h2>
             <div class="card" id="alerts-container">
                 <p style="color: var(--text-muted); text-align: center;">Nessuna allerta al momento</p>
             </div>
 
-            <h2>📈 Grafici Principali</h2>
+            <h2><i data-feather="trending-up" class="feather-icon"></i> Grafici Principali</h2>
             <div class="data-groups-container">
                 <div class="card">
                     <h3 style="color: var(--primary-color); margin-top: 0;">Livelli Idrometrici (Ultime ore)</h3>
@@ -1341,8 +1514,10 @@
         <!-- PREVISIONI IDRO PAGE -->
         <section id="previsioni" class="page-section">
             <div class="header">
-                <h1>🔮 Previsione Idrometrica Misa (Bettolelle)</h1>
-                <button id="toggle-instructions-btn" class="toggle-btn">📖 Mostra Istruzioni</button>
+                <h1><i data-feather="activity" class="feather-icon"></i> Previsione Idrometrica Misa (Bettolelle)</h1>
+                <button id="toggle-instructions-btn" class="toggle-btn">
+                    <i data-feather="book-open" class="feather-icon"></i> Mostra Istruzioni
+                </button>
                 <div id="instructions-container" class="instructions">
                     <p class="subtitle">
                         <b>🖱️ Sposta:</b> Trascina il grafico con il mouse per spostarti nel tempo.<br/>
@@ -1360,11 +1535,15 @@
                     <div class="chart-header">
                         <span class="chart-title">Andamento Previsto</span>
                         <div class="chart-actions">
-                            <button class="chart-btn" id="download-forecast-chart">📷 Scarica</button>
-                            <button class="chart-btn" id="fullscreen-forecast">⛶ Fullscreen</button>
+                            <button class="chart-btn" id="download-forecast-chart">
+                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                            </button>
+                            <button class="chart-btn" id="fullscreen-forecast">
+                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                            </button>
                         </div>
                     </div>
-                    <div class="chart-container card">
+                    <div class="chart-container card" id="forecastChart-container">
                         <canvas id="forecastChart"></canvas>
                     </div>
                     <div class="card">
@@ -1419,7 +1598,7 @@
 
         <!-- IDROMETRI PAGE -->
         <section id="idrometri" class="page-section">
-            <h1>💧 Idrometri - Monitoraggio Livelli Idrici</h1>
+            <h1><i data-feather="droplet" class="feather-icon"></i> Idrometri - Monitoraggio Livelli Idrici</h1>
             
             <div class="data-groups-container">
                 <div class="data-group">
@@ -1468,19 +1647,27 @@
                     <label for="end-time-hydro">A:</label>
                     <input type="datetime-local" id="end-time-hydro">
                 </div>
-                <button id="filter-hydro">🔍 Filtra</button>
-                <button id="export-hydro-data">📥 Esporta CSV</button>
+                <button id="filter-hydro">
+                    <i data-feather="search" class="feather-icon"></i> Filtra
+                </button>
+                <button id="export-hydro-data">
+                    <i data-feather="download" class="feather-icon"></i> Esporta CSV
+                </button>
             </div>
 
             <div class="chart-wrapper">
                 <div class="chart-header">
                     <span class="chart-title">Andamento Storico Livelli</span>
                     <div class="chart-actions">
-                        <button class="chart-btn" id="download-hydro-chart">📷 Scarica</button>
-                        <button class="chart-btn" id="fullscreen-hydro">⛶ Fullscreen</button>
+                        <button class="chart-btn" id="download-hydro-chart">
+                            <i data-feather="camera" class="feather-icon"></i> Scarica
+                        </button>
+                        <button class="chart-btn" id="fullscreen-hydro">
+                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                        </button>
                     </div>
                 </div>
-                <div class="chart-container card">
+                <div class="chart-container card" id="hydroHistoryChart-container">
                     <canvas id="hydroHistoryChart"></canvas>
                 </div>
             </div>
@@ -1488,7 +1675,7 @@
 
         <!-- PLUVIOMETRI PAGE -->
         <section id="pluviometri" class="page-section">
-            <h1>🌧️ Pluviometri - Monitoraggio Precipitazioni</h1>
+            <h1><i data-feather="cloud-rain" class="feather-icon"></i> Pluviometri - Monitoraggio Precipitazioni</h1>
             
             <div class="data-groups-container">
                 <div class="data-group">
@@ -1545,8 +1732,12 @@
                     <label for="end-time-rain">A:</label>
                     <input type="datetime-local" id="end-time-rain">
                 </div>
-                <button id="filter-rain">🔍 Filtra</button>
-                <button id="export-rain-data">📥 Esporta CSV</button>
+                <button id="filter-rain">
+                    <i data-feather="search" class="feather-icon"></i> Filtra
+                </button>
+                <button id="export-rain-data">
+                    <i data-feather="download" class="feather-icon"></i> Esporta CSV
+                </button>
                 
                 <div style="width: 100%; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                     <label style="font-weight: 600; margin-bottom: 10px; display: block;">Seleziona Stazioni:</label>
@@ -1566,11 +1757,15 @@
                 <div class="chart-header">
                     <span class="chart-title">Andamento Storico Pioggia Cumulata</span>
                     <div class="chart-actions">
-                        <button class="chart-btn" id="download-rain-chart">📷 Scarica</button>
-                        <button class="chart-btn" id="fullscreen-rain">⛶ Fullscreen</button>
+                        <button class="chart-btn" id="download-rain-chart">
+                            <i data-feather="camera" class="feather-icon"></i> Scarica
+                        </button>
+                        <button class="chart-btn" id="fullscreen-rain">
+                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                        </button>
                     </div>
                 </div>
-                <div class="chart-container card">
+                <div class="chart-container card" id="rainHistoryChart-container">
                     <canvas id="rainHistoryChart"></canvas>
                 </div>
             </div>
@@ -1578,7 +1773,7 @@
 
         <!-- ANEMOMETRI PAGE -->
         <section id="anemometri" class="page-section">
-            <h1>💨 Anemometri - Monitoraggio Vento</h1>
+            <h1><i data-feather="wind" class="feather-icon"></i> Anemometri - Monitoraggio Vento</h1>
             
             <div class="data-groups-container">
                 <div class="wind-bar-widget">
@@ -1675,19 +1870,27 @@
                         <option value="Scapezzano">Scapezzano</option>
                     </select>
                 </div>
-                <button id="filter-wind">🔍 Filtra</button>
-                <button id="export-wind-data">📥 Esporta CSV</button>
+                <button id="filter-wind">
+                    <i data-feather="search" class="feather-icon"></i> Filtra
+                </button>
+                <button id="export-wind-data">
+                    <i data-feather="download" class="feather-icon"></i> Esporta CSV
+                </button>
             </div>
 
             <div class="chart-wrapper">
                 <div class="chart-header">
                     <span class="chart-title">Andamento Storico Vento</span>
                     <div class="chart-actions">
-                        <button class="chart-btn" id="download-wind-chart">📷 Scarica</button>
-                        <button class="chart-btn" id="fullscreen-wind">⛶ Fullscreen</button>
+                        <button class="chart-btn" id="download-wind-chart">
+                            <i data-feather="camera" class="feather-icon"></i> Scarica
+                        </button>
+                        <button class="chart-btn" id="fullscreen-wind">
+                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                        </button>
                     </div>
                 </div>
-                <div class="chart-container card">
+                <div class="chart-container card" id="windHistoryChart-container">
                     <canvas id="windHistoryChart"></canvas>
                 </div>
             </div>
@@ -1695,7 +1898,7 @@
 
         <!-- ANALISI PAGE -->
         <section id="analisi" class="page-section">
-            <h1>📊 Analisi Avanzata</h1>
+            <h1><i data-feather="bar-chart-2" class="feather-icon"></i> Analisi Avanzata</h1>
             
             <div class="data-groups-container">
                 <div class="card">
@@ -1734,6 +1937,46 @@
                 </div>
             </div>
         </section>
+        
+        <!-- MAPPA PAGE -->
+        <section id="mappa" class="page-section">
+            <h1><i data-feather="map" class="feather-icon"></i> Mappa delle Stazioni di Monitoraggio</h1>
+            
+            <div class="card">
+                <h3 style="color: var(--primary-color); margin-top: 0;">Posizione Geografica delle Stazioni</h3>
+                <p style="color: var(--text-muted); margin-bottom: 15px;">
+                    Clicca sui marker per visualizzare informazioni dettagliate e navigare alla sezione specifica della stazione.
+                </p>
+                <div id="map-container"></div>
+            </div>
+
+            <div class="data-groups-container" style="margin-top: 25px;">
+                <div class="card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">
+                        <i data-feather="droplet" class="feather-icon"></i> Stazioni Idrometriche
+                    </h3>
+                    <ul style="color: var(--text-color); line-height: 1.8;">
+                        <li>Serra dei Conti - Livello Misa</li>
+                        <li>Pianello di Ostra - Livello Misa</li>
+                        <li>Bettolelle - Livello Misa</li>
+                        <li>Corinaldo/Nevola - Livello</li>
+                        <li>Ponte Garibaldi - Livello Misa 2</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">
+                        <i data-feather="cloud-rain" class="feather-icon"></i> Stazioni Pluviometriche
+                    </h3>
+                    <ul style="color: var(--text-color); line-height: 1.8;">
+                        <li>Bettolelle - Pioggia Cumulata</li>
+                        <li>Arcevia - Pioggia Cumulata</li>
+                        <li>Barbara - Pioggia Cumulata</li>
+                        <li>Corinaldo - Pioggia Cumulata</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
 
     </main>
 
@@ -1741,20 +1984,28 @@
     <div class="modal" id="export-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">📥 Esporta Dati</h2>
+                <h2 class="modal-title">
+                    <i data-feather="download" class="feather-icon"></i> Esporta Dati
+                </h2>
                 <button class="modal-close" id="close-export-modal">×</button>
             </div>
             <div class="modal-body">
                 <div class="modal-option" id="export-current-view">
-                    <h4 style="margin: 0 0 5px 0;">📊 Vista Corrente</h4>
+                    <h4 style="margin: 0 0 5px 0;">
+                        <i data-feather="bar-chart-2" class="feather-icon"></i> Vista Corrente
+                    </h4>
                     <p style="margin: 0; font-size: 0.9em; color: var(--text-muted);">Esporta i dati della sezione attualmente visualizzata</p>
                 </div>
                 <div class="modal-option" id="export-all-data">
-                    <h4 style="margin: 0 0 5px 0;">📦 Tutti i Dati</h4>
+                    <h4 style="margin: 0 0 5px 0;">
+                        <i data-feather="package" class="feather-icon"></i> Tutti i Dati
+                    </h4>
                     <p style="margin: 0; font-size: 0.9em; color: var(--text-muted);">Esporta l'intero dataset disponibile</p>
                 </div>
                 <div class="modal-option" id="export-custom">
-                    <h4 style="margin: 0 0 5px 0;">⚙️ Personalizzato</h4>
+                    <h4 style="margin: 0 0 5px 0;">
+                        <i data-feather="settings" class="feather-icon"></i> Personalizzato
+                    </h4>
                     <p style="margin: 0; font-size: 0.9em; color: var(--text-muted);">Seleziona periodo e stazioni specifiche</p>
                 </div>
             </div>
@@ -1765,7 +2016,9 @@
     <div class="modal" id="settings-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">⚙️ Impostazioni</h2>
+                <h2 class="modal-title">
+                    <i data-feather="settings" class="feather-icon"></i> Impostazioni
+                </h2>
                 <button class="modal-close" id="close-settings-modal">×</button>
             </div>
             <div class="modal-body">
@@ -1818,13 +2071,18 @@
                 </div>
 
                 <button class="filter-container button" id="save-settings-btn" style="width: 100%; margin-top: 20px; justify-content: center;">
-                    💾 Salva Impostazioni
+                    <i data-feather="save" class="feather-icon" style="width: 16px; height: 16px;"></i> Salva Impostazioni
                 </button>
             </div>
         </div>
     </div>
 
-    <audio id="alert-sound" src="https://alby-bussaglia.s3.eu-north-1.amazonaws.com/notification.mp3" preload="auto"></audio>
+    <audio id="alert-sound" preload="auto">
+        <source src="suoni/suono_notifica_allarme.mp3" type="audio/mpeg">
+        <source src="suoni/suono_notifica_allarme.ogg" type="audio/ogg">
+        <source src="suoni/suono_notifica_allarme.wav" type="audio/wav">
+        Il tuo browser non supporta l'elemento audio.
+    </audio>
 
     <script>
         // ==================== CONFIGURATION ====================
@@ -1863,6 +2121,7 @@
             regionLatestData: null,
             weatherlinkLatestData: null,
             forecastData: [],
+            map: null,  // Aggiunto per la mappa Leaflet
             charts: {
                 forecast: null,
                 hydroHistory: null,
@@ -1879,7 +2138,8 @@
             updateIntervals: {
                 data: null,
                 forecast: null
-            }
+            },
+            countdownInterval: null
         };
 
         // ==================== UTILITY FUNCTIONS ====================
@@ -1917,24 +2177,27 @@
             const startTime = start ? new Date(start).getTime() : null;
             const endTime = end ? new Date(end).getTime() : null;
             
-            if (!startTime && !endTime) {
-                const now = new Date();
-                const defaultStart = now.getTime() - CONFIG.defaults.timeWindow * 3600000;
+            // Se entrambi startTime e endTime sono specificati, usa il range personalizzato
+            if (startTime || endTime) {
                 return data.filter(r => {
                     const d = parseCustomDate(r[timeColumn]);
-                    return d ? d.getTime() >= defaultStart : false;
+                    if (!d) return false;
+                    const t = d.getTime();
+                    if (startTime && t < startTime) return false;
+                    if (endTime && t > endTime) return false;
+                    return true;
                 });
             }
             
+            // Altrimenti, usa il filtro di default (ultime N ore)
+            const now = new Date();
+            const defaultStart = now.getTime() - CONFIG.defaults.timeWindow * 3600000;
             return data.filter(r => {
                 const d = parseCustomDate(r[timeColumn]);
-                if (!d) return false;
-                const t = d.getTime();
-                if (startTime && t < startTime) return false;
-                if (endTime && t > endTime) return false;
-                return true;
+                return d ? d.getTime() >= defaultStart : false;
             });
         }
+
 
         function calculateStats(values) {
             const validValues = values.filter(v => !isNaN(v) && v !== null);
@@ -1997,6 +2260,37 @@
         function updateLastUpdate() {
             STATE.lastUpdate = new Date();
             document.getElementById('last-update').textContent = `Ultimo aggiornamento: ${formatDateTime(STATE.lastUpdate)}`;
+            
+            // Avvia contatore per prossimo aggiornamento
+            startUpdateCountdown();
+        }
+
+        function startUpdateCountdown() {
+            // Pulisci eventuale countdown esistente
+            if (STATE.countdownInterval) {
+                clearInterval(STATE.countdownInterval);
+            }
+            
+            const nextUpdateElement = document.getElementById('next-update');
+            const updateIntervalMs = CONFIG.intervals.dataUpdate; // Millisecondi
+            const nextUpdateTime = new Date(STATE.lastUpdate.getTime() + updateIntervalMs);
+            
+            STATE.countdownInterval = setInterval(function() {
+                const now = new Date();
+                const remainingMs = nextUpdateTime - now;
+                
+                if (remainingMs <= 0) {
+                    nextUpdateElement.textContent = 'Prossimo aggiornamento: in corso...';
+                    clearInterval(STATE.countdownInterval);
+                    return;
+                }
+                
+                const remainingSeconds = Math.floor(remainingMs / 1000);
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                
+                nextUpdateElement.innerHTML = `Prossimo aggiornamento: <strong>${minutes}:${String(seconds).padStart(2, '0')}</strong>`;
+            }, 1000);
         }
 
         function updateConnectionStatus(online) {
@@ -2046,7 +2340,7 @@
             document.getElementById(`gust-bar-${station}`).style.width = `${gustPercent}%`;
         }
 
-        // ==================== ALERT SYSTEM (IMPLEMENTED) ====================
+        // ==================== ALERT SYSTEM ====================
         function checkAlerts() {
             STATE.alerts = [];
 
@@ -2160,7 +2454,23 @@
             const newAlertsPresent = STATE.alerts.length > 0;
 
             if (newAlertsPresent && !STATE.hasActiveAlerts) {
+                // Riproduci suono
                 alertSound.play().catch(error => console.error("Errore nella riproduzione del suono:", error));
+                
+                // Invia notifiche browser per allerte critiche
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    STATE.alerts.forEach(alert => {
+                        if (alert.level === 'critical') {
+                            new Notification('⚠️ ALLERTA CRITICA - Dashboard Meteo', {
+                                body: `${alert.station}: ${alert.message}`,
+                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23f44336" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+                                tag: `alert-${alert.type}-${alert.station}`,
+                                requireInteraction: true,
+                                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f44336"><circle cx="12" cy="12" r="10"/></svg>'
+                            });
+                        }
+                    });
+                }
             }
 
             STATE.hasActiveAlerts = newAlertsPresent;
@@ -2172,10 +2482,16 @@
                 return;
             }
 
-            container.innerHTML = STATE.alerts.map(alert => `
+            container.innerHTML = STATE.alerts.map(alert => {
+                let icon = 'alert-triangle';
+                if(alert.type.includes('hydro')) icon = 'droplet';
+                if(alert.type.includes('rain')) icon = 'cloud-rain';
+                if(alert.type.includes('wind')) icon = 'wind';
+
+                return `
                 <div class="alert-item ${alert.level}">
                     <div class="alert-icon">
-                        ${alert.type === 'hydro-forecast' ? 'PREV' : (alert.type === 'hydro' ? '💧' : alert.type === 'rain' ? '🌧️' : '💨')}
+                        ${alert.type === 'hydro-forecast' ? '<span style="font-weight: bold; color: var(--warning-color);">PREV</span>' : `<i data-feather="${icon}" class="feather-icon"></i>`}
                     </div>
                     <div class="alert-content">
                         <div class="alert-title">${alert.station}</div>
@@ -2183,7 +2499,9 @@
                     </div>
                     <div class="alert-time">${formatDateTime(STATE.lastUpdate)}</div>
                 </div>
-            `).join('');
+            `}).join('');
+            
+            feather.replace(); // Update icons
         }
 
         // ==================== DATA FETCHING ====================
@@ -2257,13 +2575,12 @@
             }
         }
 
-        // ==================== OVERVIEW FUNCTIONS (IMPLEMENTED) ====================
+        // ==================== OVERVIEW FUNCTIONS ====================
         function updateOverviewStats() {
             if (!STATE.regionLatestData || !STATE.weatherlinkLatestData) return;
 
             const region = STATE.regionLatestData;
             const weather = STATE.weatherlinkLatestData;
-            const now = new Date();
             
             // Max hydro level
             const hydroStations = [
@@ -2339,34 +2656,19 @@
             // Active stations
             const totalStations = 15;
             const activeStations = new Set();
-
-            // Aggiungi stazioni idrometriche attive
             validHydro.forEach(s => activeStations.add(s.name));
-
-            // Aggiungi stazioni anemometriche attive (spesso coincidono con quelle pluvio)
             validWind.forEach(s => activeStations.add(s.name));
-
-            // Aggiungi le stazioni pluviometriche per completezza
-            const rainStations = [
+            const rainStationData = [
                 { name: 'Arcevia', value: parseAndFixDecimal(region['Arcevia - Pioggia TOT Oggi (mm)']) },
                 { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Pioggia TOT Oggi (mm)']) },
                 { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Pioggia TOT Oggi (mm)']) },
-                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']) },
-                { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Pioggia Giornaliera (mm)']) },
-                { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Pioggia Giornaliera (mm)"]) },
-                { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Pioggia Giornaliera (mm)']) }
+                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']) }
             ];
-            rainStations.forEach(s => {
-                if (!isNaN(s.value)) {
-                    activeStations.add(s.name);
-                }
-            });
-
+            rainStationData.forEach(s => { if (!isNaN(s.value)) activeStations.add(s.name); });
             const activeCount = activeStations.size;
             const stationsCard = document.getElementById('overview-stations');
             if (stationsCard) {
-                const valueEl = stationsCard.querySelector('.quick-stat-value');
-                valueEl.innerHTML = `${activeCount}/${totalStations}`;
+                stationsCard.querySelector('.quick-stat-value').innerHTML = `${activeCount}/${totalStations}`;
             }
         }
 
@@ -2443,6 +2745,7 @@
             
             const ctx = document.getElementById(canvasId).getContext('2d');
             const newChart = new Chart(ctx, config);
+            document.getElementById(canvasId).chart = newChart; // Link chart instance to canvas for fullscreen
             
             if (chartKey) {
                 STATE.charts[chartKey] = newChart;
@@ -2700,7 +3003,6 @@
             const recentWeather = STATE.weatherlinkHistoryData.filter(r => (parseCustomDate(r.Data_Ora) || 0) >= yesterday);
             
             updateHydroStatsTable(recentRegion);
-            updateRainStatsTable(recentRegion, recentWeather);
             updateWindStatsTable(recentWeather);
         }
 
@@ -2722,17 +3024,11 @@
                 if (values.length === 0) return;
                 
                 const stats = calculateStats(values);
-                const variation = (stats.max - values[0]).toFixed(3);
+                const variation = (values[values.length -1] - values[0]).toFixed(3);
                 
                 const row = tbody.insertRow();
                 row.innerHTML = `<td>${station.name}</td><td>${stats.min.toFixed(3)}</td><td>${stats.max.toFixed(3)}</td><td>${stats.avg.toFixed(3)}</td><td>${variation > 0 ? '+' : ''}${variation} m</td>`;
             });
-        }
-
-        function updateRainStatsTable(regionData, weatherData) {
-            const tbody = document.querySelector('#rain-stats-table tbody');
-            if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Funzionalità in sviluppo...</td></tr>';
         }
 
         function updateWindStatsTable(data) {
@@ -2754,6 +3050,75 @@
                 row.innerHTML = `<td>${station}</td><td>${avgSpeed} km/h</td><td>${maxGust} km/h</td><td>N/D</td>`;
             });
         }
+        
+        // ==================== MAP FUNCTIONS ====================
+        function initMap() {
+            if (STATE.map) {
+                STATE.map.remove();
+            }
+
+            const centerLat = 43.63;
+            const centerLon = 13.10;
+
+            STATE.map = L.map('map-container').setView([centerLat, centerLon], 11);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(STATE.map);
+
+            const stations = [
+                { name: 'Cumulata Sensore 2637 (Bettolelle)', lat: 43.66250, lon: 13.16472, type: 'pluvio', section: 'pluviometri' },
+                { name: 'Cumulata Sensore 1295 (Arcevia)', lat: 43.49722, lon: 12.93667, type: 'pluvio', section: 'pluviometri' },
+                { name: 'Cumulata Sensore 2858 (Barbara)', lat: 43.58000, lon: 13.02889, type: 'pluvio', section: 'pluviometri' },
+                { name: 'Cumulata Sensore 2964 (Corinaldo)', lat: 43.66028, lon: 13.04611, type: 'pluvio', section: 'pluviometri' },
+                { name: 'Livello Idrometrico Sensore 1008 [m] (Serra dei Conti)', lat: 43.54778, lon: 13.02806, type: 'idro', section: 'idrometri' },
+                { name: 'Livello Idrometrico Sensore 3072 [m] (Pianello di Ostra)', lat: 43.62444, lon: 13.12694, type: 'idro', section: 'idrometri' },
+                { name: 'Livello Idrometrico Sensore 1112 [m] (Bettolelle)', lat: 43.66250, lon: 13.16472, type: 'idro', section: 'idrometri' },
+                { name: 'Livello Idrometrico Sensore 1283 [m] (Corinaldo/Nevola)', lat: 43.63833, lon: 13.07667, type: 'idro', section: 'idrometri' },
+                { name: 'Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)', lat: 43.71500, lon: 13.21361, type: 'idro', section: 'idrometri' }
+            ];
+
+            const hydroIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="background-color: #00bcd4; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">💧</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            const rainIcon = L.divIcon({
+                className: 'custom-marker',
+                html: '<div style="background-color: #ffc107; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);">🌧️</div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            stations.forEach(station => {
+                const marker = L.marker([station.lat, station.lon], { icon: station.type === 'idro' ? hydroIcon : rainIcon }).addTo(STATE.map);
+                const popupContent = `
+                    <div>
+                        <h3>${station.name}</h3>
+                        <p><strong>Tipo:</strong> ${station.type === 'idro' ? 'Idrometro' : 'Pluviometro'}</p>
+                        <p><strong>Coordinate:</strong> ${station.lat.toFixed(5)}, ${station.lon.toFixed(5)}</p>
+                        <a href="#${station.section}" class="nav-link">Vedi Dettagli</a>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+                marker.on('popupopen', function() {
+                    document.querySelector('.leaflet-popup-content a').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const targetSection = this.getAttribute('href');
+                        document.querySelectorAll('.nav-link').forEach(link => {
+                            if (link.getAttribute('href') === targetSection) link.click();
+                        });
+                        STATE.map.closePopup();
+                    });
+                });
+            });
+            feather.replace();
+        }
+
         
         // ==================== EXPORT FUNCTIONS ====================
         function exportToCSV(data, filename) {
@@ -2797,6 +3162,7 @@
                         
                         switch(targetSection.id) {
                             case 'overview': drawOverviewCharts(); break;
+                            case 'mappa': initMap(); break;
                             case 'previsioni': if (!STATE.charts.forecast) fetchForecastData(); break;
                             case 'idrometri': if (!STATE.charts.hydroHistory) drawHydroHistoryChart(); break;
                             case 'pluviometri': if (!STATE.charts.rainHistory) drawRainHistoryChart(); break;
@@ -2804,7 +3170,6 @@
                             case 'analisi': updateStatisticsTables(); break;
                         }
                     }
-                    // Chiude la sidebar su mobile dopo la navigazione
                     if (window.innerWidth <= 768) {
                         document.getElementById('sidebar').classList.remove('open');
                     }
@@ -2837,6 +3202,75 @@
             });
         }
         
+        // ==================== FULLSCREEN FUNCTIONS ====================
+        function setupFullscreen(buttonId, chartContainerId) {
+            const button = document.getElementById(buttonId);
+            const container = document.getElementById(chartContainerId + "-container");
+            
+            if (!button || !container) return;
+            
+            button.addEventListener('click', function() {
+                const isFullscreen = container.classList.contains('fullscreen');
+                
+                if (isFullscreen) {
+                    exitFullscreen(container);
+                } else {
+                    enterFullscreen(container);
+                }
+            });
+        }
+
+        function enterFullscreen(container) {
+            container.classList.add('fullscreen');
+            
+            const exitBtn = document.createElement('button');
+            exitBtn.className = 'fullscreen-exit-btn';
+            exitBtn.id = 'fullscreen-exit-btn';
+            exitBtn.innerHTML = '&times;';
+            exitBtn.title = 'Esci da Fullscreen';
+            
+            exitBtn.addEventListener('click', function() {
+                exitFullscreen(container);
+            });
+            
+            document.body.appendChild(exitBtn);
+            
+            const canvas = container.querySelector('canvas');
+            if (canvas && canvas.chart) {
+                canvas.chart.resize();
+            }
+        }
+
+        function exitFullscreen(container) {
+            container.classList.remove('fullscreen');
+            
+            const exitBtn = document.getElementById('fullscreen-exit-btn');
+            if (exitBtn) {
+                exitBtn.remove();
+            }
+            
+            const canvas = container.querySelector('canvas');
+            if (canvas && canvas.chart) {
+                canvas.chart.resize();
+            }
+        }
+
+        function initFullscreenButtons() {
+            setupFullscreen('fullscreen-forecast', 'forecastChart');
+            setupFullscreen('fullscreen-hydro', 'hydroHistoryChart');
+            setupFullscreen('fullscreen-rain', 'rainHistoryChart');
+            setupFullscreen('fullscreen-wind', 'windHistoryChart');
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const fullscreenContainer = document.querySelector('.chart-container.fullscreen');
+                    if (fullscreenContainer) {
+                        exitFullscreen(fullscreenContainer);
+                    }
+                }
+            });
+        }
+
         function initUIInteractions() {
             // Mobile Menu
             document.getElementById('menu-toggle').addEventListener('click', () => {
@@ -2878,13 +3312,16 @@
             document.getElementById('toggle-instructions-btn').addEventListener('click', function() {
                 const instructions = document.getElementById('instructions-container');
                 const isVisible = instructions.classList.toggle('visible');
-                this.textContent = isVisible ? '📖 Nascondi Istruzioni' : '📖 Mostra Istruzioni';
+                const icon = this.querySelector('.feather-icon');
+                this.childNodes[2].nodeValue = isVisible ? ' Nascondi Istruzioni' : ' Mostra Istruzioni';
+                icon.setAttribute('data-feather', isVisible ? 'book' : 'book-open');
+                feather.replace();
             });
             document.getElementById('resetZoomBtn').addEventListener('click', () => {
                 if (STATE.charts.forecast) STATE.charts.forecast.resetZoom();
             });
 
-            // Chart action buttons (download & fullscreen)
+            // Chart action buttons
             const chartActions = {
                 'download-forecast-chart': () => downloadChartImage('forecastChart', 'previsioni.png'),
                 'download-hydro-chart': () => downloadChartImage('hydroHistoryChart', 'idrometri.png'),
@@ -2895,26 +3332,9 @@
                 const btn = document.getElementById(id);
                 if (btn) btn.addEventListener('click', action);
             }
-            
-            const setupFullscreen = (btnId, containerId) => {
-                const btn = document.getElementById(btnId);
-                if (!btn) return;
-                btn.addEventListener('click', function() {
-                    const container = document.getElementById(containerId).parentElement;
-                    container.classList.toggle('fullscreen');
-                    this.textContent = container.classList.contains('fullscreen') ? '✕ Esci' : '⛶ Fullscreen';
-                    
-                    const chartKey = Object.keys(STATE.charts).find(k => containerId.toLowerCase().includes(k.replace('history','').toLowerCase()));
-                    if(STATE.charts[chartKey]) setTimeout(() => STATE.charts[chartKey].resize(), 300);
-                });
-            };
-            setupFullscreen('fullscreen-forecast', 'forecastChart');
-            setupFullscreen('fullscreen-hydro', 'hydroHistoryChart');
-            setupFullscreen('fullscreen-rain', 'rainHistoryChart');
-            setupFullscreen('fullscreen-wind', 'windHistoryChart');
         }
 
-        // ==================== SETTINGS (IMPLEMENTED) ====================
+        // ==================== SETTINGS ====================
         function saveSettings() {
             const newConfig = {
                 thresholds: {
@@ -2931,7 +3351,6 @@
                 }
             };
 
-            // Merge with existing config (keeping URLs, etc.)
             CONFIG.thresholds = newConfig.thresholds;
             CONFIG.intervals = newConfig.intervals;
 
@@ -2939,9 +3358,7 @@
             showToast('Impostazioni salvate', 'success');
             document.getElementById('settings-modal').classList.remove('active');
             
-            // Restart intervals with new timings
             startAutoRefresh();
-            // Re-check alerts with new thresholds
             checkAlerts();
         }
 
@@ -2953,7 +3370,6 @@
                 CONFIG.intervals = parsedConfig.intervals;
             }
             
-            // Populate modal fields
             document.getElementById('threshold-hydro-warning').value = CONFIG.thresholds.hydroWarning;
             document.getElementById('threshold-hydro-critical').value = CONFIG.thresholds.hydroCritical;
             document.getElementById('threshold-rain-warning').value = CONFIG.thresholds.rainWarning;
@@ -2993,7 +3409,6 @@
                 STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora);
                 STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora);
 
-                // Set default time filters for all sections
                 document.querySelectorAll('.quick-filter-btn.active').forEach(btn => btn.click());
                 
                 drawOverviewCharts();
@@ -3008,7 +3423,6 @@
         }
         
         function startAutoRefresh() {
-            // Clear existing intervals before setting new ones
             if (STATE.updateIntervals.data) clearInterval(STATE.updateIntervals.data);
             if (STATE.updateIntervals.forecast) clearInterval(STATE.updateIntervals.forecast);
 
@@ -3020,9 +3434,20 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Inizializzazione Dashboard Meteo Pro...');
             
+            feather.replace();
+
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        console.log('Permesso notifiche concesso');
+                    }
+                });
+            }
+
             initNavigation();
             initQuickFilters();
             initUIInteractions();
+            initFullscreenButtons();
             initEventListeners();
             initDashboard();
             startAutoRefresh();
