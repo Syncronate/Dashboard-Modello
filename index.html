@@ -2406,6 +2406,8 @@ passwordInput.focus();
             mapMarkers: {}, 
             charts: {
                 forecast: null,
+                forecastBettolelle3h: null,
+                forecastPonteGaribaldi6h: null,
                 hydroHistory: null,
                 rainHistory: null,
                 windHistory: null,
@@ -3047,11 +3049,7 @@ passwordInput.focus();
         }
 
         // ==================== CHART FUNCTIONS ====================
-        function createChart(canvasId, config) {
-            const chartKey = Object.keys(STATE.charts).find(key => 
-                canvasId.toLowerCase().includes(key.replace(/history/i, '').toLowerCase())
-            );
-            
+        function createChart(canvasId, config, chartKey) {
             if (chartKey && STATE.charts[chartKey]) {
                 STATE.charts[chartKey].destroy();
             }
@@ -3166,7 +3164,7 @@ passwordInput.focus();
                     }
                 },
                 plugins: [highlightPlugin]
-            });
+            }, 'forecast');
         }
 
         function updateForecastTable(data) {
@@ -3266,7 +3264,7 @@ passwordInput.focus();
                         y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
                     }
                 }
-            });
+            }, 'forecastBettolelle3h');
         }
 
         function updateForecastTableBettolelle3h(data) {
@@ -3350,7 +3348,7 @@ passwordInput.focus();
                         y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
                     }
                 }
-            });
+            }, 'forecastPonteGaribaldi6h');
         }
 
         function updateForecastTablePonteGaribaldi6h(data) {
