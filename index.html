@@ -86,7 +86,7 @@
         }
 
         .menu-toggle {
-            display: none;
+            display: block;
             background: none;
             border: none;
             color: var(--text-color);
@@ -1201,26 +1201,6 @@
         }
 
         @media (max-width: 768px) {
-            .menu-toggle {
-                display: block;
-            }
-
-            .sidebar {
-                transform: translateX(-100%);
-                z-index: 1002; /* Sopra l'header quando aperto */
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            #main-content {
-                margin-left: 0;
-            }
-             #main-content.expanded {
-                margin-left: 0;
-            }
-
             .header-title {
                 font-size: 1em;
             }
@@ -1488,7 +1468,7 @@ max-width: 400px;
     </header>
 
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
+    <nav class="sidebar collapsed" id="sidebar">
         <h2>Navigazione</h2>
         <ul>
             <li><a href="#overview" class="nav-link active">Dashboard</a></li>
@@ -1506,7 +1486,7 @@ max-width: 400px;
     </nav>
 
     <!-- Main Content -->
-    <main id="main-content">
+    <main id="main-content" class="expanded">
         
         <!-- OVERVIEW PAGE -->
         <section id="overview" class="page-section active">
@@ -1574,17 +1554,6 @@ max-width: 400px;
                 <p style="color: var(--text-muted); text-align: center;">Nessuna allerta al momento</p>
             </div>
 
-            <h2><i data-feather="trending-up" class="feather-icon"></i> Grafici Principali</h2>
-            <div class="data-groups-container">
-                <div class="card">
-                    <h3 style="color: var(--primary-color); margin-top: 0;">Livelli Idrometrici (Ultime ore)</h3>
-                    <canvas id="overviewHydroChart" style="max-height: 300px;"></canvas>
-                </div>
-                <div class="card">
-                    <h3 style="color: var(--primary-color); margin-top: 0;">Intensità Pioggia (Ultime ore)</h3>
-                    <canvas id="overviewRainChart" style="max-height: 300px;"></canvas>
-                </div>
-            </div>
         </section>
 
         <!-- PREVISIONI IDRO PAGE -->
@@ -3886,9 +3855,10 @@ passwordInput.focus();
         }
 
         function initUIInteractions() {
-            // Mobile Menu
+            // Sidebar Toggle
             document.getElementById('menu-toggle').addEventListener('click', () => {
-                document.getElementById('sidebar').classList.toggle('open');
+                document.getElementById('sidebar').classList.toggle('collapsed');
+                document.getElementById('main-content').classList.toggle('expanded');
             });
 
             // Modals
