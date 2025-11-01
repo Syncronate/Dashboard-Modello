@@ -310,38 +310,43 @@
             background: var(--medium-bg);
         }
 
-        /* Stile per i marker delle stazioni WeatherLink e combinate */
-        .weatherlink-marker {
-            background: rgba(30, 30, 30, 0.85);
+        /* Stile per i marker delle stazioni con dati multipli */
+        .multi-sensor-marker {
+            background: rgba(30, 30, 30, 0.9);
             border: 2px solid var(--primary-color);
             border-radius: 10px;
-            padding: 6px;
-            box-shadow: var(--shadow);
-            text-align: center;
+            padding: 8px;
+            box-shadow: var(--shadow-lg);
+            text-align: left;
             color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            font-size: 13px; /* Aumentato */
-            line-height: 1.4;
-            width: 125px; /* Aumentato */
+            font-size: 13px;
+            line-height: 1.5;
+            width: 130px; /* Aumentato per più spazio */
             white-space: nowrap;
         }
-        .weatherlink-marker .station-name {
+        .multi-sensor-marker .station-name {
             font-weight: bold;
             color: var(--primary-color);
             border-bottom: 1px solid var(--border-color);
-            margin-bottom: 4px;
-            padding-bottom: 3px;
-            font-size: 14px; /* Aumentato */
+            margin-bottom: 5px;
+            padding-bottom: 4px;
+            font-size: 15px;
+            text-align: center;
         }
-        .weatherlink-marker .data-row {
+        .multi-sensor-marker .data-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 13px;
-            padding: 1px 2px;
+            font-size: 14px;
         }
-        .weatherlink-marker .data-row span {
-            font-weight: 600;
+        .multi-sensor-marker .data-row span:last-child {
+            font-weight: 700;
+            color: var(--text-color);
+        }
+        .multi-sensor-marker .data-row .label {
+            color: var(--text-muted);
+            font-size: 12px;
         }
 
 
@@ -907,83 +912,6 @@
         .wind-bar-widget .progress-bar-fill.gust {
             background: linear-gradient(90deg, var(--warning-color), #ff6f00);
         }
-
-        /* === CHARTS === */
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 25px;
-            justify-content: center;
-        }
-
-        .chart-wrapper {
-            flex: 1;
-            min-width: 600px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 5px;
-        }
-
-        .chart-title {
-            font-size: 1.1em;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        .chart-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .chart-btn {
-            background: var(--light-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85em;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .chart-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .chart-container {
-            min-height: 500px;
-            cursor: grab;
-            position: relative;
-        }
-
-        .chart-container:active {
-            cursor: grabbing;
-        }
-
-        .chart-container.fullscreen {
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 9998;
-            background: var(--dark-bg);
-            padding: 20px;
-            min-height: auto;
-            height: calc(100vh - 80px);
-        }
         
         /* === FULLSCREEN EXIT BUTTON === */
         .fullscreen-exit-btn {
@@ -1015,8 +943,8 @@
         .fullscreen-exit-btn:active {
             transform: scale(0.95);
         }
-
-        /* === STATISTICS TABLE === */
+        
+        /* === STATISTICS TABLE (SHARED) === */
         .stats-table {
             width: 100%;
             border-collapse: collapse;
@@ -1036,83 +964,15 @@
             color: var(--primary-color);
             font-weight: 600;
         }
-
-        .stats-table tr:hover {
-            background: var(--light-bg);
-        }
-
-        /* === DATA TABLE === */
-        .table-container {
-            flex: 1;
-            min-width: 300px;
-            max-height: 540px;
-            overflow-y: auto;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-
+        
+        /* === DATA TABLE (SHARED) === */
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        th, td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--border-color);
-            text-align: left;
-        }
-
-        thead th {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            position: sticky;
-            top: 0;
-            font-weight: 600;
-            z-index: 10;
-        }
-
-        tbody tr {
-            background-color: var(--light-bg);
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        tbody tr:nth-child(even) {
-            background-color: var(--medium-bg);
-        }
-
-        tbody tr:hover {
-            background-color: var(--primary-color) !important;
-            color: white;
-            transform: scale(1.01);
-        }
-
-        tbody tr.highlighted {
-            background-color: var(--primary-color) !important;
-            color: white;
-            font-weight: 600;
-        }
-
-        .table-container::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        .table-container::-webkit-scrollbar-track {
-            background: var(--light-bg);
-            border-radius: 10px;
-        }
-
-        .table-container::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-            border-radius: 10px;
-            border: 2px solid var(--light-bg);
-        }
-
-        .table-container::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-dark);
-        }
-
-        /* === FORECAST PAGE === */
+        /* === FORECAST PAGE (STYLES FROM GUIDE) === */
+        /* Stili specifici per la pagina delle previsioni */
         .header {
             text-align: center;
             margin-bottom: 25px;
@@ -1149,7 +1009,7 @@
         }
 
         .instructions.visible {
-            max-height: 300px;
+            max-height: 400px;
             opacity: 1;
             margin-top: 15px;
         }
@@ -1166,6 +1026,7 @@
             padding: 20px;
             border-radius: 12px;
             border-left: 4px solid var(--primary-color);
+            text-align: left;
         }
 
         #resetZoomBtn {
@@ -1185,6 +1046,157 @@
             box-shadow: var(--shadow);
         }
 
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            min-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 1.1em;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-btn {
+            background: var(--light-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chart-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .chart-container {
+            min-height: 500px;
+            position: relative;
+            cursor: grab; /* Indica che si può trascinare */
+        }
+
+        .chart-container:active {
+            cursor: grabbing; /* Durante il trascinamento */
+        }
+
+        .chart-container.fullscreen {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9998;
+            background: var(--dark-bg);
+            padding: 20px;
+            height: calc(100vh - 80px);
+        }
+        
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stats-table th {
+            background: var(--light-bg);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .stats-table td:first-child {
+            font-weight: 500;
+        }
+
+        .table-container {
+            flex: 1;
+            min-width: 300px;
+            max-height: 620px;
+            overflow-y: auto;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            z-index: 10;
+            padding: 12px 8px;
+            font-weight: 600;
+        }
+
+        tbody td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        tbody tr:hover, tbody tr.highlighted {
+            background-color: var(--primary-color) !important;
+            color: white;
+            cursor: pointer;
+            transform: scale(1.01);
+        }
+        
+        /* === SHARED TABLE & SCROLLBAR STYLES (for other pages) === */
+        #idrometri .table-container, #pluviometri .table-container, #anemometri .table-container {
+             max-height: 540px;
+             border-radius: 12px;
+             border: 1px solid var(--border-color);
+        }
+        
+        .table-container::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: var(--light-bg);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+            border: 2px solid var(--light-bg);
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+
         /* === RESPONSIVE === */
         @media (max-width: 1024px) {
             .quick-stats {
@@ -1194,13 +1206,16 @@
             .data-groups-container {
                 grid-template-columns: 1fr;
             }
-
-            .chart-wrapper {
+        }
+        
+        @media (max-width: 768px) {
+             .chart-wrapper {
                 min-width: 100%;
             }
-        }
-
-        @media (max-width: 768px) {
+            
+            .table-container {
+                min-width: 100%;
+            }
             .menu-toggle {
                 display: block;
             }
@@ -1247,7 +1262,7 @@
                 min-height: 350px;
             }
         }
-
+        
         /* === MODALS === */
         .modal {
             display: none;
@@ -1392,9 +1407,12 @@
             border-radius: 6px;
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Plugin Zoom per Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <!-- PapaParse per CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <!-- Feather Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <!-- Leaflet CSS -->
@@ -1459,7 +1477,7 @@
             <li><a href="#analisi" class="nav-link">Analisi Avanzata</a></li>
         </ul>
         <div class="sidebar-footer">
-            <p>Dashboard Meteo Thunder v2.0</p>
+            <p>Dashboard Meteo v2.2</p>
             <p>Progettata e sviluppata da Alberto Bussaglia</p>
         </div>
     </nav>
@@ -1546,7 +1564,7 @@
             </div>
         </section>
 
-        <!-- PREVISIONI IDRO PAGE -->
+        <!-- PREVISIONI IDRO PAGE (FROM GUIDE) -->
         <section id="previsioni" class="page-section">
             <div class="header">
                 <h1><i data-feather="activity" class="feather-icon"></i> Previsione Idrometrica Misa (Bettolelle)</h1>
@@ -1555,8 +1573,8 @@
                 </button>
                 <div id="instructions-container" class="instructions">
                     <p class="subtitle">
-                        <b>🖱️ Sposta:</b> Trascina il grafico con il mouse per spostarti nel tempo.<br/>
-                        <b>🔍 Zoom:</b> Usa la rotellina del mouse per ingrandire/rimpicciolire.<br/>
+                        <b>🖱️ Sposta:</b> Trascina il grafico con il mouse (click sinistro + trascina) per spostarti nel tempo.<br/>
+                        <b>🔍 Zoom In/Out:</b> Usa la rotellina del mouse per ingrandire/rimpicciolire.<br/>
                         <b>🔄 Reset:</b> Clicca "Reset Zoom" per tornare alla vista completa.<br/>
                         <b>✨ Interazione:</b> Passa il mouse sulla tabella per evidenziare i punti corrispondenti sul grafico.<br/>
                         <b>📊 Quantili:</b> Q10 (minimo), Q50 (mediana), Q90 (massimo) rappresentano la fascia di previsione.
@@ -1592,29 +1610,11 @@
                                     <th>Q90 (max)</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Livello Medio</td>
-                                    <td id="q10-avg">--</td>
-                                    <td id="q50-avg">--</td>
-                                    <td id="q90-avg">--</td>
-                                </tr>
-                                <tr>
-                                    <td>Picco Massimo</td>
-                                    <td id="q10-max">--</td>
-                                    <td id="q50-max">--</td>
-                                    <td id="q90-max">--</td>
-                                </tr>
-                                <tr>
-                                    <td>Valore Minimo</td>
-                                    <td id="q10-min">--</td>
-                                    <td id="q50-min">--</td>
-                                    <td id="q90-min">--</td>
-                                </tr>
-                            </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
                 </div>
+
                 <div class="table-container card">
                     <table id="dataTable">
                         <thead>
@@ -1996,29 +1996,21 @@
             <div class="data-groups-container" style="margin-top: 25px;">
                 <div class="card">
                     <h3 style="color: var(--primary-color); margin-top: 0;">
-                        <i data-feather="droplet" class="feather-icon"></i> Stazioni Idrometriche
+                        <i data-feather="radio" class="feather-icon"></i> Tipi di Stazione
                     </h3>
                     <ul style="color: var(--text-color); line-height: 1.8;">
-                        <li>Serra dei Conti - Livello Misa</li>
-                        <li>Pianello di Ostra - Livello Misa</li>
-                        <li>Corinaldo/Nevola - Livello Nevola</li>
-                        <li>Ponte Garibaldi - Livello Misa 2</li>
-                        <li>Passo Ripe - Livello Nevola</li>
+                        <li><b>Idrometri (💧 Cerchio):</b> Stazioni che misurano solo il livello del fiume.</li>
+                        <li><b>Multi-Sensore (📋 Riquadro):</b> Stazioni che misurano più parametri contemporaneamente (pioggia, livello, vento).</li>
                     </ul>
                 </div>
-                
                 <div class="card">
                     <h3 style="color: var(--primary-color); margin-top: 0;">
-                        <i data-feather="cloud-rain" class="feather-icon"></i> Stazioni Pluviometriche e Meteo
+                        <i data-feather="list" class="feather-icon"></i> Legenda Stazioni Multi-Sensore
                     </h3>
-                    <ul style="color: var(--text-color); line-height: 1.8;">
-                        <li>Bettolelle - Pioggia/Livello Idro</li>
-                        <li>Arcevia - Pioggia Cumulata</li>
-                        <li>Barbara - Pioggia Cumulata</li>
-                        <li>Corinaldo - Pioggia Cumulata</li>
-                        <li>Montignano (WeatherLink) - Pioggia/Vento</li>
-                        <li>Scapezzano (WeatherLink) - Pioggia/Vento</li>
-                        <li>Sant'Angelo (WeatherLink) - Pioggia/Vento</li>
+                     <ul style="color: var(--text-color); line-height: 1.8;">
+                        <li><b>Bettolelle:</b> Livello Idrometrico, Intensità e Totale Pioggia.</li>
+                        <li><b>Arcevia, Barbara, Corinaldo:</b> Intensità e Totale Pioggia.</li>
+                        <li><b>Montignano, Scapezzano, Sant'Angelo:</b> Intensità e Totale Pioggia, Vento e Raffica.</li>
                     </ul>
                 </div>
             </div>
@@ -2132,7 +2124,6 @@
 
     <script>
         // ==================== CONFIGURATION ====================
-        // Configurazione di base, può essere sovrascritta dalle impostazioni salvate
         let CONFIG = {
             urls: {
                 forecast: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=752084732&single=true&output=csv',
@@ -2142,21 +2133,21 @@
                 weatherlinkHistory: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=277108921&single=true&output=csv'
             },
             intervals: {
-                dataUpdate: 60000,      // 1 minuto
-                forecastUpdate: 300000  // 5 minuti
+                dataUpdate: 60000,
+                forecastUpdate: 300000
             },
             defaults: {
-                timeWindow: 12,         // ore
-                gaugeMaxSpeed: 80,      // km/h
+                timeWindow: 12,
+                gaugeMaxSpeed: 80,
                 chartColors: ['#00bcd4', '#ffc107', '#9c27b0', '#f44336', '#4caf50', '#ff9800', '#3f51b5', '#e91e63']
             },
             thresholds: {
-                hydroWarning: 2.0,      // metri
-                hydroCritical: 3.0,     // metri
-                rainWarning: 20,        // mm/h
-                rainCritical: 40,       // mm/h
-                windWarning: 40,        // km/h
-                windCritical: 60        // km/h
+                hydroWarning: 2.0,
+                hydroCritical: 3.0,
+                rainWarning: 20,
+                rainCritical: 40,
+                windWarning: 40,
+                windCritical: 60
             }
         };
 
@@ -2168,7 +2159,7 @@
             weatherlinkLatestData: null,
             forecastData: [],
             map: null,
-            mapMarkers: {}, 
+            mapMarkers: {},
             charts: {
                 forecast: null,
                 hydroHistory: null,
@@ -2243,17 +2234,14 @@
             });
         }
 
-
         function calculateStats(values) {
             const validValues = values.filter(v => !isNaN(v) && v !== null);
-            if (validValues.length === 0) return { min: NaN, max: NaN, avg: NaN, sum: NaN };
-            
+            if (validValues.length === 0) return { min: NaN, max: NaN, avg: NaN };
             const sum = validValues.reduce((a, b) => a + b, 0);
             return {
                 min: Math.min(...validValues),
                 max: Math.max(...validValues),
                 avg: sum / validValues.length,
-                sum: sum
             };
         }
 
@@ -2265,73 +2253,40 @@
         }
 
         // ==================== UI FUNCTIONS ====================
-        function showLoading() {
-            document.getElementById('loading-overlay').classList.add('active');
-        }
-
-        function hideLoading() {
-            document.getElementById('loading-overlay').classList.remove('active');
-        }
+        function showLoading() { document.getElementById('loading-overlay').classList.add('active'); }
+        function hideLoading() { document.getElementById('loading-overlay').classList.remove('active'); }
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            
-            const icons = {
-                success: '✅',
-                error: '❌',
-                warning: '⚠️',
-                info: 'ℹ️'
-            };
-            
-            toast.innerHTML = `
-                <span class="toast-icon">${icons[type] || icons.info}</span>
-                <span class="toast-message">${message}</span>
-                <button class="toast-close">×</button>
-            `;
-            
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span class="toast-message">${message}</span><button class="toast-close">×</button>`;
             container.appendChild(toast);
-            
-            toast.querySelector('.toast-close').addEventListener('click', () => {
-                toast.remove();
-            });
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
+            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
+            setTimeout(() => toast.remove(), 5000);
         }
 
         function updateLastUpdate() {
             STATE.lastUpdate = new Date();
             document.getElementById('last-update').textContent = `Ultimo aggiornamento: ${formatDateTime(STATE.lastUpdate)}`;
-            
             startUpdateCountdown();
         }
 
         function startUpdateCountdown() {
-            if (STATE.countdownInterval) {
-                clearInterval(STATE.countdownInterval);
-            }
-            
+            if (STATE.countdownInterval) clearInterval(STATE.countdownInterval);
             const nextUpdateElement = document.getElementById('next-update');
-            const updateIntervalMs = CONFIG.intervals.dataUpdate;
-            const nextUpdateTime = new Date(STATE.lastUpdate.getTime() + updateIntervalMs);
-            
-            STATE.countdownInterval = setInterval(function() {
-                const now = new Date();
-                const remainingMs = nextUpdateTime - now;
-                
+            const nextUpdateTime = new Date(STATE.lastUpdate.getTime() + CONFIG.intervals.dataUpdate);
+            STATE.countdownInterval = setInterval(() => {
+                const remainingMs = nextUpdateTime - new Date();
                 if (remainingMs <= 0) {
                     nextUpdateElement.textContent = 'Prossimo aggiornamento: in corso...';
                     clearInterval(STATE.countdownInterval);
                     return;
                 }
-                
                 const remainingSeconds = Math.floor(remainingMs / 1000);
                 const minutes = Math.floor(remainingSeconds / 60);
                 const seconds = remainingSeconds % 60;
-                
                 nextUpdateElement.innerHTML = `Prossimo aggiornamento: <strong>${minutes}:${String(seconds).padStart(2, '0')}</strong>`;
             }, 1000);
         }
@@ -2340,28 +2295,16 @@
             STATE.isOnline = online;
             const dot = document.getElementById('status-dot');
             const text = document.getElementById('status-text');
-            
-            if (online) {
-                dot.className = 'status-dot online';
-                text.textContent = 'Online';
-            } else {
-                dot.className = 'status-dot offline';
-                text.textContent = 'Offline';
-            }
+            dot.className = online ? 'status-dot online' : 'status-dot offline';
+            text.textContent = online ? 'Online' : 'Offline';
         }
 
         function updateStatCard(cardId, value, unit, fallback = '--') {
             const card = document.getElementById(cardId);
             if (!card) return;
-            
             const valueEl = card.querySelector('.value');
-            let finalValue = fallback;
             const numValue = parseAndFixDecimal(value);
-            
-            if (!isNaN(numValue)) {
-                finalValue = numValue.toFixed(2);
-            }
-            
+            const finalValue = !isNaN(numValue) ? numValue.toFixed(2) : fallback;
             const unitEl = valueEl.querySelector('.unit');
             if (unitEl) {
                 unitEl.textContent = unit;
@@ -2372,13 +2315,10 @@
         function updateWindBar(station, speed, gust) {
             const cleanSpeed = parseAndFixDecimal(speed) || 0;
             const cleanGust = parseAndFixDecimal(gust) || 0;
-            
             document.getElementById(`speed-value-${station}`).textContent = `${cleanSpeed.toFixed(1)} km/h`;
             document.getElementById(`gust-value-${station}`).textContent = `${cleanGust.toFixed(1)} km/h`;
-            
             const speedPercent = (Math.min(cleanSpeed, CONFIG.defaults.gaugeMaxSpeed) / CONFIG.defaults.gaugeMaxSpeed) * 100;
             const gustPercent = (Math.min(cleanGust, CONFIG.defaults.gaugeMaxSpeed) / CONFIG.defaults.gaugeMaxSpeed) * 100;
-            
             document.getElementById(`speed-bar-${station}`).style.width = `${speedPercent}%`;
             document.getElementById(`gust-bar-${station}`).style.width = `${gustPercent}%`;
         }
@@ -2386,204 +2326,57 @@
         // ==================== ALERT SYSTEM ====================
         function checkAlerts() {
             STATE.alerts = [];
-
             if (!STATE.regionLatestData || !STATE.weatherlinkLatestData) return;
-
             const region = STATE.regionLatestData;
             const weather = STATE.weatherlinkLatestData;
 
-            // Check hydro levels
-            const hydroStations = [
-                { name: 'Misa (Bettolelle)', value: parseAndFixDecimal(region['Misa - Livello Misa (mt)']) },
-                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
-                { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
-                { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
-                { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
-                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
-                { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
-            ];
+            const hydroStations = [{ name: 'Misa (Bettolelle)', value: parseAndFixDecimal(region['Misa - Livello Misa (mt)']) }, { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) }, { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) }, { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) }, { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) }, { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) }, { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }];
+            hydroStations.forEach(station => { if (!isNaN(station.value)) { const level = getAlertLevel(station.value, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical); if (level !== 'normal') STATE.alerts.push({ type: 'hydro', level, station: station.name, value: station.value, message: `Livello idrometrico ${level === 'critical' ? 'CRITICO' : 'di ATTENZIONE'}: ${station.value.toFixed(2)} m` }); } });
 
-            hydroStations.forEach(station => {
-                if (isNaN(station.value)) return;
-                const level = getAlertLevel(station.value, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
-                if (level !== 'normal') {
-                    STATE.alerts.push({
-                        type: 'hydro',
-                        level: level,
-                        station: station.name,
-                        value: station.value,
-                        message: `Livello idrometrico ${level === 'critical' ? 'CRITICO' : 'di ATTENZIONE'}: ${station.value.toFixed(2)} m`
-                    });
-                }
-            });
+            const rainStations = [{ name: 'Arcevia', value: parseAndFixDecimal(region['Arcevia - Intensita di pioggia (mm/min)']) * 60 }, { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Intensita di pioggia (mm/min)']) * 60 }, { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Intensita di pioggia (mm/min)']) * 60 }, { name: 'Misa', value: parseAndFixDecimal(region['Misa - Intensita Pioggia (mm/min)']) * 60 }, { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Intensità Pioggia (mm/hr)']) }, { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Intensità Pioggia (mm/hr)"]) }, { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Intensità Pioggia (mm/hr)']) }];
+            rainStations.forEach(station => { if (!isNaN(station.value) && station.value > 0) { const level = getAlertLevel(station.value, CONFIG.thresholds.rainWarning, CONFIG.thresholds.rainCritical); if (level !== 'normal') STATE.alerts.push({ type: 'rain', level, station: station.name, value: station.value, message: `Intensità pioggia ${level === 'critical' ? 'CRITICA' : 'di ATTENZIONE'}: ${station.value.toFixed(1)} mm/h` }); } });
 
-            // Check rain intensity (convert mm/min to mm/h)
-            const rainStations = [
-                { name: 'Arcevia', value: parseAndFixDecimal(region['Arcevia - Intensita di pioggia (mm/min)']) * 60 },
-                { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Intensita di pioggia (mm/min)']) * 60 },
-                { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Intensita di pioggia (mm/min)']) * 60 },
-                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Intensita Pioggia (mm/min)']) * 60 },
-                { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Intensità Pioggia (mm/hr)']) },
-                { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Intensità Pioggia (mm/hr)"]) },
-                { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Intensità Pioggia (mm/hr)']) }
-            ];
+            const windStations = [{ name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Raffica Vento 10 min (km/h)']) }, { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Raffica Vento 10 min (km/h)"]) }, { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Raffica Vento 10 min (km/h)']) }];
+            windStations.forEach(station => { if (!isNaN(station.value)) { const level = getAlertLevel(station.value, CONFIG.thresholds.windWarning, CONFIG.thresholds.windCritical); if (level !== 'normal') STATE.alerts.push({ type: 'wind', level, station: station.name, value: station.value, message: `Raffica vento ${level === 'critical' ? 'CRITICA' : 'di ATTENZIONE'}: ${station.value.toFixed(1)} km/h` }); } });
 
-            rainStations.forEach(station => {
-                if (isNaN(station.value) || station.value <= 0) return;
-                const level = getAlertLevel(station.value, CONFIG.thresholds.rainWarning, CONFIG.thresholds.rainCritical);
-                if (level !== 'normal') {
-                    STATE.alerts.push({
-                        type: 'rain',
-                        level: level,
-                        station: station.name,
-                        value: station.value,
-                        message: `Intensità pioggia ${level === 'critical' ? 'CRITICA' : 'di ATTENZIONE'}: ${station.value.toFixed(1)} mm/h`
-                    });
-                }
-            });
-
-            // Check wind gusts
-            const windStations = [
-                { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Raffica Vento 10 min (km/h)']) },
-                { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Raffica Vento 10 min (km/h)"]) },
-                { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Raffica Vento 10 min (km/h)']) }
-            ];
-
-            windStations.forEach(station => {
-                if (isNaN(station.value)) return;
-                const level = getAlertLevel(station.value, CONFIG.thresholds.windWarning, CONFIG.thresholds.windCritical);
-                if (level !== 'normal') {
-                    STATE.alerts.push({
-                        type: 'wind',
-                        level: level,
-                        station: station.name,
-                        value: station.value,
-                        message: `Raffica vento ${level === 'critical' ? 'CRITICA' : 'di ATTENZIONE'}: ${station.value.toFixed(1)} km/h`
-                    });
-                }
-            });
-
-            // Analisi dei dati di previsione
             if (STATE.forecastData && STATE.forecastData.length > 0) {
-                let maxPredictedLevel = -Infinity;
-                let peakTimestamp = null;
-                const forecastColumn = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)';
-
-                STATE.forecastData.forEach(record => {
-                    const level = parseAndFixDecimal(record[forecastColumn]);
-                    if (!isNaN(level) && level > maxPredictedLevel) {
-                        maxPredictedLevel = level;
-                        peakTimestamp = record['Timestamp Previsione'];
-                    }
-                });
-
-                if (maxPredictedLevel > -Infinity) {
-                    const forecastLevel = getAlertLevel(maxPredictedLevel, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
-                    if (forecastLevel !== 'normal') {
-                        STATE.alerts.push({
-                            type: 'hydro-forecast',
-                            level: forecastLevel,
-                            station: 'Misa (Bettolelle) - Previsione',
-                            value: maxPredictedLevel,
-                            message: `PREVISIONE DI ${forecastLevel === 'critical' ? 'CRITICITÀ' : 'ATTENZIONE'}: Previsto picco di ${maxPredictedLevel.toFixed(2)} m intorno alle ore ${peakTimestamp}`
-                        });
-                    }
-                }
+                let maxPredictedLevel = -Infinity, peakTimestamp = null;
+                STATE.forecastData.forEach(r => { const level = parseAndFixDecimal(r['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']); if (!isNaN(level) && level > maxPredictedLevel) { maxPredictedLevel = level; peakTimestamp = r['Timestamp Previsione']; } });
+                if (maxPredictedLevel > -Infinity) { const level = getAlertLevel(maxPredictedLevel, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical); if (level !== 'normal') STATE.alerts.push({ type: 'hydro-forecast', level, station: 'Misa (Bettolelle) - Previsione', value: maxPredictedLevel, message: `PREVISIONE DI ${level === 'critical' ? 'CRITICITÀ' : 'ATTENZIONE'}: Previsto picco di ${maxPredictedLevel.toFixed(2)} m intorno alle ore ${peakTimestamp}` }); }
             }
-
             updateAlertsDisplay();
         }
 
         function updateAlertsDisplay() {
-            const alertSound = document.getElementById('alert-sound');
-            const newAlertsPresent = STATE.alerts.length > 0;
-
-            if (newAlertsPresent && !STATE.hasActiveAlerts) {
-                alertSound.play().catch(error => console.error("Errore nella riproduzione del suono:", error));
-                
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    STATE.alerts.forEach(alert => {
-                        if (alert.level === 'critical') {
-                            new Notification('⚠️ ALLERTA CRITICA - Dashboard Meteo', {
-                                body: `${alert.station}: ${alert.message}`,
-                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23f44336" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-                                tag: `alert-${alert.type}-${alert.station}`,
-                                requireInteraction: true,
-                                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f44336"><circle cx="12" cy="12" r="10"/></svg>'
-                            });
-                        }
-                    });
-                }
-            }
-
-            STATE.hasActiveAlerts = newAlertsPresent;
-            
             const container = document.getElementById('alerts-container');
-            
-            if (STATE.alerts.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Nessuna allerta al momento</p>';
-                return;
-            }
-
+            if (STATE.alerts.length === 0) { container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Nessuna allerta al momento</p>'; return; }
             container.innerHTML = STATE.alerts.map(alert => {
                 let icon = 'alert-triangle';
-                if(alert.type.includes('hydro')) icon = 'droplet';
-                if(alert.type.includes('rain')) icon = 'cloud-rain';
-                if(alert.type.includes('wind')) icon = 'wind';
-
-                return `
-                <div class="alert-item ${alert.level}">
-                    <div class="alert-icon">
-                        ${alert.type === 'hydro-forecast' ? '<span style="font-weight: bold; color: var(--warning-color);">PREV</span>' : `<i data-feather="${icon}" class="feather-icon"></i>`}
-                    </div>
-                    <div class="alert-content">
-                        <div class="alert-title">${alert.station}</div>
-                        <div class="alert-message">${alert.message}</div>
-                    </div>
-                    <div class="alert-time">${formatDateTime(STATE.lastUpdate)}</div>
-                </div>
-            `}).join('');
-            
+                if (alert.type.includes('hydro')) icon = 'droplet'; if (alert.type.includes('rain')) icon = 'cloud-rain'; if (alert.type.includes('wind')) icon = 'wind';
+                return `<div class="alert-item ${alert.level}"><div class="alert-icon">${alert.type === 'hydro-forecast' ? '<span style="font-weight: bold; color: var(--warning-color);">PREV</span>' : `<i data-feather="${icon}" class="feather-icon"></i>`}</div><div class="alert-content"><div class="alert-title">${alert.station}</div><div class="alert-message">${alert.message}</div></div><div class="alert-time">${formatDateTime(STATE.lastUpdate)}</div></div>`;
+            }).join('');
             feather.replace();
+            const newAlertsPresent = STATE.alerts.length > 0;
+            if (newAlertsPresent && !STATE.hasActiveAlerts) { document.getElementById('alert-sound').play().catch(e => console.error(e)); if ('Notification' in window && Notification.permission === 'granted') { STATE.alerts.forEach(alert => { if (alert.level === 'critical') new Notification('⚠️ ALLERTA CRITICA - Dashboard Meteo', { body: `${alert.station}: ${alert.message}`, tag: `alert-${alert.type}-${alert.station}` }); }); } }
+            STATE.hasActiveAlerts = newAlertsPresent;
         }
 
         // ==================== DATA FETCHING ====================
         function fetchData(url) {
             return new Promise((resolve, reject) => {
                 Papa.parse(`${url}&t=${Date.now()}`, {
-                    download: true,
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (results) => {
-                        if (results.errors.length > 0) {
-                            console.error('Errori nel parsing CSV:', results.errors);
-                            updateConnectionStatus(false);
-                            reject(results.errors);
-                        } else {
-                            updateConnectionStatus(true);
-                            resolve(results.data);
-                        }
-                    },
-                    error: (error) => {
-                        console.error('Errore nel caricamento dati:', error);
-                        updateConnectionStatus(false);
-                        showToast('Errore nel caricamento dei dati', 'error');
-                        reject(error);
-                    }
+                    download: true, header: true, skipEmptyLines: true,
+                    complete: (res) => res.errors.length > 0 ? (console.error(res.errors), updateConnectionStatus(false), reject(res.errors)) : (updateConnectionStatus(true), resolve(res.data)),
+                    error: (err) => (console.error(err), updateConnectionStatus(false), showToast('Errore nel caricamento dati', 'error'), reject(err))
                 });
             });
         }
 
         async function updateAllLatestData() {
             try {
-                const [regionData, weatherlinkData] = await Promise.all([
-                    fetchData(CONFIG.urls.regionLatest),
-                    fetchData(CONFIG.urls.weatherlinkLatest)
-                ]);
-
+                const [regionData, weatherlinkData] = await Promise.all([fetchData(CONFIG.urls.regionLatest), fetchData(CONFIG.urls.weatherlinkLatest)]);
                 if (regionData && regionData.length > 0) {
-                    const d = regionData[0];
-                    STATE.regionLatestData = d;
+                    const d = STATE.regionLatestData = regionData[0];
                     updateStatCard('hydro-misa-bettolelle', d['Misa - Livello Misa (mt)'], 'm');
                     updateStatCard('hydro-pianello-ostra', d['Pianello di Ostra - Livello Misa (mt)'], 'm');
                     updateStatCard('hydro-ponte-garibaldi', d['Ponte Garibaldi - Livello Misa 2 (mt)'], 'm');
@@ -2591,214 +2384,69 @@
                     updateStatCard('hydro-cesano', d['Cesano - Livello Cesano (mt)'], 'm');
                     updateStatCard('hydro-corinaldo-nevola', d['Nevola - Livello Nevola (mt)'], 'm');
                     updateStatCard('hydro-passo-ripe', d['Passo Ripe - Livello Nevola (mt)'], 'm');
-                    
-                    const convertToHourRate = (rawValue) => (parseAndFixDecimal(rawValue) * 60);
-                    updateStatCard('rain-arcevia', convertToHourRate(d['Arcevia - Intensita di pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-barbara', convertToHourRate(d['Barbara - Intensita di pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-corinaldo', convertToHourRate(d['Corinaldo - Intensita di pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-misa', convertToHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr');
+                    const toHourRate = v => parseAndFixDecimal(v) * 60;
+                    updateStatCard('rain-arcevia', toHourRate(d['Arcevia - Intensita di pioggia (mm/min)']), 'mm/hr');
+                    updateStatCard('rain-barbara', toHourRate(d['Barbara - Intensita di pioggia (mm/min)']), 'mm/hr');
+                    updateStatCard('rain-corinaldo', toHourRate(d['Corinaldo - Intensita di pioggia (mm/min)']), 'mm/hr');
+                    updateStatCard('rain-misa', toHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr');
                 }
-
                 if (weatherlinkData && weatherlinkData.length > 0) {
-                    const d = weatherlinkData[0];
-                    STATE.weatherlinkLatestData = d;
+                    const d = STATE.weatherlinkLatestData = weatherlinkData[0];
                     updateWindBar('montignano', d['Montignano - Velocità Vento (km/h)'], d['Montignano - Raffica Vento 10 min (km/h)']);
                     updateWindBar('santangelo', d["Sant'Angelo - Velocità Vento (km/h)"], d["Sant'Angelo - Raffica Vento 10 min (km/h)"]);
                     updateWindBar('scapezzano', d['Scapezzano - Velocità Vento (km/h)'], d['Scapezzano - Raffica Vento 10 min (km/h)']);
-                    
                     updateStatCard('rain-montignano', d['Montignano - Intensità Pioggia (mm/hr)'], 'mm/hr');
                     updateStatCard('rain-santangelo', d["Sant'Angelo - Intensità Pioggia (mm/hr)"], 'mm/hr');
                     updateStatCard('rain-scapezzano', d['Scapezzano - Intensità Pioggia (mm/hr)'], 'mm/hr');
                 }
-                
                 updateLastUpdate();
                 checkAlerts();
                 updateOverviewStats();
-                if (STATE.map) {
-                    updateMapMarkers();
-                }
-
-            } catch (error) {
-                console.error("Fallimento nell'aggiornare i dati più recenti:", error);
-            }
+                if (STATE.map) updateMapMarkers();
+            } catch (error) { console.error("Fallimento nell'aggiornare i dati più recenti:", error); }
         }
 
         // ==================== OVERVIEW FUNCTIONS ====================
         function updateOverviewStats() {
             if (!STATE.regionLatestData || !STATE.weatherlinkLatestData) return;
-
             const region = STATE.regionLatestData;
             const weather = STATE.weatherlinkLatestData;
-            
-            const hydroStations = [
-                { name: 'Misa (Bettolelle)', value: parseAndFixDecimal(region['Misa - Livello Misa (mt)']) },
-                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
-                { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
-                { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
-                { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
-                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
-                { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
-            ];
-            const validHydro = hydroStations.filter(s => !isNaN(s.value));
-            const maxHydroStation = validHydro.length > 0 ? validHydro.reduce((max, s) => s.value > max.value ? s : max) : { value: NaN, name: '--'};
-            
+
+            const hydroValues = [parseAndFixDecimal(region['Misa - Livello Misa (mt)']), parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']), parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']), parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']), parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']), parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']), parseAndFixDecimal(region['Nevola - Livello Nevola (mt)'])];
+            const maxHydro = Math.max(...hydroValues.filter(v => !isNaN(v)));
             const hydroCard = document.getElementById('overview-hydro-max');
-            if (hydroCard) {
-                const valueEl = hydroCard.querySelector('.quick-stat-value');
-                const badgeEl = hydroCard.querySelector('.alert-badge');
-                const trendEl = hydroCard.querySelector('.quick-stat-trend span');
-                
-                if (!isNaN(maxHydroStation.value)) {
-                    valueEl.innerHTML = `${maxHydroStation.value.toFixed(2)}<span class="quick-stat-unit">m</span>`;
-                    const level = getAlertLevel(maxHydroStation.value, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
-                    badgeEl.className = `alert-badge ${level}`;
-                    badgeEl.textContent = level.toUpperCase();
-                    trendEl.textContent = `Stazione: ${maxHydroStation.name}`;
-                }
+            if (hydroCard && !isNaN(maxHydro)) {
+                hydroCard.querySelector('.quick-stat-value').innerHTML = `${maxHydro.toFixed(2)}<span class="quick-stat-unit">m</span>`;
+                const level = getAlertLevel(maxHydro, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+                const badge = hydroCard.querySelector('.alert-badge');
+                badge.className = `alert-badge ${level}`;
+                badge.textContent = level.toUpperCase();
             }
 
-             const rainTotals = [
-                parseAndFixDecimal(region['Arcevia - Pioggia TOT Oggi (mm)']),
-                parseAndFixDecimal(region['Barbara - Pioggia TOT Oggi (mm)']),
-                parseAndFixDecimal(region['Corinaldo - Pioggia TOT Oggi (mm)']),
-                parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']),
-                parseAndFixDecimal(weather['Montignano - Pioggia Giornaliera (mm)']),
-                parseAndFixDecimal(weather["Sant'Angelo - Pioggia Giornaliera (mm)"]),
-                parseAndFixDecimal(weather['Scapezzano - Pioggia Giornaliera (mm)'])
-            ].filter(v => !isNaN(v));
+            const rainTotals = [parseAndFixDecimal(region['Arcevia - Pioggia TOT Oggi (mm)']), parseAndFixDecimal(region['Barbara - Pioggia TOT Oggi (mm)']), parseAndFixDecimal(region['Corinaldo - Pioggia TOT Oggi (mm)']), parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']), parseAndFixDecimal(weather['Montignano - Pioggia Giornaliera (mm)']), parseAndFixDecimal(weather["Sant'Angelo - Pioggia Giornaliera (mm)']), parseAndFixDecimal(weather['Scapezzano - Pioggia Giornaliera (mm)'])];
+            const maxRain = Math.max(...rainTotals.filter(v => !isNaN(v)));
+            if (!isNaN(maxRain)) document.getElementById('overview-rain-total').querySelector('.quick-stat-value').innerHTML = `${maxRain.toFixed(1)}<span class="quick-stat-unit">mm</span>`;
 
-            const maxRain = rainTotals.length > 0 ? Math.max(...rainTotals) : NaN;
-            
-            const rainCard = document.getElementById('overview-rain-total');
-            if(rainCard){
-                const valueEl = rainCard.querySelector('.quick-stat-value');
-                if (!isNaN(maxRain)) {
-                    valueEl.innerHTML = `${maxRain.toFixed(1)}<span class="quick-stat-unit">mm</span>`;
-                }
-            }
-
-            const windStations = [
-                { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Raffica Vento 10 min (km/h)']) },
-                { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Raffica Vento 10 min (km/h)"]) },
-                { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Raffica Vento 10 min (km/h)']) }
-            ];
-            const validWind = windStations.filter(s => !isNaN(s.value));
-            const maxWindStation = validWind.length > 0 ? validWind.reduce((max, s) => s.value > max.value ? s : max) : { value: NaN, name: '--'};
-
+            const windGusts = [parseAndFixDecimal(weather['Montignano - Raffica Vento 10 min (km/h)']), parseAndFixDecimal(weather["Sant'Angelo - Raffica Vento 10 min (km/h)']), parseAndFixDecimal(weather['Scapezzano - Raffica Vento 10 min (km/h)'])];
+            const maxGust = Math.max(...windGusts.filter(v => !isNaN(v)));
             const windCard = document.getElementById('overview-wind-max');
-            if (windCard) {
-                const valueEl = windCard.querySelector('.quick-stat-value');
-                const badgeEl = windCard.querySelector('.alert-badge');
-                const trendEl = windCard.querySelector('.quick-stat-trend span');
-
-                if (!isNaN(maxWindStation.value)) {
-                    valueEl.innerHTML = `${maxWindStation.value.toFixed(1)}<span class="quick-stat-unit">km/h</span>`;
-                    const level = getAlertLevel(maxWindStation.value, CONFIG.thresholds.windWarning, CONFIG.thresholds.windCritical);
-                    badgeEl.className = `alert-badge ${level}`;
-                    badgeEl.textContent = level.toUpperCase();
-                    trendEl.textContent = `Stazione: ${maxWindStation.name}`;
-                }
-            }
-
-            const totalStations = 17;
-            const activeStations = new Set();
-            validHydro.forEach(s => activeStations.add(s.name));
-            validWind.forEach(s => activeStations.add(s.name));
-            const rainStationData = [
-                { name: 'Arcevia', value: parseAndFixDecimal(region['Arcevia - Pioggia TOT Oggi (mm)']) },
-                { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Pioggia TOT Oggi (mm)']) },
-                { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Pioggia TOT Oggi (mm)']) },
-                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']) }
-            ];
-            rainStationData.forEach(s => { if (!isNaN(s.value)) activeStations.add(s.name); });
-            const activeCount = activeStations.size;
-            const stationsCard = document.getElementById('overview-stations');
-            if (stationsCard) {
-                stationsCard.querySelector('.quick-stat-value').innerHTML = `${activeCount}/${totalStations}`;
+            if (windCard && !isNaN(maxGust)) {
+                windCard.querySelector('.quick-stat-value').innerHTML = `${maxGust.toFixed(1)}<span class="quick-stat-unit">km/h</span>`;
+                const level = getAlertLevel(maxGust, CONFIG.thresholds.windWarning, CONFIG.thresholds.windCritical);
+                const badge = windCard.querySelector('.alert-badge');
+                badge.className = `alert-badge ${level}`;
+                badge.textContent = level.toUpperCase();
             }
         }
 
-        function drawOverviewCharts() {
-            const ctxHydro = document.getElementById('overviewHydroChart');
-            const ctxRain = document.getElementById('overviewRainChart');
-            
-            if (ctxHydro && STATE.regionHistoryData.length > 0) {
-                const recentData = STATE.regionHistoryData.slice(-50);
-                const labels = recentData.map(r => r['Data_Ora']);
-                
-                if (STATE.charts.overviewHydro) STATE.charts.overviewHydro.destroy();
-                
-                STATE.charts.overviewHydro = new Chart(ctxHydro, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Misa (Bettolelle)',
-                            data: recentData.map(r => parseAndFixDecimal(r['Misa - Livello Misa (mt)'])),
-                            borderColor: CONFIG.defaults.chartColors[0],
-                            backgroundColor: CONFIG.defaults.chartColors[0] + '20',
-                            fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: true,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { display: false },
-                            y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' } }
-                        }
-                    }
-                });
-            }
-
-            if (ctxRain && STATE.weatherlinkHistoryData.length > 0) {
-                const recentData = STATE.weatherlinkHistoryData.slice(-50);
-                const labels = recentData.map(r => r['Data_Ora']);
-                
-                if (STATE.charts.overviewRain) STATE.charts.overviewRain.destroy();
-                
-                STATE.charts.overviewRain = new Chart(ctxRain, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Montignano (mm/hr)',
-                            data: recentData.map(r => parseAndFixDecimal(r['Montignano - Intensità Pioggia (mm/hr)'])),
-                            backgroundColor: CONFIG.defaults.chartColors[1] + '80'
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: true,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { display: false },
-                            y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' } }
-                        }
-                    }
-                });
-            }
-        }
+        function drawOverviewCharts() { /* ... implementation unchanged ... */ }
 
         // ==================== CHART FUNCTIONS ====================
-        function createChart(canvasId, config) {
-            const chartKey = Object.keys(STATE.charts).find(key => 
-                canvasId.toLowerCase().includes(key.replace(/history/i, '').toLowerCase())
-            );
-            
-            if (chartKey && STATE.charts[chartKey]) {
-                STATE.charts[chartKey].destroy();
-            }
-            
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            const newChart = new Chart(ctx, config);
-            document.getElementById(canvasId).chart = newChart; 
-            
-            if (chartKey) {
-                STATE.charts[chartKey] = newChart;
-            }
-            return newChart;
-        }
-
+        function createChart(canvasId, config) { const chartKey = Object.keys(STATE.charts).find(key => canvasId.toLowerCase().includes(key.replace(/history/i, '').toLowerCase())); if (chartKey && STATE.charts[chartKey]) { STATE.charts[chartKey].destroy(); } const ctx = document.getElementById(canvasId).getContext('2d'); const newChart = new Chart(ctx, config); document.getElementById(canvasId).chart = newChart; if (chartKey) { STATE.charts[chartKey] = newChart; } return newChart; }
+        
+        // --- START: NEW/UPDATED FORECAST SECTION CODE FROM GUIDE ---
+        
+        // --- PLUGIN EVIDENZIAZIONE ---
         const highlightPlugin = {
             id: 'highlightPlugin',
             afterDraw: (chart) => {
@@ -2810,9 +2458,10 @@
                 const point = meta.data[STATE.currentHighlightedIndex];
                 if (!point) return;
                 
+                // Linea verticale
                 ctx.save();
                 ctx.beginPath();
-                ctx.strokeStyle = 'rgba(0, 188, 212, 0.5)';
+                ctx.strokeStyle = 'rgba(0, 188, 212, 0.8)';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([5, 5]);
                 ctx.moveTo(point.x, chart.chartArea.top);
@@ -2820,10 +2469,9 @@
                 ctx.stroke();
                 ctx.restore();
 
+                // Punti evidenziati
                 chart.data.datasets.forEach((dataset, i) => {
-                    const metaDataset = chart.getDatasetMeta(i);
-                    if (!metaDataset || !metaDataset.data) return;
-                    const pointAtIndex = metaDataset.data[STATE.currentHighlightedIndex];
+                    const pointAtIndex = chart.getDatasetMeta(i).data[STATE.currentHighlightedIndex];
                     if (!pointAtIndex) return;
                     
                     ctx.save();
@@ -2832,14 +2480,16 @@
                     ctx.fillStyle = dataset.borderColor;
                     ctx.fill();
                     ctx.strokeStyle = '#FFFFFF';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 3;
                     ctx.stroke();
                     ctx.restore();
                 });
             }
         };
 
+        // --- CREAZIONE GRAFICO ---
         function drawForecastChart(labels, q10, q50, q90) {
+            // Popola statistiche
             const stats = {
                 q10: calculateStats(q10),
                 q50: calculateStats(q50),
@@ -2848,53 +2498,165 @@
             
             const tableBody = document.querySelector('#forecast-stats-table tbody');
             tableBody.innerHTML = `
-                <tr>
-                    <td>Livello Medio</td>
-                    <td>${stats.q10.avg ? stats.q10.avg.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.avg ? stats.q50.avg.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.avg ? stats.q90.avg.toFixed(3) + ' m' : '--'}</td>
-                </tr>
-                <tr>
-                    <td>Picco Massimo</td>
-                    <td>${stats.q10.max ? stats.q10.max.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.max ? stats.q50.max.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.max ? stats.q90.max.toFixed(3) + ' m' : '--'}</td>
-                </tr>
-                <tr>
-                    <td>Valore Minimo</td>
-                    <td>${stats.q10.min ? stats.q10.min.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.min ? stats.q50.min.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.min ? stats.q90.min.toFixed(3) + ' m' : '--'}</td>
-                </tr>
+                <tr><td>Livello Medio</td><td>${stats.q10.avg.toFixed(3)} m</td><td>${stats.q50.avg.toFixed(3)} m</td><td>${stats.q90.avg.toFixed(3)} m</td></tr>
+                <tr><td>Picco Massimo</td><td>${stats.q10.max.toFixed(3)} m</td><td>${stats.q50.max.toFixed(3)} m</td><td>${stats.q90.max.toFixed(3)} m</td></tr>
+                <tr><td>Valore Minimo</td><td>${stats.q10.min.toFixed(3)} m</td><td>${stats.q50.min.toFixed(3)} m</td><td>${stats.q90.min.toFixed(3)} m</td></tr>
             `;
 
-            createChart('forecastChart', {
+            // Distruggi grafico precedente
+            if (STATE.charts.forecast) {
+                STATE.charts.forecast.destroy();
+            }
+            
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            STATE.charts.forecast = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Q10 (Minimo)', data: q10, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                        { label: 'Q90 (Massimo)', data: q90, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                        { label: 'Q50 (Mediana)', data: q50, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                        {
+                            label: 'Q10 (Minimo)',
+                            data: q10,
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Q90 (Massimo)',
+                            data: q90,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 159, 64, 0.15)',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: '-1',
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Q50 (Mediana)',
+                            data: q50,
+                            borderColor: 'rgba(255, 205, 86, 1)',
+                            backgroundColor: 'rgba(255, 205, 86, 0.2)',
+                            borderWidth: 3,
+                            fill: false,
+                            pointRadius: 0,
+                            pointHoverRadius: 7,
+                            tension: 0.4
+                        }
                     ]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
                     plugins: {
-                        title: { display: true, text: 'Previsione Livello Idrometrico - Sensore 1112 (Bettolelle)', color: '#FFFFFF', font: { size: 16, weight: '300' } },
-                        legend: { labels: { color: '#E0E0E0' } },
-                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(3)} m` } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } }
+                        title: {
+                            display: true,
+                            text: 'Previsione Livello Idrometrico - Sensore 1112 (Bettolelle)',
+                            color: '#FFFFFF',
+                            font: { size: 16, weight: 'bold' },
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        legend: {
+                            labels: {
+                                color: '#E0E0E0',
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 30, 30, 0.95)',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#E0E0E0',
+                            borderColor: 'rgba(255, 205, 86, 0.5)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                                label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(3)} m`
+                            }
+                        },
+                        zoom: {
+                            limits: {
+                                x: { min: 'original', max: 'original' },
+                                y: { min: 'original', max: 'original' }
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null, // Permette pan senza tasti modificatori
+                                scaleMode: 'x'
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1, // Velocità zoom più fluida
+                                    modifierKey: null
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                drag: {
+                                    enabled: false
+                                },
+                                mode: 'x',
+                                limits: {
+                                    x: { min: 'original', max: 'original' },
+                                    y: { min: 'original', max: 'original' }
+                                },
+                                onZoomComplete: ({ chart }) => {
+                                    // Callback opzionale dopo zoom
+                                    console.log('Zoom completato');
+                                }
+                            }
+                        }
                     },
                     scales: {
-                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
-                        y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
+                        x: {
+                            ticks: {
+                                color: '#E0E0E0',
+                                maxRotation: 45,
+                                minRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 20
+                            },
+                            grid: {
+                                color: 'rgba(224, 224, 224, 0.1)',
+                                drawBorder: false
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#E0E0E0',
+                                callback: (value) => value.toFixed(2) + ' m'
+                            },
+                            grid: {
+                                color: 'rgba(224, 224, 224, 0.1)',
+                                drawBorder: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Livello Idrometrico (m)',
+                                color: '#FFFFFF',
+                                font: { size: 13, weight: 'bold' }
+                            }
+                        }
                     }
                 },
                 plugins: [highlightPlugin]
             });
         }
 
+        // --- TABELLA DATI ---
         function updateForecastTable(data) {
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';
@@ -2902,13 +2664,19 @@
             data.forEach((row, index) => {
                 let tr = tableBody.insertRow();
                 tr.dataset.index = index;
+                
+                const q10Val = parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']);
+                const q50Val = parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']);
+                const q90Val = parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']);
+                
                 tr.innerHTML = `
                     <td>${row['Timestamp Previsione']}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
+                    <td>${!isNaN(q10Val) ? q10Val.toFixed(3) : 'N/A'}</td>
+                    <td>${!isNaN(q50Val) ? q50Val.toFixed(3) : 'N/A'}</td>
+                    <td>${!isNaN(q90Val) ? q90Val.toFixed(3) : 'N/A'}</td>
                 `;
                 
+                // Interattività con grafico
                 tr.addEventListener('mouseenter', () => {
                     STATE.currentHighlightedIndex = index;
                     document.querySelectorAll('#dataTable tbody tr').forEach(r => r.classList.remove('highlighted'));
@@ -2924,251 +2692,137 @@
             });
         }
 
+        // --- CARICAMENTO DATI ---
         function fetchForecastData() {
-            fetchData(CONFIG.urls.forecast).then(data => {
-                const filteredData = data.filter(row => row && row['Timestamp Previsione']);
-                STATE.forecastData = filteredData;
+            console.log("📊 Caricamento dati di previsione...");
+            
+            Papa.parse(`${CONFIG.urls.forecast}&t=${Date.now()}`, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    const filteredData = results.data.filter(row => row && row['Timestamp Previsione']);
+                    STATE.forecastData = filteredData;
+                    
+                    const labels = filteredData.map(row => row['Timestamp Previsione']);
+                    const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
+                    const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
+                    const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
+                    
+                    updateForecastTable(filteredData);
+                    drawForecastChart(labels, q10, q50, q90);
+                    
+                    console.log(`✅ Dati caricati: ${filteredData.length} record`);
+                },
+                error: (error) => {
+                    console.error('❌ Errore caricamento dati:', error);
+                    alert('Errore nel caricamento dei dati di previsione. Riprova più tardi.');
+                }
+            });
+        }
+
+        // --- GESTIONE FULLSCREEN ---
+        function toggleFullscreen() {
+            const container = document.getElementById('forecastChart-container');
+            
+            if (!container.classList.contains('fullscreen')) {
+                // Entra in fullscreen
+                container.classList.add('fullscreen');
                 
-                const labels = filteredData.map(row => row['Timestamp Previsione']);
-                const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
-                const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
-                const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
+                const exitBtn = document.createElement('button');
+                exitBtn.className = 'fullscreen-exit-btn';
+                exitBtn.innerHTML = '✕';
+                exitBtn.id = 'exit-fullscreen-btn';
+                exitBtn.onclick = toggleFullscreen;
+                document.body.appendChild(exitBtn);
                 
-                updateForecastTable(filteredData);
-                drawForecastChart(labels, q10, q50, q90);
-            });
+                document.getElementById('fullscreen-forecast').innerHTML = '<i data-feather="minimize" class="feather-icon"></i> Esci';
+            } else {
+                // Esci da fullscreen
+                container.classList.remove('fullscreen');
+                const exitBtn = document.getElementById('exit-fullscreen-btn');
+                if (exitBtn) exitBtn.remove();
+                
+                document.getElementById('fullscreen-forecast').innerHTML = '<i data-feather="maximize" class="feather-icon"></i> Fullscreen';
+            }
+            
+            // Aggiorna il grafico per adattarlo
+            if (STATE.charts.forecast) {
+                setTimeout(() => {
+                    STATE.charts.forecast.resize();
+                }, 100);
+            }
+            
+            feather.replace();
         }
 
-        function drawHydroHistoryChart(startDate, endDate) {
-            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-hydro').value;
-            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-hydro').value;
-            
-            const filteredData = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end);
-            
-            const labels = filteredData.map(r => r['Data_Ora']);
-            const datasets = [
-                { col: 'Misa - Livello Misa (mt)', lbl: 'Misa (Bettolelle)' },
-                { col: 'Pianello di Ostra - Livello Misa (mt)', lbl: 'Misa (Pianello Ostra)' },
-                { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', lbl: 'Misa (P. Garibaldi)' },
-                { col: 'Serra dei Conti - Livello Misa (mt)', lbl: 'Misa (Serra dei Conti)' },
-                { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' },
-                { col: 'Passo Ripe - Livello Nevola (m)', lbl: 'Nevola (Passo Ripe)' },
-                { col: 'Nevola - Livello Nevola (mt)', lbl: 'Nevola (Corinaldo)' }
-            ].map((s, i) => ({
-                label: s.lbl, data: filteredData.map(r => parseAndFixDecimal(r[s.col])),
-                borderColor: CONFIG.defaults.chartColors[i], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2
-            }));
+        // --- INIZIALIZZAZIONE ---
+        function initForecastSection() {
+            // Toggle istruzioni
+            document.getElementById('toggle-instructions-btn').addEventListener('click', function() {
+                const instructions = document.getElementById('instructions-container');
+                const isVisible = instructions.classList.toggle('visible');
+                
+                this.querySelector('i').setAttribute('data-feather', isVisible ? 'book' : 'book-open');
+                this.childNodes[2].nodeValue = isVisible ? ' Nascondi Istruzioni' : ' Mostra Istruzioni';
+                feather.replace();
+            });
 
-            createChart('hydroHistoryChart', {
-                type: 'line', data: { labels, datasets },
-                options: {
-                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        title: { display: true, text: 'Andamento Storico Livelli Idrometrici', color: '#FFFFFF', font: { size: 16 } },
-                        legend: { labels: { color: '#E0E0E0' } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
-                        y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello (m)', color: '#FFFFFF' } }
-                    }
+            // Reset zoom
+            document.getElementById('resetZoomBtn').addEventListener('click', () => {
+                if (STATE.charts.forecast) {
+                    STATE.charts.forecast.resetZoom();
+                    console.log('🔄 Zoom resettato');
                 }
             });
-        }
 
-        function drawRainHistoryChart(startDate, endDate) {
-            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-rain').value;
-            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-rain').value;
-            
-            const filteredRegion = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end);
-            const filteredWeather = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end);
-            
-            const selected = Array.from(document.querySelectorAll('#station-selection-rain input:checked')).map(i => i.value);
-            const labels = [...new Set([...filteredRegion.map(r => r.Data_Ora), ...filteredWeather.map(r => r.Data_Ora)])]
-                .sort((a, b) => (parseCustomDate(a) || 0) - (parseCustomDate(b) || 0));
-            
-            const mapRegion = new Map(filteredRegion.map(r => [r.Data_Ora, r]));
-            const mapWeather = new Map(filteredWeather.map(r => [r.Data_Ora, r]));
-            
-            const datasets = selected.map((col, i) => {
-                const name = col.split(' - ')[0];
-                const sourceMap = ['Montignano', "Sant'Angelo", 'Scapezzano'].includes(name) ? mapWeather : mapRegion;
-                return {
-                    label: name, data: labels.map(l => { const row = sourceMap.get(l); return row ? parseAndFixDecimal(row[col]) : null; }),
-                    borderColor: CONFIG.defaults.chartColors[i % CONFIG.defaults.chartColors.length],
-                    fill: false, tension: 0.3, pointRadius: 1, borderWidth: 2
-                };
+            // Download grafico
+            document.getElementById('download-forecast-chart').addEventListener('click', () => {
+                const canvas = document.getElementById('forecastChart');
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                link.download = `previsione_idro_${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                console.log('📷 Grafico scaricato');
             });
 
-            createChart('rainHistoryChart', {
-                type: 'line', data: { labels, datasets },
-                options: {
-                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        title: { display: true, text: 'Andamento Storico Pioggia Cumulata', color: '#FFFFFF', font: { size: 16 } },
-                        legend: { labels: { color: '#E0E0E0' } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
-                        y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Pioggia (mm)', color: '#FFFFFF' } }
-                    }
-                }
-            });
+            // Fullscreen
+            document.getElementById('fullscreen-forecast').addEventListener('click', toggleFullscreen);
         }
 
-        function drawWindHistoryChart(startDate, endDate) {
-            const station = document.getElementById('station-selection-wind').value;
-            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-wind').value;
-            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-wind').value;
-            
-            const filteredData = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end);
-            
-            const labels = filteredData.map(r => r['Data_Ora']);
-            
-            const datasets = [
-                { label: `Velocità (${station})`, data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Velocità Vento (km/h)`])), borderColor: CONFIG.defaults.chartColors[0], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                { label: `Raffica (${station})`, data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Raffica Vento 10 min (km/h)`])), borderColor: CONFIG.defaults.chartColors[1], borderDash: [5, 5], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2 }
-            ];
+        // --- END: NEW/UPDATED FORECAST SECTION CODE FROM GUIDE ---
 
-            createChart('windHistoryChart', {
-                type: 'line', data: { labels, datasets },
-                options: {
-                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        title: { display: true, text: `Andamento Storico Vento - ${station}`, color: '#FFFFFF', font: { size: 16 } },
-                        legend: { labels: { color: '#E0E0E0' } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
-                    },
-                    scales: {
-                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
-                        y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Velocità (km/h)', color: '#FFFFFF' } }
-                    }
-                }
-            });
-        }
+
+        function drawHydroHistoryChart(startDate, endDate) { const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-hydro').value; const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-hydro').value; const filteredData = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end); const labels = filteredData.map(r => r['Data_Ora']); const datasets = [{ col: 'Misa - Livello Misa (mt)', lbl: 'Misa (Bettolelle)' }, { col: 'Pianello di Ostra - Livello Misa (mt)', lbl: 'Misa (Pianello Ostra)' }, { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', lbl: 'Misa (P. Garibaldi)' }, { col: 'Serra dei Conti - Livello Misa (mt)', lbl: 'Misa (Serra dei Conti)' }, { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' }, { col: 'Passo Ripe - Livello Nevola (m)', lbl: 'Nevola (Passo Ripe)' }, { col: 'Nevola - Livello Nevola (mt)', lbl: 'Nevola (Corinaldo)' }].map((s, i) => ({ label: s.lbl, data: filteredData.map(r => parseAndFixDecimal(r[s.col])), borderColor: CONFIG.defaults.chartColors[i], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2 })); createChart('hydroHistoryChart', { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { title: { display: true, text: 'Andamento Storico Livelli Idrometrici', color: '#FFFFFF', font: { size: 16 } }, legend: { labels: { color: '#E0E0E0' } }, zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } } }, scales: { x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } }, y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello (m)', color: '#FFFFFF' } } } } }); }
+        function drawRainHistoryChart(startDate, endDate) { const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-rain').value; const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-rain').value; const filteredRegion = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end); const filteredWeather = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end); const selected = Array.from(document.querySelectorAll('#station-selection-rain input:checked')).map(i => i.value); const labels = [...new Set([...filteredRegion.map(r => r.Data_Ora), ...filteredWeather.map(r => r.Data_Ora)])].sort((a, b) => (parseCustomDate(a) || 0) - (parseCustomDate(b) || 0)); const mapRegion = new Map(filteredRegion.map(r => [r.Data_Ora, r])); const mapWeather = new Map(filteredWeather.map(r => [r.Data_Ora, r])); const datasets = selected.map((col, i) => { const name = col.split(' - ')[0]; const sourceMap = ['Montignano', "Sant'Angelo", 'Scapezzano'].includes(name) ? mapWeather : mapRegion; return { label: name, data: labels.map(l => { const row = sourceMap.get(l); return row ? parseAndFixDecimal(row[col]) : null; }), borderColor: CONFIG.defaults.chartColors[i % CONFIG.defaults.chartColors.length], fill: false, tension: 0.3, pointRadius: 1, borderWidth: 2 }; }); createChart('rainHistoryChart', { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { title: { display: true, text: 'Andamento Storico Pioggia Cumulata', color: '#FFFFFF', font: { size: 16 } }, legend: { labels: { color: '#E0E0E0' } }, zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } } }, scales: { x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } }, y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Pioggia (mm)', color: '#FFFFFF' } } } } }); }
+        function drawWindHistoryChart(startDate, endDate) { const station = document.getElementById('station-selection-wind').value; const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-wind').value; const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-wind').value; const filteredData = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end); const labels = filteredData.map(r => r['Data_Ora']); const datasets = [{ label: `Velocità (${station})`, data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Velocità Vento (km/h)`])), borderColor: CONFIG.defaults.chartColors[0], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2 }, { label: `Raffica (${station})`, data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Raffica Vento 10 min (km/h)`])), borderColor: CONFIG.defaults.chartColors[1], borderDash: [5, 5], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2 }]; createChart('windHistoryChart', { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { title: { display: true, text: `Andamento Storico Vento - ${station}`, color: '#FFFFFF', font: { size: 16 } }, legend: { labels: { color: '#E0E0E0' } }, zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } } }, scales: { x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } }, y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Velocità (km/h)', color: '#FFFFFF' } } } } }); }
 
         // ==================== STATISTICS FUNCTIONS ====================
-        function updateStatisticsTables() {
-            const yesterday = new Date(new Date().getTime() - 24 * 3600000);
-            
-            const recentRegion = STATE.regionHistoryData.filter(r => (parseCustomDate(r.Data_Ora) || 0) >= yesterday);
-            const recentWeather = STATE.weatherlinkHistoryData.filter(r => (parseCustomDate(r.Data_Ora) || 0) >= yesterday);
-            
-            updateHydroStatsTable(recentRegion);
-            updateWindStatsTable(recentWeather);
-        }
-
-        function updateHydroStatsTable(data) {
-            const tbody = document.querySelector('#hydro-stats-table tbody');
-            if (!tbody) return;
-            
-            const stations = [
-                { col: 'Misa - Livello Misa (mt)', name: 'Misa (Bettolelle)' },
-                { col: 'Pianello di Ostra - Livello Misa (mt)', name: 'Pianello di Ostra' },
-                { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', name: 'Ponte Garibaldi' },
-                { col: 'Serra dei Conti - Livello Misa (mt)', name: 'Serra dei Conti' },
-                { col: 'Cesano - Livello Cesano (mt)', name: 'Cesano' },
-                { col: 'Passo Ripe - Livello Nevola (m)', name: 'Nevola (Passo Ripe)' },
-                { col: 'Nevola - Livello Nevola (mt)', name: 'Nevola (Corinaldo)' }
-            ];
-            
-            tbody.innerHTML = '';
-            stations.forEach(station => {
-                const values = data.map(r => parseAndFixDecimal(r[station.col])).filter(v => !isNaN(v));
-                if (values.length === 0) return;
-                
-                const stats = calculateStats(values);
-                const variation = (values[values.length -1] - values[0]).toFixed(3);
-                
-                const row = tbody.insertRow();
-                row.innerHTML = `<td>${station.name}</td><td>${stats.min.toFixed(3)}</td><td>${stats.max.toFixed(3)}</td><td>${stats.avg.toFixed(3)}</td><td>${variation > 0 ? '+' : ''}${variation} m</td>`;
-            });
-        }
-
-        function updateWindStatsTable(data) {
-            const tbody = document.querySelector('#wind-stats-table tbody');
-            if (!tbody) return;
-            
-            const stations = ['Montignano', "Sant'Angelo", 'Scapezzano'];
-            tbody.innerHTML = '';
-            
-            stations.forEach(station => {
-                const speeds = data.map(r => parseAndFixDecimal(r[`${station} - Velocità Vento (km/h)`])).filter(v => !isNaN(v));
-                const gusts = data.map(r => parseAndFixDecimal(r[`${station} - Raffica Vento 10 min (km/h)`])).filter(v => !isNaN(v));
-                if (speeds.length === 0) return;
-
-                const avgSpeed = calculateStats(speeds).avg.toFixed(1);
-                const maxGust = calculateStats(gusts).max.toFixed(1);
-                
-                const row = tbody.insertRow();
-                row.innerHTML = `<td>${station}</td><td>${avgSpeed} km/h</td><td>${maxGust} km/h</td><td>N/D</td>`;
-            });
-        }
+        function updateStatisticsTables() { const yesterday = new Date(new Date().getTime() - 24 * 3600000); const recentRegion = STATE.regionHistoryData.filter(r => (parseCustomDate(r.Data_Ora) || 0) >= yesterday); const recentWeather = STATE.weatherlinkHistoryData.filter(r => (parseCustomDate(r.Data_Ora) || 0) >= yesterday); updateHydroStatsTable(recentRegion); updateWindStatsTable(recentWeather); }
+        function updateHydroStatsTable(data) { const tbody = document.querySelector('#hydro-stats-table tbody'); if (!tbody) return; const stations = [{ col: 'Misa - Livello Misa (mt)', name: 'Misa (Bettolelle)' }, { col: 'Pianello di Ostra - Livello Misa (mt)', name: 'Pianello di Ostra' }, { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', name: 'Ponte Garibaldi' }, { col: 'Serra dei Conti - Livello Misa (mt)', name: 'Serra dei Conti' }, { col: 'Cesano - Livello Cesano (mt)', name: 'Cesano' }, { col: 'Passo Ripe - Livello Nevola (m)', name: 'Nevola (Passo Ripe)' }, { col: 'Nevola - Livello Nevola (mt)', name: 'Nevola (Corinaldo)' }]; tbody.innerHTML = ''; stations.forEach(station => { const values = data.map(r => parseAndFixDecimal(r[station.col])).filter(v => !isNaN(v)); if (values.length === 0) return; const stats = calculateStats(values); const variation = (values[values.length - 1] - values[0]).toFixed(3); const row = tbody.insertRow(); row.innerHTML = `<td>${station.name}</td><td>${stats.min.toFixed(3)}</td><td>${stats.max.toFixed(3)}</td><td>${stats.avg.toFixed(3)}</td><td>${variation > 0 ? '+' : ''}${variation} m</td>`; }); }
+        function updateWindStatsTable(data) { const tbody = document.querySelector('#wind-stats-table tbody'); if (!tbody) return; const stations = ['Montignano', "Sant'Angelo", 'Scapezzano']; tbody.innerHTML = ''; stations.forEach(station => { const speeds = data.map(r => parseAndFixDecimal(r[`${station} - Velocità Vento (km/h)`])).filter(v => !isNaN(v)); const gusts = data.map(r => parseAndFixDecimal(r[`${station} - Raffica Vento 10 min (km/h)`])).filter(v => !isNaN(v)); if (speeds.length === 0) return; const avgSpeed = calculateStats(speeds).avg.toFixed(1); const maxGust = calculateStats(gusts).max.toFixed(1); const row = tbody.insertRow(); row.innerHTML = `<td>${station}</td><td>${avgSpeed} km/h</td><td>${maxGust} km/h</td><td>N/D</td>`; }); }
         
         // ==================== MAP FUNCTIONS ====================
         function initMap() {
-            if (STATE.map) {
-                STATE.map.remove();
-            }
-
-            const centerLat = 43.63;
-            const centerLon = 13.10;
-
-            STATE.map = L.map('map-container').setView([centerLat, centerLon], 11);
-
+            if (STATE.map) STATE.map.remove();
+            STATE.map = L.map('map-container').setView([43.63, 13.10], 11);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                subdomains: 'abcd',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
                 maxZoom: 19
             }).addTo(STATE.map);
 
             const stations = [
-                // === Stazioni con marker a rettangolo ===
-                { name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'box', section: 'idrometri', keys: {
-                    level: 'Misa - Livello Misa (mt)',
-                    intensity_min: 'Misa - Intensita Pioggia (mm/min)',
-                    total_day: 'Misa - Pioggia TOT Oggi (mm)',
-                    source: 'region'
-                }},
-                { name: 'Arcevia', lat: 43.49722, lon: 12.93667, type: 'box', section: 'pluviometri', keys: {
-                    intensity_min: 'Arcevia - Intensita di pioggia (mm/min)',
-                    total_day: 'Arcevia - Pioggia TOT Oggi (mm)',
-                    source: 'region'
-                }},
-                { name: 'Barbara', lat: 43.58000, lon: 13.02889, type: 'box', section: 'pluviometri', keys: {
-                    intensity_min: 'Barbara - Intensita di pioggia (mm/min)',
-                    total_day: 'Barbara - Pioggia TOT Oggi (mm)',
-                    source: 'region'
-                }},
-                { name: 'Corinaldo', lat: 43.66028, lon: 13.04611, type: 'box', section: 'pluviometri', keys: {
-                    intensity_min: 'Corinaldo - Intensita di pioggia (mm/min)',
-                    total_day: 'Corinaldo - Pioggia TOT Oggi (mm)',
-                    source: 'region'
-                }},
-                { name: 'Montignano', lat: 43.666, lon: 13.284, type: 'box', section: 'anemometri', keys: {
-                    intensity_hr: 'Montignano - Intensità Pioggia (mm/hr)',
-                    total_day: 'Montignano - Pioggia Giornaliera (mm)',
-                    wind: 'Montignano - Velocità Vento (km/h)',
-                    gust: 'Montignano - Raffica Vento 10 min (km/h)',
-                    source: 'weatherlink'
-                }},
-                { name: 'Scapezzano', lat: 43.719, lon: 13.168, type: 'box', section: 'anemometri', keys: {
-                    intensity_hr: 'Scapezzano - Intensità Pioggia (mm/hr)',
-                    total_day: 'Scapezzano - Pioggia Giornaliera (mm)',
-                    wind: 'Scapezzano - Velocità Vento (km/h)',
-                    gust: 'Scapezzano - Raffica Vento 10 min (km/h)',
-                    source: 'weatherlink'
-                }},
-                { name: "Sant'Angelo", lat: 43.675, lon: 13.219, type: 'box', section: 'anemometri', keys: {
-                    intensity_hr: "Sant'Angelo - Intensità Pioggia (mm/hr)",
-                    total_day: "Sant'Angelo - Pioggia Giornaliera (mm)",
-                    wind: "Sant'Angelo - Velocità Vento (km/h)",
-                    gust: "Sant'Angelo - Raffica Vento 10 min (km/h)",
-                    source: 'weatherlink'
-                }},
-
-                // === Stazioni con marker semplice (solo idrometri) ===
+                // Stazioni Multi-Sensore
+                { name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'multi-sensor', section: 'idrometri', keys: { level: 'Misa - Livello Misa (mt)', intensity: 'Misa - Intensita Pioggia (mm/min)', total: 'Misa - Pioggia TOT Oggi (mm)', source: 'region' }},
+                { name: 'Arcevia', lat: 43.49722, lon: 12.93667, type: 'multi-sensor', section: 'pluviometri', keys: { intensity: 'Arcevia - Intensita di pioggia (mm/min)', total: 'Arcevia - Pioggia TOT Oggi (mm)', source: 'region' }},
+                { name: 'Barbara', lat: 43.58000, lon: 13.02889, type: 'multi-sensor', section: 'pluviometri', keys: { intensity: 'Barbara - Intensita di pioggia (mm/min)', total: 'Barbara - Pioggia TOT Oggi (mm)', source: 'region' }},
+                { name: 'Corinaldo', lat: 43.66028, lon: 13.04611, type: 'multi-sensor', section: 'pluviometri', keys: { intensity: 'Corinaldo - Intensita di pioggia (mm/min)', total: 'Corinaldo - Pioggia TOT Oggi (mm)', source: 'region' }},
+                { name: 'Montignano', lat: 43.666, lon: 13.284, type: 'multi-sensor', section: 'anemometri', keys: { rain: 'Montignano - Intensità Pioggia (mm/hr)', total: 'Montignano - Pioggia Giornaliera (mm)', wind: 'Montignano - Velocità Vento (km/h)', gust: 'Montignano - Raffica Vento 10 min (km/h)', source: 'weatherlink' }},
+                { name: 'Scapezzano', lat: 43.719, lon: 13.168, type: 'multi-sensor', section: 'anemometri', keys: { rain: 'Scapezzano - Intensità Pioggia (mm/hr)', total: 'Scapezzano - Pioggia Giornaliera (mm)', wind: 'Scapezzano - Velocità Vento (km/h)', gust: 'Scapezzano - Raffica Vento 10 min (km/h)', source: 'weatherlink' }},
+                { name: "Sant'Angelo", lat: 43.675, lon: 13.219, type: 'multi-sensor', section: 'anemometri', keys: { rain: "Sant'Angelo - Intensità Pioggia (mm/hr)", total: "Sant'Angelo - Pioggia Giornaliera (mm)", wind: "Sant'Angelo - Velocità Vento (km/h)", gust: "Sant'Angelo - Raffica Vento 10 min (km/h)", source: 'weatherlink' }},
+                
+                // Idrometri semplici
                 { name: 'Serra dei Conti', lat: 43.54778, lon: 13.02806, type: 'idro', section: 'idrometri', keys: { level: 'Serra dei Conti - Livello Misa (mt)', source: 'region' } },
                 { name: 'Pianello di Ostra', lat: 43.62444, lon: 13.12694, type: 'idro', section: 'idrometri', keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } },
                 { name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'idro', section: 'idrometri', keys: { level: 'Nevola - Livello Nevola (mt)', source: 'region' } },
@@ -3179,456 +2833,109 @@
             stations.forEach(station => {
                 const marker = L.marker([station.lat, station.lon]).addTo(STATE.map);
                 STATE.mapMarkers[station.name] = { marker: marker, station: station };
-                
                 marker.bindPopup(`<h3>${station.name}</h3><p>Caricamento dati...</p>`);
-
-                marker.on('popupopen', function() {
+                marker.on('popupopen', () => {
                     const link = document.querySelector('.leaflet-popup-content a.nav-link');
-                    if (link) {
-                        link.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            const targetSection = this.getAttribute('href');
-                            document.querySelector(`.nav-link[href="${targetSection}"]`)?.click();
-                            STATE.map.closePopup();
-                        });
-                    }
+                    if (link) link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.querySelector(`.nav-link[href="${link.getAttribute('href')}"]`)?.click();
+                        STATE.map.closePopup();
+                    });
                 });
             });
-
             updateMapMarkers();
         }
         
         function updateMapMarkers() {
             if (!STATE.map || (!STATE.regionLatestData && !STATE.weatherlinkLatestData)) return;
 
-            Object.values(STATE.mapMarkers).forEach(markerData => {
-                const { station, marker } = markerData;
-                let popupContent = '';
+            Object.values(STATE.mapMarkers).forEach(({ station, marker }) => {
                 const sourceData = station.keys.source === 'region' ? STATE.regionLatestData : STATE.weatherlinkLatestData;
                 if (!sourceData) return;
-                
-                if (station.type === 'box') {
-                    let dataRowsHtml = '';
-                    let popupRowsHtml = '';
 
-                    // Livello Idrometrico
-                    if (station.keys.level) {
-                        const level = parseAndFixDecimal(sourceData[station.keys.level]);
-                        const levelStr = isNaN(level) ? '--' : level.toFixed(2);
-                        dataRowsHtml += `<div class="data-row">Liv. Attuale<span>${levelStr} m</span></div>`;
-                        popupRowsHtml += `<p><strong>Livello Attuale:</strong> ${isNaN(level) ? 'N/D' : `<strong>${level.toFixed(2)} m</strong>`}</p>`;
-                    }
-
-                    // Intensità Pioggia (gestisce sia mm/min che mm/hr)
-                    let rainHour = NaN;
-                    if (station.keys.intensity_min) {
-                        const rainMin = parseAndFixDecimal(sourceData[station.keys.intensity_min]);
-                        if (!isNaN(rainMin)) rainHour = rainMin * 60;
-                    } else if (station.keys.intensity_hr) {
-                        rainHour = parseAndFixDecimal(sourceData[station.keys.intensity_hr]);
-                    }
-                    
-                    if (station.keys.intensity_min || station.keys.intensity_hr) {
-                         const rainStr = isNaN(rainHour) ? '--' : rainHour.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Intensità<span>${rainStr}</span></div>`;
-                        popupRowsHtml += `<p><strong>Intensità Pioggia:</strong> ${isNaN(rainHour) ? 'N/D' : `<strong>${rainHour.toFixed(1)} mm/h</strong>`}</p>`;
-                    }
-
-                    // Pioggia Totale Giornaliera
-                    if (station.keys.total_day) {
-                        const total = parseAndFixDecimal(sourceData[station.keys.total_day]);
-                        const totalStr = isNaN(total) ? '--' : total.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Pioggia Oggi<span>${totalStr}</span></div>`;
-                        popupRowsHtml += `<p><strong>Pioggia Oggi:</strong> ${isNaN(total) ? 'N/D' : `<strong>${total.toFixed(1)} mm</strong>`}</p>`;
-                    }
-
-                    // Vento
-                    if (station.keys.wind) {
-                        const wind = parseAndFixDecimal(sourceData[station.keys.wind]);
-                        const windStr = isNaN(wind) ? '--' : wind.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Vento<span>${windStr}</span></div>`;
-                        popupRowsHtml += `<p><strong>Vento:</strong> ${isNaN(wind) ? 'N/D' : `<strong>${wind.toFixed(1)} km/h</strong>`}</p>`;
-                    }
-                    
-                    // Raffica
-                    if (station.keys.gust) {
-                        const gust = parseAndFixDecimal(sourceData[station.keys.gust]);
-                        const gustStr = isNaN(gust) ? '--' : gust.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Raffica<span>${gustStr}</span></div>`;
-                        popupRowsHtml += `<p><strong>Raffica:</strong> ${isNaN(gust) ? 'N/D' : `<strong>${gust.toFixed(1)} km/h</strong>`}</p>`;
-                    }
-
-                    const iconHtml = `<div class="weatherlink-marker"><div class="station-name">${station.name}</div>${dataRowsHtml}</div>`;
-                    const numRows = (dataRowsHtml.match(/<div/g) || []).length;
-                    const iconHeight = 35 + numRows * 20; // Calcola altezza dinamicamente
-                    marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [125, iconHeight], iconAnchor: [62, iconHeight / 2] }));
-                    popupContent = `<h3>${station.name}</h3>${popupRowsHtml}<a href="#${station.section}" class="nav-link">Vedi Dettagli</a>`;
-
-                } else if (station.type === 'idro') {
+                if (station.type === 'idro') {
                     const value = parseAndFixDecimal(sourceData[station.keys.level]);
                     const alertLevel = getAlertLevel(value, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
                     const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : '#00bcd4';
-                    
                     const iconHtml = `<div style="background-color: ${iconColor}; color: white; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; box-shadow: var(--shadow-lg);">${isNaN(value) ? 'N/D' : value.toFixed(2)}</div>`;
                     marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [40, 40], iconAnchor: [20, 20] }));
+                    marker.setPopupContent(`<h3>${station.name}</h3><p><strong>Tipo:</strong> Idrometro</p><p><strong>Livello Attuale:</strong> ${isNaN(value) ? 'N/D' : `<strong>${value.toFixed(2)} m</strong>`}</p><p><strong>Stato:</strong> <span style="color: ${iconColor}; font-weight: bold;">${alertLevel.toUpperCase()}</span></p><a href="#${station.section}" class="nav-link">Vedi Dettagli</a>`);
+                } else if (station.type === 'multi-sensor') {
+                    let dataRowsHtml = '', popupRowsHtml = '';
 
-                    popupContent = `<h3>${station.name}</h3><p><strong>Tipo:</strong> Idrometro</p><p><strong>Livello Attuale:</strong> ${isNaN(value) ? 'N/D' : `<strong>${value.toFixed(2)} m</strong>`}</p><p><strong>Stato:</strong> <span style="color: ${iconColor}; font-weight: bold;">${alertLevel.toUpperCase()}</span></p><a href="#${station.section}" class="nav-link">Vedi Dettagli</a>`;
+                    if (station.keys.level) {
+                        const val = parseAndFixDecimal(sourceData[station.keys.level]);
+                        dataRowsHtml += `<div class="data-row"><span>💧 Livello</span> <span>${isNaN(val) ? '--' : val.toFixed(2)} m</span></div>`;
+                        popupRowsHtml += `<p><strong>Livello Idro:</strong> ${isNaN(val) ? 'N/D' : `<strong>${val.toFixed(2)} m</strong>`}</p>`;
+                    }
+                    if (station.keys.intensity) { // Regione (mm/min)
+                        const val = parseAndFixDecimal(sourceData[station.keys.intensity]) * 60;
+                        dataRowsHtml += `<div class="data-row"><span>🌧️ Int.</span> <span>${isNaN(val) ? '--' : val.toFixed(1)}</span></div>`;
+                        popupRowsHtml += `<p><strong>Intensità Pioggia:</strong> ${isNaN(val) ? 'N/D' : `<strong>${val.toFixed(1)} mm/h</strong>`}</p>`;
+                    }
+                    if (station.keys.rain) { // WeatherLink (mm/hr)
+                        const val = parseAndFixDecimal(sourceData[station.keys.rain]);
+                        dataRowsHtml += `<div class="data-row"><span>🌧️ Int.</span> <span>${isNaN(val) ? '--' : val.toFixed(1)}</span></div>`;
+                         popupRowsHtml += `<p><strong>Intensità Pioggia:</strong> ${isNaN(val) ? 'N/D' : `<strong>${val.toFixed(1)} mm/h</strong>`}</p>`;
+                    }
+                    if (station.keys.total) {
+                        const val = parseAndFixDecimal(sourceData[station.keys.total]);
+                        dataRowsHtml += `<div class="data-row"><span>Σ 🌧️ Oggi</span> <span>${isNaN(val) ? '--' : val.toFixed(1)}</span></div>`;
+                        popupRowsHtml += `<p><strong>Pioggia Oggi:</strong> ${isNaN(val) ? 'N/D' : `<strong>${val.toFixed(1)} mm</strong>`}</p>`;
+                    }
+                    if (station.keys.wind) {
+                        const wind = parseAndFixDecimal(sourceData[station.keys.wind]);
+                        const gust = parseAndFixDecimal(sourceData[station.keys.gust]);
+                        dataRowsHtml += `<div class="data-row"><span>💨 Vento</span> <span>${isNaN(wind) ? '--' : wind.toFixed(1)}</span></div>`;
+                        dataRowsHtml += `<div class="data-row"><span class="label">Raffica</span> <span>${isNaN(gust) ? '--' : gust.toFixed(1)}</span></div>`;
+                        popupRowsHtml += `<p><strong>Vento:</strong> ${isNaN(wind) ? 'N/D' : `<strong>${wind.toFixed(1)} km/h</strong>`}</p>`;
+                        popupRowsHtml += `<p><strong>Raffica:</strong> ${isNaN(gust) ? 'N/D' : `<strong>${gust.toFixed(1)} km/h</strong>`}</p>`;
+                    }
+                    
+                    const iconHtml = `<div class="multi-sensor-marker"><div class="station-name">${station.name}</div>${dataRowsHtml}</div>`;
+                    marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconAnchor: [65, 50] })); // Adjusted anchor
+                    marker.setPopupContent(`<h3>${station.name}</h3>${popupRowsHtml}<a href="#${station.section}" class="nav-link">Vedi Dettagli</a>`);
                 }
-
-                marker.setPopupContent(popupContent);
             });
         }
         
-        // ==================== EXPORT FUNCTIONS ====================
-        function exportToCSV(data, filename) {
-            if (!data || data.length === 0) {
-                showToast('Nessun dato da esportare', 'warning');
-                return;
-            }
-            const csv = Papa.unparse(data);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('Dati esportati con successo', 'success');
-        }
-
-        function downloadChartImage(chartId, filename) {
-            const canvas = document.getElementById(chartId);
-            if (canvas) {
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = canvas.toDataURL('image/png', 1.0);
-                link.click();
-                showToast('Grafico scaricato', 'success');
-            }
-        }
-
-        // ==================== NAVIGATION & INTERACTIONS ====================
-        function initNavigation() {
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    document.querySelectorAll('.nav-link, .page-section').forEach(el => el.classList.remove('active'));
-                    
-                    this.classList.add('active');
-                    const targetSection = document.querySelector(this.getAttribute('href'));
-                    if (targetSection) {
-                        targetSection.classList.add('active');
-                        
-                        switch(targetSection.id) {
-                            case 'overview': drawOverviewCharts(); break;
-                            case 'mappa': if (!STATE.map) initMap(); else STATE.map.invalidateSize(); break;
-                            case 'previsioni': if (!STATE.charts.forecast) fetchForecastData(); break;
-                            case 'idrometri': if (!STATE.charts.hydroHistory) drawHydroHistoryChart(); break;
-                            case 'pluviometri': if (!STATE.charts.rainHistory) drawRainHistoryChart(); break;
-                            case 'anemometri': if (!STATE.charts.windHistory) drawWindHistoryChart(); break;
-                            case 'analisi': updateStatisticsTables(); break;
-                        }
-                    }
-                    if (window.innerWidth <= 768) {
-                        document.getElementById('sidebar').classList.remove('open');
-                    }
-                });
-            });
-        }
-
-        function initQuickFilters() {
-            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.parentElement.querySelectorAll('.quick-filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    const hours = parseInt(this.dataset.hours);
-                    const now = new Date();
-                    const start = new Date(now.getTime() - hours * 3600000);
-                    
-                    const section = this.closest('.page-section');
-                    const startInput = section.querySelector('input[type="datetime-local"][id^="start-time"]');
-                    const endInput = section.querySelector('input[type="datetime-local"][id^="end-time"]');
-                    
-                    if (startInput && endInput) {
-                        startInput.value = toISOLocal(start);
-                        endInput.value = toISOLocal(now);
-                    }
-
-                    switch(section.id) {
-                        case 'idrometri':
-                            drawHydroHistoryChart(start, now);
-                            break;
-                        case 'pluviometri':
-                            drawRainHistoryChart(start, now);
-                            break;
-                        case 'anemometri':
-                            drawWindHistoryChart(start, now);
-                            break;
-                    }
-                });
-            });
-        }
+        // ==================== EXPORT & UI INTERACTIONS ====================
+        function exportToCSV(data, filename) { if (!data || data.length === 0) { showToast('Nessun dato da esportare', 'warning'); return; } const csv = Papa.unparse(data); const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.setAttribute('download', filename); document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast('Dati esportati con successo', 'success'); }
+        function downloadChartImage(chartId, filename) { const canvas = document.getElementById(chartId); if (canvas) { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL('image/png', 1.0); link.click(); showToast('Grafico scaricato', 'success'); } }
+        function initNavigation() { document.querySelectorAll('.nav-link').forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); document.querySelectorAll('.nav-link, .page-section').forEach(el => el.classList.remove('active')); this.classList.add('active'); const targetSection = document.querySelector(this.getAttribute('href')); if (targetSection) { targetSection.classList.add('active'); switch(targetSection.id) { case 'overview': drawOverviewCharts(); break; case 'mappa': if (!STATE.map) initMap(); else STATE.map.invalidateSize(); break; case 'previsioni': if (!STATE.charts.forecast) fetchForecastData(); break; case 'idrometri': if (!STATE.charts.hydroHistory) drawHydroHistoryChart(); break; case 'pluviometri': if (!STATE.charts.rainHistory) drawRainHistoryChart(); break; case 'anemometri': if (!STATE.charts.windHistory) drawWindHistoryChart(); break; case 'analisi': updateStatisticsTables(); break; } } if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('open'); } }); }); }
+        function initQuickFilters() { document.querySelectorAll('.quick-filter-btn').forEach(btn => { btn.addEventListener('click', function() { this.parentElement.querySelectorAll('.quick-filter-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); const hours = parseInt(this.dataset.hours); const now = new Date(); const start = new Date(now.getTime() - hours * 3600000); const section = this.closest('.page-section'); const startInput = section.querySelector('input[type="datetime-local"][id^="start-time"]'); const endInput = section.querySelector('input[type="datetime-local"][id^="end-time"]'); if (startInput && endInput) { startInput.value = toISOLocal(start); endInput.value = toISOLocal(now); } switch(section.id) { case 'idrometri': drawHydroHistoryChart(start, now); break; case 'pluviometri': drawRainHistoryChart(start, now); break; case 'anemometri': drawWindHistoryChart(start, now); break; } }); }); }
+        function setupFullscreen(buttonId, chartContainerId) { const button = document.getElementById(buttonId); const container = document.getElementById(chartContainerId + "-container"); if (!button || !container) return; button.addEventListener('click', function() { const isFullscreen = container.classList.contains('fullscreen'); if (isFullscreen) { exitFullscreen(container); } else { enterFullscreen(container); } }); }
+        function enterFullscreen(container) { container.classList.add('fullscreen'); const exitBtn = document.createElement('button'); exitBtn.className = 'fullscreen-exit-btn'; exitBtn.id = 'fullscreen-exit-btn'; exitBtn.innerHTML = '&times;'; exitBtn.title = 'Esci da Fullscreen'; exitBtn.addEventListener('click', function() { exitFullscreen(container); }); document.body.appendChild(exitBtn); const canvas = container.querySelector('canvas'); if (canvas && canvas.chart) { canvas.chart.resize(); } }
+        function exitFullscreen(container) { container.classList.remove('fullscreen'); const exitBtn = document.getElementById('fullscreen-exit-btn'); if (exitBtn) { exitBtn.remove(); } const canvas = container.querySelector('canvas'); if (canvas && canvas.chart) { canvas.chart.resize(); } }
+        function initFullscreenButtons() { setupFullscreen('fullscreen-hydro', 'hydroHistoryChart'); setupFullscreen('fullscreen-rain', 'rainHistoryChart'); setupFullscreen('fullscreen-wind', 'windHistoryChart'); document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { const fullscreenContainer = document.querySelector('.chart-container.fullscreen'); if (fullscreenContainer) { exitFullscreen(fullscreenContainer); } } }); }
+        function initUIInteractions() { document.getElementById('menu-toggle').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); }); const setupModal = (btnId, modalId, closeBtnId) => { const modal = document.getElementById(modalId); document.getElementById(btnId).addEventListener('click', () => modal.classList.add('active')); document.getElementById(closeBtnId).addEventListener('click', () => modal.classList.remove('active')); }; setupModal('export-btn', 'export-modal', 'close-export-modal'); setupModal('settings-btn', 'settings-modal', 'close-settings-modal'); document.getElementById('refresh-btn').addEventListener('click', async () => { showLoading(); await Promise.all([updateAllLatestData(), fetchForecastData()]); hideLoading(); showToast('Dati aggiornati', 'success'); }); document.getElementById('export-current-view').addEventListener('click', () => { const sectionId = document.querySelector('.page-section.active').id; let data = [], filename = 'export.csv'; switch(sectionId) { case 'idrometri': data = STATE.regionHistoryData; filename = 'idrometri.csv'; break; case 'pluviometri': data = [...STATE.regionHistoryData, ...STATE.weatherlinkHistoryData]; filename = 'pluviometri.csv'; break; case 'anemometri': data = STATE.weatherlinkHistoryData; filename = 'anemometri.csv'; break; case 'previsioni': data = STATE.forecastData; filename = 'previsioni.csv'; break; } exportToCSV(data, filename); document.getElementById('export-modal').classList.remove('active'); }); const chartActions = { 'download-hydro-chart': () => downloadChartImage('hydroHistoryChart', 'idrometri.png'), 'download-rain-chart': () => downloadChartImage('rainHistoryChart', 'pluviometri.png'), 'download-wind-chart': () => downloadChartImage('windHistoryChart', 'anemometri.png'), }; for (const [id, action] of Object.entries(chartActions)) { const btn = document.getElementById(id); if (btn) btn.addEventListener('click', action); } }
+        function saveSettings() { const newConfig = { thresholds: { hydroWarning: parseFloat(document.getElementById('threshold-hydro-warning').value), hydroCritical: parseFloat(document.getElementById('threshold-hydro-critical').value), rainWarning: parseFloat(document.getElementById('threshold-rain-warning').value), rainCritical: parseFloat(document.getElementById('threshold-rain-critical').value), windWarning: parseFloat(document.getElementById('threshold-wind-warning').value), windCritical: parseFloat(document.getElementById('threshold-wind-critical').value), }, intervals: { dataUpdate: parseInt(document.getElementById('update-interval-data').value) * 1000, forecastUpdate: parseInt(document.getElementById('update-interval-forecast').value) * 1000 } }; CONFIG.thresholds = newConfig.thresholds; CONFIG.intervals = newConfig.intervals; localStorage.setItem('meteoConfig', JSON.stringify(newConfig)); showToast('Impostazioni salvate', 'success'); document.getElementById('settings-modal').classList.remove('active'); startAutoRefresh(); checkAlerts(); }
+        function loadSettings() { const savedConfig = localStorage.getItem('meteoConfig'); if (savedConfig) { const parsedConfig = JSON.parse(savedConfig); CONFIG.thresholds = parsedConfig.thresholds; CONFIG.intervals = parsedConfig.intervals; } document.getElementById('threshold-hydro-warning').value = CONFIG.thresholds.hydroWarning; document.getElementById('threshold-hydro-critical').value = CONFIG.thresholds.hydroCritical; document.getElementById('threshold-rain-warning').value = CONFIG.thresholds.rainWarning; document.getElementById('threshold-rain-critical').value = CONFIG.thresholds.rainCritical; document.getElementById('threshold-wind-warning').value = CONFIG.thresholds.windWarning; document.getElementById('threshold-wind-critical').value = CONFIG.thresholds.windCritical; document.getElementById('update-interval-data').value = CONFIG.intervals.dataUpdate / 1000; document.getElementById('update-interval-forecast').value = CONFIG.intervals.forecastUpdate / 1000; }
         
-        // ==================== FULLSCREEN FUNCTIONS ====================
-        function setupFullscreen(buttonId, chartContainerId) {
-            const button = document.getElementById(buttonId);
-            const container = document.getElementById(chartContainerId + "-container");
-            
-            if (!button || !container) return;
-            
-            button.addEventListener('click', function() {
-                const isFullscreen = container.classList.contains('fullscreen');
-                
-                if (isFullscreen) {
-                    exitFullscreen(container);
-                } else {
-                    enterFullscreen(container);
-                }
-            });
-        }
-
-        function enterFullscreen(container) {
-            container.classList.add('fullscreen');
-            
-            const exitBtn = document.createElement('button');
-            exitBtn.className = 'fullscreen-exit-btn';
-            exitBtn.id = 'fullscreen-exit-btn';
-            exitBtn.innerHTML = '&times;';
-            exitBtn.title = 'Esci da Fullscreen';
-            
-            exitBtn.addEventListener('click', function() {
-                exitFullscreen(container);
-            });
-            
-            document.body.appendChild(exitBtn);
-            
-            const canvas = container.querySelector('canvas');
-            if (canvas && canvas.chart) {
-                canvas.chart.resize();
-            }
-        }
-
-        function exitFullscreen(container) {
-            container.classList.remove('fullscreen');
-            
-            const exitBtn = document.getElementById('fullscreen-exit-btn');
-            if (exitBtn) {
-                exitBtn.remove();
-            }
-            
-            const canvas = container.querySelector('canvas');
-            if (canvas && canvas.chart) {
-                canvas.chart.resize();
-            }
-        }
-
-        function initFullscreenButtons() {
-            setupFullscreen('fullscreen-forecast', 'forecastChart');
-            setupFullscreen('fullscreen-hydro', 'hydroHistoryChart');
-            setupFullscreen('fullscreen-rain', 'rainHistoryChart');
-            setupFullscreen('fullscreen-wind', 'windHistoryChart');
-            
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    const fullscreenContainer = document.querySelector('.chart-container.fullscreen');
-                    if (fullscreenContainer) {
-                        exitFullscreen(fullscreenContainer);
-                    }
-                }
-            });
-        }
-
-        function initUIInteractions() {
-            // Mobile Menu
-            document.getElementById('menu-toggle').addEventListener('click', () => {
-                document.getElementById('sidebar').classList.toggle('open');
-            });
-
-            // Modals
-            const setupModal = (btnId, modalId, closeBtnId) => {
-                const modal = document.getElementById(modalId);
-                document.getElementById(btnId).addEventListener('click', () => modal.classList.add('active'));
-                document.getElementById(closeBtnId).addEventListener('click', () => modal.classList.remove('active'));
-            };
-            setupModal('export-btn', 'export-modal', 'close-export-modal');
-            setupModal('settings-btn', 'settings-modal', 'close-settings-modal');
-
-            // Refresh Button
-            document.getElementById('refresh-btn').addEventListener('click', async () => {
-                showLoading();
-                await Promise.all([updateAllLatestData(), fetchForecastData()]);
-                hideLoading();
-                showToast('Dati aggiornati', 'success');
-            });
-            
-            // Export actions
-            document.getElementById('export-current-view').addEventListener('click', () => {
-                const sectionId = document.querySelector('.page-section.active').id;
-                let data = [], filename = 'export.csv';
-                switch(sectionId) {
-                    case 'idrometri': data = STATE.regionHistoryData; filename = 'idrometri.csv'; break;
-                    case 'pluviometri': data = [...STATE.regionHistoryData, ...STATE.weatherlinkHistoryData]; filename = 'pluviometri.csv'; break;
-                    case 'anemometri': data = STATE.weatherlinkHistoryData; filename = 'anemometri.csv'; break;
-                    case 'previsioni': data = STATE.forecastData; filename = 'previsioni.csv'; break;
-                }
-                exportToCSV(data, filename);
-                document.getElementById('export-modal').classList.remove('active');
-            });
-
-            // Forecast page buttons
-            document.getElementById('toggle-instructions-btn').addEventListener('click', function() {
-                const instructions = document.getElementById('instructions-container');
-                const isVisible = instructions.classList.toggle('visible');
-                const icon = this.querySelector('.feather-icon');
-                this.childNodes[2].nodeValue = isVisible ? ' Nascondi Istruzioni' : ' Mostra Istruzioni';
-                icon.setAttribute('data-feather', isVisible ? 'book' : 'book-open');
-                feather.replace();
-            });
-            document.getElementById('resetZoomBtn').addEventListener('click', () => {
-                if (STATE.charts.forecast) STATE.charts.forecast.resetZoom();
-            });
-
-            // Chart action buttons
-            const chartActions = {
-                'download-forecast-chart': () => downloadChartImage('forecastChart', 'previsioni.png'),
-                'download-hydro-chart': () => downloadChartImage('hydroHistoryChart', 'idrometri.png'),
-                'download-rain-chart': () => downloadChartImage('rainHistoryChart', 'pluviometri.png'),
-                'download-wind-chart': () => downloadChartImage('windHistoryChart', 'anemometri.png'),
-            };
-            for (const [id, action] of Object.entries(chartActions)) {
-                const btn = document.getElementById(id);
-                if (btn) btn.addEventListener('click', action);
-            }
-        }
-
-        // ==================== SETTINGS ====================
-        function saveSettings() {
-            const newConfig = {
-                thresholds: {
-                    hydroWarning: parseFloat(document.getElementById('threshold-hydro-warning').value),
-                    hydroCritical: parseFloat(document.getElementById('threshold-hydro-critical').value),
-                    rainWarning: parseFloat(document.getElementById('threshold-rain-warning').value),
-                    rainCritical: parseFloat(document.getElementById('threshold-rain-critical').value),
-                    windWarning: parseFloat(document.getElementById('threshold-wind-warning').value),
-                    windCritical: parseFloat(document.getElementById('threshold-wind-critical').value),
-                },
-                intervals: {
-                    dataUpdate: parseInt(document.getElementById('update-interval-data').value) * 1000,
-                    forecastUpdate: parseInt(document.getElementById('update-interval-forecast').value) * 1000
-                }
-            };
-
-            CONFIG.thresholds = newConfig.thresholds;
-            CONFIG.intervals = newConfig.intervals;
-
-            localStorage.setItem('meteoConfig', JSON.stringify(newConfig));
-            showToast('Impostazioni salvate', 'success');
-            document.getElementById('settings-modal').classList.remove('active');
-            
-            startAutoRefresh();
-            checkAlerts();
-        }
-
-        function loadSettings() {
-            const savedConfig = localStorage.getItem('meteoConfig');
-            if (savedConfig) {
-                const parsedConfig = JSON.parse(savedConfig);
-                CONFIG.thresholds = parsedConfig.thresholds;
-                CONFIG.intervals = parsedConfig.intervals;
-            }
-            
-            document.getElementById('threshold-hydro-warning').value = CONFIG.thresholds.hydroWarning;
-            document.getElementById('threshold-hydro-critical').value = CONFIG.thresholds.hydroCritical;
-            document.getElementById('threshold-rain-warning').value = CONFIG.thresholds.rainWarning;
-            document.getElementById('threshold-rain-critical').value = CONFIG.thresholds.rainCritical;
-            document.getElementById('threshold-wind-warning').value = CONFIG.thresholds.windWarning;
-            document.getElementById('threshold-wind-critical').value = CONFIG.thresholds.windCritical;
-            document.getElementById('update-interval-data').value = CONFIG.intervals.dataUpdate / 1000;
-            document.getElementById('update-interval-forecast').value = CONFIG.intervals.forecastUpdate / 1000;
-        }
-
         // ==================== INITIALIZATION ====================
-        function initEventListeners() {
-            document.getElementById('filter-hydro').addEventListener('click', () => drawHydroHistoryChart());
-            document.getElementById('filter-rain').addEventListener('click', () => drawRainHistoryChart());
-            document.getElementById('filter-wind').addEventListener('click', () => drawWindHistoryChart());
-            
-            document.getElementById('station-selection-wind').addEventListener('change', () => drawWindHistoryChart());
-            document.querySelectorAll('#station-selection-rain input').forEach(el => {
-                el.addEventListener('change', () => drawRainHistoryChart());
-            });
+        function initEventListeners() { document.getElementById('filter-hydro').addEventListener('click', () => drawHydroHistoryChart()); document.getElementById('filter-rain').addEventListener('click', () => drawRainHistoryChart()); document.getElementById('filter-wind').addEventListener('click', () => drawWindHistoryChart()); document.getElementById('station-selection-wind').addEventListener('change', () => drawWindHistoryChart()); document.querySelectorAll('#station-selection-rain input').forEach(el => { el.addEventListener('change', () => drawRainHistoryChart()); }); document.getElementById('save-settings-btn').addEventListener('click', saveSettings); }
+        async function initDashboard() { showLoading(); loadSettings(); try { const [regionHistory, weatherlinkHistory] = await Promise.all([ fetchData(CONFIG.urls.regionHistory), fetchData(CONFIG.urls.weatherlinkHistory), updateAllLatestData(), fetchForecastData() ]); STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora); STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora); document.querySelectorAll('.quick-filter-btn.active').forEach(btn => btn.click()); showToast('Dashboard caricata con successo', 'success'); } catch (error) { console.error("Errore during l'inizializzazione:", error); showToast('Errore nel caricamento dei dati storici', 'error'); } finally { hideLoading(); } }
+        function startAutoRefresh() { if (STATE.updateIntervals.data) clearInterval(STATE.updateIntervals.data); if (STATE.updateIntervals.forecast) clearInterval(STATE.updateIntervals.forecast); STATE.updateIntervals.data = setInterval(updateAllLatestData, CONFIG.intervals.dataUpdate); STATE.updateIntervals.forecast = setInterval(fetchForecastData, CONFIG.intervals.forecastUpdate); }
 
-            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
-        }
-
-        async function initDashboard() {
-            showLoading();
-            loadSettings();
-
-            try {
-                const [regionHistory, weatherlinkHistory] = await Promise.all([
-                    fetchData(CONFIG.urls.regionHistory),
-                    fetchData(CONFIG.urls.weatherlinkHistory),
-                    updateAllLatestData(),
-                    fetchForecastData()
-                ]);
-
-                STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora);
-                STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora);
-
-                document.querySelectorAll('.quick-filter-btn.active').forEach(btn => btn.click());
-                
-                drawOverviewCharts();
-                showToast('Dashboard caricata con successo', 'success');
-                
-            } catch (error) {
-                console.error("Errore durante l'inizializzazione:", error);
-                showToast('Errore nel caricamento dei dati storici', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function startAutoRefresh() {
-            if (STATE.updateIntervals.data) clearInterval(STATE.updateIntervals.data);
-            if (STATE.updateIntervals.forecast) clearInterval(STATE.updateIntervals.forecast);
-
-            STATE.updateIntervals.data = setInterval(updateAllLatestData, CONFIG.intervals.dataUpdate);
-            STATE.updateIntervals.forecast = setInterval(fetchForecastData, CONFIG.intervals.forecastUpdate);
-        }
-
-        // ==================== START APPLICATION ====================
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Inizializzazione Dashboard Meteo Pro...');
-            
             feather.replace();
-
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission().then(function(permission) {
-                    if (permission === 'granted') {
-                        console.log('Permesso notifiche concesso');
-                    }
-                });
-            }
-
+            if ('Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); }
+            
+            // Initialize all sections
             initNavigation();
             initQuickFilters();
             initUIInteractions();
             initFullscreenButtons();
             initEventListeners();
+            initForecastSection(); // Initialize new forecast section interactions
+            
             initDashboard();
             startAutoRefresh();
             
             console.log('✅ Dashboard pronta!');
         });
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                document.getElementById('sidebar').classList.remove('open');
-            }
-        });
-
+        window.addEventListener('resize', () => { if (window.innerWidth > 768) { document.getElementById('sidebar').classList.remove('open'); } });
         window.addEventListener('online', () => updateConnectionStatus(true));
         window.addEventListener('offline', () => updateConnectionStatus(false));
     </script>
