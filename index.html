@@ -1391,6 +1391,37 @@
             padding: 5px 10px;
             border-radius: 6px;
         }
+/* === LOGIN STYLES === */
+#login-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: var(--dark-bg);
+z-index: 10002;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: opacity 0.5s ease-out, visibility 0.5s;
+}
+.login-box {
+background: var(--medium-bg);
+padding: 40px;
+border-radius: 12px;
+box-shadow: var(--shadow-lg);
+text-align: center;
+border: 1px solid var(--border-color);
+width: 90%;
+max-width: 400px;
+}
+.login-box h2 { color: var(--primary-color); margin-bottom: 25px; }
+.login-box input { width: 100%; padding: 12px 15px; background: var(--light-bg); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1em; margin-bottom: 20px; }
+.login-box input:focus { outline: none; border-color: var(--primary-color); }
+.login-box button { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; transition: var(--transition); }
+.login-box button:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.login-box .error-message { color: var(--danger-color); margin-top: 15px; height: 20px; font-size: 0.9em; }
+.content-hidden { visibility: hidden; opacity: 0; transition: opacity 0.5s ease-in; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
@@ -1407,6 +1438,16 @@
         crossorigin=""></script>
 </head>
 <body>
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>Accesso Riservato</h2>
+            <p>Inserisci la password per continuare.</p>
+            <input type="password" id="password-input" placeholder="Password">
+            <button id="login-button">Accedi</button>
+            <p class="error-message" id="error-message"></p>
+        </div>
+    </div>
+<div id="app-container" class="content-hidden">
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="spinner"></div>
@@ -2133,6 +2174,60 @@
     </audio>
 
     <script>
+document.addEventListener('DOMContentLoaded', () => {
+const PWD_HASH = 'b8dffa399635231e7b7038b2a64d576374982ebb2b858fe721ee7f6f8ff697a9';
+
+const loginOverlay = document.getElementById('login-overlay');
+const passwordInput = document.getElementById('password-input');
+const loginButton = document.getElementById('login-button');
+const errorMessage = document.getElementById('error-message');
+const appContainer = document.getElementById('app-container');
+
+async function checkPassword() {
+const enteredPassword = passwordInput.value;
+if (!enteredPassword) { errorMessage.textContent = 'Inserisci una password.'; return; }
+
+loginButton.disabled = true;
+loginButton.textContent = 'Verifico...';
+
+try {
+const encoder = new TextEncoder();
+const data = encoder.encode(enteredPassword);
+const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+const hashArray = Array.from(new Uint8Array(hashBuffer));
+const enteredHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+if (enteredHash === PWD_HASH) {
+loginOverlay.style.opacity = '0';
+loginOverlay.style.visibility = 'hidden';
+setTimeout(() => {
+loginOverlay.remove();
+appContainer.classList.remove('content-hidden');
+// Chiamata alla funzione che avvia la dashboard
+initializeDashboard();
+}, 500);
+} else {
+errorMessage.textContent = 'Password non corretta. Riprova.';
+passwordInput.value = '';
+passwordInput.focus();
+loginButton.disabled = false;
+loginButton.textContent = 'Accedi';
+}
+} catch (e) {
+errorMessage.textContent = 'Errore durante la verifica.';
+loginButton.disabled = false;
+loginButton.textContent = 'Accedi';
+}
+}
+
+loginButton.addEventListener('click', checkPassword);
+passwordInput.addEventListener('keyup', (event) => {
+errorMessage.textContent = '';
+if (event.key === 'Enter') { checkPassword(); }
+});
+
+passwordInput.focus();
+});
         // ==================== CONFIGURATION ====================
         // Configurazione di base, può essere sovrascritta dalle impostazioni salvate
         let CONFIG = {
@@ -3646,7 +3741,11 @@
         }
 
         // ==================== START APPLICATION ====================
-        document.addEventListener('DOMContentLoaded', () => {
+        // La logica della dashboard deve essere dentro una funzione come questa
+        async function initializeDashboard() {
+            // Qui dentro va il codice di avvio della tua app
+            console.log('Accesso autorizzato. Avvio dashboard...');
+
             console.log('🚀 Inizializzazione Dashboard Meteo Pro...');
             
             feather.replace();
@@ -3668,7 +3767,7 @@
             startAutoRefresh();
             
             console.log('✅ Dashboard pronta!');
-        });
+        }
 
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768) {
@@ -3679,5 +3778,6 @@
         window.addEventListener('online', () => updateConnectionStatus(true));
         window.addEventListener('offline', () => updateConnectionStatus(false));
     </script>
+</div>
 </body>
 </html>
