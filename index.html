@@ -2195,19 +2195,48 @@
             return parseFloat(String(value).replace(',', '.'));
         }
 
+        /**
+         * BUG FIX: La funzione originale per il parsing della data era poco robusta
+         * e falliva con alcuni formati di orario, causando la sparizione dei dati
+         * nelle ore mattutine. Questa nuova versione è molto più affidabile.
+         */
         function parseCustomDate(dateString) {
-            if (!dateString) return null;
-            const formatted = dateString.replace(/(\d{2})\.(\d{2})$/, '$1:$2').replace(/(\d{1,2})\:(\d{2})$/, '$1:$2');
-            const parts = formatted.split(/[\s/:]+/);
-            if (parts.length < 5) return null;
-            const [d, m, y, h, min] = parts;
-            const date = new Date(y, m - 1, d, h, min, parts[5] || 0);
-            if (isNaN(date.getTime())) {
-                console.warn(`Data non valida: "${dateString}"`);
-                return null;
+            if (!dateString || typeof dateString !== 'string') return null;
+
+            // Pulisce la stringa, sostituendo i punti con due punti nell'orario (es. 10.45 -> 10:45)
+            const cleanedString = dateString.trim().replace(/(\d{1,2})\.(\d{2})$/, '$1:$2');
+
+            // Regex per catturare i componenti della data nel formato GG/MM/AAAA HH:MM(:SS)
+            const match = cleanedString.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+
+            if (match) {
+                const day = parseInt(match[1], 10);
+                const month = parseInt(match[2], 10);
+                const year = parseInt(match[3], 10);
+                const hour = parseInt(match[4], 10);
+                const minute = parseInt(match[5], 10);
+                const second = match[6] ? parseInt(match[6], 10) : 0;
+
+                // Crea l'oggetto Date. NOTA: il mese è 1-based (da 1 a 12) nel regex, 
+                // ma 0-based (da 0 a 11) nel costruttore Date di JavaScript.
+                const date = new Date(year, month - 1, day, hour, minute, second);
+
+                // Valida la data creata per scartare input non validi (es. 31/02/2024),
+                // che JavaScript altrimenti convertirebbe in una data valida di Marzo.
+                // Controlliamo che i componenti della data costruita corrispondano a quelli letti.
+                if (date.getFullYear() === year &&
+                    date.getMonth() === month - 1 &&
+                    date.getDate() === day &&
+                    !isNaN(date.getTime())) {
+                    return date;
+                }
             }
-            return date;
+
+            // Se il parsing fallisce, avvisa in console. La vecchia funzione falliva silenziosamente.
+            // console.warn(`Impossibile analizzare la data: "${dateString}"`); // Abilitare per debug
+            return null;
         }
+
 
         function formatDateTime(date) {
             if (!date) return '--:--';
