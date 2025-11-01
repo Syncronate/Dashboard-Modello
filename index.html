@@ -3215,7 +3215,7 @@
                     if (station.keys.level) {
                         const level = parseAndFixDecimal(sourceData[station.keys.level]);
                         const levelStr = isNaN(level) ? '--' : level.toFixed(2);
-                        dataRowsHtml += `<div class="data-row">Liv. Attuale 💧<span>${levelStr} m</span></div>`;
+                        dataRowsHtml += `<div class="data-row">Liv. Attuale<span>${levelStr} m</span></div>`;
                         popupRowsHtml += `<p><strong>Livello Attuale:</strong> ${isNaN(level) ? 'N/D' : `<strong>${level.toFixed(2)} m</strong>`}</p>`;
                     }
 
@@ -3230,7 +3230,7 @@
                     
                     if (station.keys.intensity_min || station.keys.intensity_hr) {
                          const rainStr = isNaN(rainHour) ? '--' : rainHour.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Intensità 🌧️<span>${rainStr}</span></div>`;
+                        dataRowsHtml += `<div class="data-row">Intensità<span>${rainStr}</span></div>`;
                         popupRowsHtml += `<p><strong>Intensità Pioggia:</strong> ${isNaN(rainHour) ? 'N/D' : `<strong>${rainHour.toFixed(1)} mm/h</strong>`}</p>`;
                     }
 
@@ -3238,7 +3238,7 @@
                     if (station.keys.total_day) {
                         const total = parseAndFixDecimal(sourceData[station.keys.total_day]);
                         const totalStr = isNaN(total) ? '--' : total.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Pioggia Oggi Σ<span>${totalStr}</span></div>`;
+                        dataRowsHtml += `<div class="data-row">Pioggia Oggi<span>${totalStr}</span></div>`;
                         popupRowsHtml += `<p><strong>Pioggia Oggi:</strong> ${isNaN(total) ? 'N/D' : `<strong>${total.toFixed(1)} mm</strong>`}</p>`;
                     }
 
@@ -3246,7 +3246,7 @@
                     if (station.keys.wind) {
                         const wind = parseAndFixDecimal(sourceData[station.keys.wind]);
                         const windStr = isNaN(wind) ? '--' : wind.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Vento 💨<span>${windStr}</span></div>`;
+                        dataRowsHtml += `<div class="data-row">Vento<span>${windStr}</span></div>`;
                         popupRowsHtml += `<p><strong>Vento:</strong> ${isNaN(wind) ? 'N/D' : `<strong>${wind.toFixed(1)} km/h</strong>`}</p>`;
                     }
                     
@@ -3254,7 +3254,7 @@
                     if (station.keys.gust) {
                         const gust = parseAndFixDecimal(sourceData[station.keys.gust]);
                         const gustStr = isNaN(gust) ? '--' : gust.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Raffica 🍃<span>${gustStr}</span></div>`;
+                        dataRowsHtml += `<div class="data-row">Raffica<span>${gustStr}</span></div>`;
                         popupRowsHtml += `<p><strong>Raffica:</strong> ${isNaN(gust) ? 'N/D' : `<strong>${gust.toFixed(1)} km/h</strong>`}</p>`;
                     }
 
