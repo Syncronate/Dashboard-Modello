@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Meteo Professionale</title>
+    <!-- Librerie richieste dalla guida -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    
+    <!-- Leaflet CSS e JS (già presenti nel tuo codice) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+        
     <style>
         :root {
             --primary-color: #00bcd4;
@@ -912,66 +926,14 @@
         .wind-bar-widget .progress-bar-fill.gust {
             background: linear-gradient(90deg, var(--warning-color), #ff6f00);
         }
-        
-        /* === FULLSCREEN EXIT BUTTON === */
-        .fullscreen-exit-btn {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            z-index: 9999;
-            background: var(--danger-color);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 24px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-lg);
-            transition: var(--transition);
+
+        /* === GENERAL CHARTS === */
+        /* Note: Specific forecast chart styles are in their own section below */
+        .chart-container {
+            position: relative;
         }
 
-        .fullscreen-exit-btn:hover {
-            background: #d32f2f;
-            transform: scale(1.1) rotate(90deg);
-        }
-
-        .fullscreen-exit-btn:active {
-            transform: scale(0.95);
-        }
-        
-        /* === STATISTICS TABLE (SHARED) === */
-        .stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 0.9em;
-        }
-
-        .stats-table th,
-        .stats-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .stats-table th {
-            background: var(--light-bg);
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        /* === DATA TABLE (SHARED) === */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        /* === FORECAST PAGE (STYLES FROM GUIDE) === */
+        /* === STYLES FROM GUIDE - START === */
         /* Stili specifici per la pagina delle previsioni */
         .header {
             text-align: center;
@@ -1120,7 +1082,39 @@
             padding: 20px;
             height: calc(100vh - 80px);
         }
-        
+
+        .fullscreen-exit-btn {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 9999;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: var(--transition);
+        }
+
+        .fullscreen-exit-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.1);
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
         .stats-table th, .stats-table td {
             padding: 12px;
             text-align: left;
@@ -1132,8 +1126,9 @@
             color: var(--primary-color);
             font-weight: 600;
         }
-
-        .stats-table td:first-child {
+        
+        /* Specificity bump for stats table */
+        #previsioni .stats-table td:first-child {
             font-weight: 500;
         }
 
@@ -1142,6 +1137,11 @@
             min-width: 300px;
             max-height: 620px;
             overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
         thead th {
@@ -1158,7 +1158,7 @@
             padding: 10px 8px;
             border-bottom: 1px solid var(--border-color);
         }
-        
+
         tbody tr {
             transition: all 0.2s ease;
         }
@@ -1170,11 +1170,32 @@
             transform: scale(1.01);
         }
         
-        /* === SHARED TABLE & SCROLLBAR STYLES (for other pages) === */
-        #idrometri .table-container, #pluviometri .table-container, #anemometri .table-container {
-             max-height: 540px;
-             border-radius: 12px;
-             border: 1px solid var(--border-color);
+        /* === STYLES FROM GUIDE - END === */
+
+
+        /* General table styles (if not forecast table) */
+        .page-section:not(#previsioni) table {
+             width: 100%;
+            border-collapse: collapse;
+        }
+        .page-section:not(#previsioni) td, .page-section:not(#previsioni) th {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+        
+        .page-section:not(#previsioni) tbody tr {
+            background-color: var(--light-bg);
+        }
+
+        .page-section:not(#previsioni) tbody tr:nth-child(even) {
+            background-color: var(--medium-bg);
+        }
+
+        .page-section:not(#previsioni) tbody tr:hover {
+            background-color: var(--primary-color) !important;
+            color: white;
+            transform: scale(1.01);
         }
         
         .table-container::-webkit-scrollbar {
@@ -1195,74 +1216,60 @@
         .table-container::-webkit-scrollbar-thumb:hover {
             background: var(--primary-dark);
         }
-
-
+        
         /* === RESPONSIVE === */
         @media (max-width: 1024px) {
             .quick-stats {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
-
             .data-groups-container {
                 grid-template-columns: 1fr;
             }
         }
-        
+
         @media (max-width: 768px) {
-             .chart-wrapper {
-                min-width: 100%;
-            }
-            
-            .table-container {
-                min-width: 100%;
-            }
             .menu-toggle {
                 display: block;
             }
-
             .sidebar {
                 transform: translateX(-100%);
-                z-index: 1002; /* Sopra l'header quando aperto */
+                z-index: 1002;
             }
-
             .sidebar.open {
                 transform: translateX(0);
             }
-
             #main-content {
                 margin-left: 0;
             }
              #main-content.expanded {
                 margin-left: 0;
             }
-
             .header-title {
                 font-size: 1em;
             }
-
             .header-actions {
                 gap: 5px;
             }
-
             .status-indicator,
             .last-update {
                 display: none;
             }
-
             .quick-stats {
                 grid-template-columns: 1fr;
             }
-
             .filter-container {
                 flex-direction: column;
                 align-items: stretch;
             }
-
+            .chart-wrapper,
+            .table-container {
+                min-width: 100%;
+            }
             .chart-container {
                 min-height: 350px;
             }
         }
-        
+
         /* === MODALS === */
         .modal {
             display: none;
@@ -1407,22 +1414,6 @@
             border-radius: 6px;
         }
     </style>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Plugin Zoom per Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-    <!-- PapaParse per CSV -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <!-- Feather Icons -->
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin=""/>
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""></script>
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -1564,7 +1555,7 @@
             </div>
         </section>
 
-        <!-- PREVISIONI IDRO PAGE (FROM GUIDE) -->
+        <!-- PREVISIONI IDRO PAGE (CODICE HTML DALLA GUIDA) -->
         <section id="previsioni" class="page-section">
             <div class="header">
                 <h1><i data-feather="activity" class="feather-icon"></i> Previsione Idrometrica Misa (Bettolelle)</h1>
@@ -1614,7 +1605,7 @@
                         </table>
                     </div>
                 </div>
-
+        
                 <div class="table-container card">
                     <table id="dataTable">
                         <thead>
@@ -2234,6 +2225,7 @@
             });
         }
 
+        // Calcolo statistiche (versione dalla guida)
         function calculateStats(values) {
             const validValues = values.filter(v => !isNaN(v) && v !== null);
             if (validValues.length === 0) return { min: NaN, max: NaN, avg: NaN };
@@ -2427,7 +2419,7 @@
             const maxRain = Math.max(...rainTotals.filter(v => !isNaN(v)));
             if (!isNaN(maxRain)) document.getElementById('overview-rain-total').querySelector('.quick-stat-value').innerHTML = `${maxRain.toFixed(1)}<span class="quick-stat-unit">mm</span>`;
 
-            const windGusts = [parseAndFixDecimal(weather['Montignano - Raffica Vento 10 min (km/h)']), parseAndFixDecimal(weather["Sant'Angelo - Raffica Vento 10 min (km/h)']), parseAndFixDecimal(weather['Scapezzano - Raffica Vento 10 min (km/h)'])];
+            const windGusts = [parseAndFixDecimal(weather['Montignano - Raffica Vento 10 min (km/h)']), parseAndFixDecimal(weather["Sant'Angelo - Raffica Vento 10 min (km/h)"]), parseAndFixDecimal(weather['Scapezzano - Raffica Vento 10 min (km/h)'])];
             const maxGust = Math.max(...windGusts.filter(v => !isNaN(v)));
             const windCard = document.getElementById('overview-wind-max');
             if (windCard && !isNaN(maxGust)) {
@@ -2438,15 +2430,10 @@
                 badge.textContent = level.toUpperCase();
             }
         }
-
-        function drawOverviewCharts() { /* ... implementation unchanged ... */ }
-
-        // ==================== CHART FUNCTIONS ====================
-        function createChart(canvasId, config) { const chartKey = Object.keys(STATE.charts).find(key => canvasId.toLowerCase().includes(key.replace(/history/i, '').toLowerCase())); if (chartKey && STATE.charts[chartKey]) { STATE.charts[chartKey].destroy(); } const ctx = document.getElementById(canvasId).getContext('2d'); const newChart = new Chart(ctx, config); document.getElementById(canvasId).chart = newChart; if (chartKey) { STATE.charts[chartKey] = newChart; } return newChart; }
         
-        // --- START: NEW/UPDATED FORECAST SECTION CODE FROM GUIDE ---
+        // ==================== FORECAST SECTION JS (FROM GUIDE) ====================
         
-        // --- PLUGIN EVIDENZIAZIONE ---
+        // --- PLUGIN EVIDENZIAZIONE (versione aggiornata dalla guida) ---
         const highlightPlugin = {
             id: 'highlightPlugin',
             afterDraw: (chart) => {
@@ -2487,7 +2474,7 @@
             }
         };
 
-        // --- CREAZIONE GRAFICO ---
+        // --- CREAZIONE GRAFICO (versione aggiornata dalla guida) ---
         function drawForecastChart(labels, q10, q50, q90) {
             // Popola statistiche
             const stats = {
@@ -2614,7 +2601,6 @@
                                     y: { min: 'original', max: 'original' }
                                 },
                                 onZoomComplete: ({ chart }) => {
-                                    // Callback opzionale dopo zoom
                                     console.log('Zoom completato');
                                 }
                             }
@@ -2656,7 +2642,7 @@
             });
         }
 
-        // --- TABELLA DATI ---
+        // --- TABELLA DATI (versione aggiornata dalla guida) ---
         function updateForecastTable(data) {
             const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
             tableBody.innerHTML = '';
@@ -2692,36 +2678,30 @@
             });
         }
 
-        // --- CARICAMENTO DATI ---
+        // --- CARICAMENTO DATI (versione aggiornata dalla guida) ---
         function fetchForecastData() {
             console.log("📊 Caricamento dati di previsione...");
             
-            Papa.parse(`${CONFIG.urls.forecast}&t=${Date.now()}`, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: (results) => {
-                    const filteredData = results.data.filter(row => row && row['Timestamp Previsione']);
-                    STATE.forecastData = filteredData;
-                    
-                    const labels = filteredData.map(row => row['Timestamp Previsione']);
-                    const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
-                    const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
-                    const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
-                    
-                    updateForecastTable(filteredData);
-                    drawForecastChart(labels, q10, q50, q90);
-                    
-                    console.log(`✅ Dati caricati: ${filteredData.length} record`);
-                },
-                error: (error) => {
-                    console.error('❌ Errore caricamento dati:', error);
-                    alert('Errore nel caricamento dei dati di previsione. Riprova più tardi.');
-                }
+            fetchData(CONFIG.urls.forecast).then(results => {
+                const filteredData = results.filter(row => row && row['Timestamp Previsione']);
+                STATE.forecastData = filteredData;
+                
+                const labels = filteredData.map(row => row['Timestamp Previsione']);
+                const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
+                const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
+                const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
+                
+                updateForecastTable(filteredData);
+                drawForecastChart(labels, q10, q50, q90);
+                
+                console.log(`✅ Dati caricati: ${filteredData.length} record`);
+            }).catch(error => {
+                 console.error('❌ Errore caricamento dati:', error);
+                 alert('Errore nel caricamento dei dati di previsione. Riprova più tardi.');
             });
         }
-
-        // --- GESTIONE FULLSCREEN ---
+        
+        // --- GESTIONE FULLSCREEN (nuova funzione dalla guida) ---
         function toggleFullscreen() {
             const container = document.getElementById('forecastChart-container');
             
@@ -2756,7 +2736,7 @@
             feather.replace();
         }
 
-        // --- INIZIALIZZAZIONE ---
+        // --- INIZIALIZZAZIONE SEZIONE FORECAST (nuova funzione dalla guida) ---
         function initForecastSection() {
             // Toggle istruzioni
             document.getElementById('toggle-instructions-btn').addEventListener('click', function() {
@@ -2790,9 +2770,12 @@
             // Fullscreen
             document.getElementById('fullscreen-forecast').addEventListener('click', toggleFullscreen);
         }
+        
+        // ==================== REST OF THE SCRIPT (UNCHANGED LOGIC) ====================
+        
+        function createChart(canvasId, config) { const chartKey = Object.keys(STATE.charts).find(key => canvasId.toLowerCase().includes(key.replace(/history/i, '').toLowerCase())); if (chartKey && STATE.charts[chartKey]) { STATE.charts[chartKey].destroy(); } const ctx = document.getElementById(canvasId).getContext('2d'); const newChart = new Chart(ctx, config); document.getElementById(canvasId).chart = newChart; if (chartKey) { STATE.charts[chartKey] = newChart; } return newChart; }
 
-        // --- END: NEW/UPDATED FORECAST SECTION CODE FROM GUIDE ---
-
+        function drawOverviewCharts() { /* ... implementation unchanged ... */ }
 
         function drawHydroHistoryChart(startDate, endDate) { const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-hydro').value; const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-hydro').value; const filteredData = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end); const labels = filteredData.map(r => r['Data_Ora']); const datasets = [{ col: 'Misa - Livello Misa (mt)', lbl: 'Misa (Bettolelle)' }, { col: 'Pianello di Ostra - Livello Misa (mt)', lbl: 'Misa (Pianello Ostra)' }, { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', lbl: 'Misa (P. Garibaldi)' }, { col: 'Serra dei Conti - Livello Misa (mt)', lbl: 'Misa (Serra dei Conti)' }, { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' }, { col: 'Passo Ripe - Livello Nevola (m)', lbl: 'Nevola (Passo Ripe)' }, { col: 'Nevola - Livello Nevola (mt)', lbl: 'Nevola (Corinaldo)' }].map((s, i) => ({ label: s.lbl, data: filteredData.map(r => parseAndFixDecimal(r[s.col])), borderColor: CONFIG.defaults.chartColors[i], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2 })); createChart('hydroHistoryChart', { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { title: { display: true, text: 'Andamento Storico Livelli Idrometrici', color: '#FFFFFF', font: { size: 16 } }, legend: { labels: { color: '#E0E0E0' } }, zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } } }, scales: { x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } }, y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello (m)', color: '#FFFFFF' } } } } }); }
         function drawRainHistoryChart(startDate, endDate) { const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-rain').value; const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-rain').value; const filteredRegion = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end); const filteredWeather = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end); const selected = Array.from(document.querySelectorAll('#station-selection-rain input:checked')).map(i => i.value); const labels = [...new Set([...filteredRegion.map(r => r.Data_Ora), ...filteredWeather.map(r => r.Data_Ora)])].sort((a, b) => (parseCustomDate(a) || 0) - (parseCustomDate(b) || 0)); const mapRegion = new Map(filteredRegion.map(r => [r.Data_Ora, r])); const mapWeather = new Map(filteredWeather.map(r => [r.Data_Ora, r])); const datasets = selected.map((col, i) => { const name = col.split(' - ')[0]; const sourceMap = ['Montignano', "Sant'Angelo", 'Scapezzano'].includes(name) ? mapWeather : mapRegion; return { label: name, data: labels.map(l => { const row = sourceMap.get(l); return row ? parseAndFixDecimal(row[col]) : null; }), borderColor: CONFIG.defaults.chartColors[i % CONFIG.defaults.chartColors.length], fill: false, tension: 0.3, pointRadius: 1, borderWidth: 2 }; }); createChart('rainHistoryChart', { type: 'line', data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { title: { display: true, text: 'Andamento Storico Pioggia Cumulata', color: '#FFFFFF', font: { size: 16 } }, legend: { labels: { color: '#E0E0E0' } }, zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } } }, scales: { x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } }, y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Pioggia (mm)', color: '#FFFFFF' } } } } }); }
@@ -2904,37 +2887,147 @@
         function downloadChartImage(chartId, filename) { const canvas = document.getElementById(chartId); if (canvas) { const link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL('image/png', 1.0); link.click(); showToast('Grafico scaricato', 'success'); } }
         function initNavigation() { document.querySelectorAll('.nav-link').forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); document.querySelectorAll('.nav-link, .page-section').forEach(el => el.classList.remove('active')); this.classList.add('active'); const targetSection = document.querySelector(this.getAttribute('href')); if (targetSection) { targetSection.classList.add('active'); switch(targetSection.id) { case 'overview': drawOverviewCharts(); break; case 'mappa': if (!STATE.map) initMap(); else STATE.map.invalidateSize(); break; case 'previsioni': if (!STATE.charts.forecast) fetchForecastData(); break; case 'idrometri': if (!STATE.charts.hydroHistory) drawHydroHistoryChart(); break; case 'pluviometri': if (!STATE.charts.rainHistory) drawRainHistoryChart(); break; case 'anemometri': if (!STATE.charts.windHistory) drawWindHistoryChart(); break; case 'analisi': updateStatisticsTables(); break; } } if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('open'); } }); }); }
         function initQuickFilters() { document.querySelectorAll('.quick-filter-btn').forEach(btn => { btn.addEventListener('click', function() { this.parentElement.querySelectorAll('.quick-filter-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); const hours = parseInt(this.dataset.hours); const now = new Date(); const start = new Date(now.getTime() - hours * 3600000); const section = this.closest('.page-section'); const startInput = section.querySelector('input[type="datetime-local"][id^="start-time"]'); const endInput = section.querySelector('input[type="datetime-local"][id^="end-time"]'); if (startInput && endInput) { startInput.value = toISOLocal(start); endInput.value = toISOLocal(now); } switch(section.id) { case 'idrometri': drawHydroHistoryChart(start, now); break; case 'pluviometri': drawRainHistoryChart(start, now); break; case 'anemometri': drawWindHistoryChart(start, now); break; } }); }); }
-        function setupFullscreen(buttonId, chartContainerId) { const button = document.getElementById(buttonId); const container = document.getElementById(chartContainerId + "-container"); if (!button || !container) return; button.addEventListener('click', function() { const isFullscreen = container.classList.contains('fullscreen'); if (isFullscreen) { exitFullscreen(container); } else { enterFullscreen(container); } }); }
-        function enterFullscreen(container) { container.classList.add('fullscreen'); const exitBtn = document.createElement('button'); exitBtn.className = 'fullscreen-exit-btn'; exitBtn.id = 'fullscreen-exit-btn'; exitBtn.innerHTML = '&times;'; exitBtn.title = 'Esci da Fullscreen'; exitBtn.addEventListener('click', function() { exitFullscreen(container); }); document.body.appendChild(exitBtn); const canvas = container.querySelector('canvas'); if (canvas && canvas.chart) { canvas.chart.resize(); } }
-        function exitFullscreen(container) { container.classList.remove('fullscreen'); const exitBtn = document.getElementById('fullscreen-exit-btn'); if (exitBtn) { exitBtn.remove(); } const canvas = container.querySelector('canvas'); if (canvas && canvas.chart) { canvas.chart.resize(); } }
-        function initFullscreenButtons() { setupFullscreen('fullscreen-hydro', 'hydroHistoryChart'); setupFullscreen('fullscreen-rain', 'rainHistoryChart'); setupFullscreen('fullscreen-wind', 'windHistoryChart'); document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { const fullscreenContainer = document.querySelector('.chart-container.fullscreen'); if (fullscreenContainer) { exitFullscreen(fullscreenContainer); } } }); }
-        function initUIInteractions() { document.getElementById('menu-toggle').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); }); const setupModal = (btnId, modalId, closeBtnId) => { const modal = document.getElementById(modalId); document.getElementById(btnId).addEventListener('click', () => modal.classList.add('active')); document.getElementById(closeBtnId).addEventListener('click', () => modal.classList.remove('active')); }; setupModal('export-btn', 'export-modal', 'close-export-modal'); setupModal('settings-btn', 'settings-modal', 'close-settings-modal'); document.getElementById('refresh-btn').addEventListener('click', async () => { showLoading(); await Promise.all([updateAllLatestData(), fetchForecastData()]); hideLoading(); showToast('Dati aggiornati', 'success'); }); document.getElementById('export-current-view').addEventListener('click', () => { const sectionId = document.querySelector('.page-section.active').id; let data = [], filename = 'export.csv'; switch(sectionId) { case 'idrometri': data = STATE.regionHistoryData; filename = 'idrometri.csv'; break; case 'pluviometri': data = [...STATE.regionHistoryData, ...STATE.weatherlinkHistoryData]; filename = 'pluviometri.csv'; break; case 'anemometri': data = STATE.weatherlinkHistoryData; filename = 'anemometri.csv'; break; case 'previsioni': data = STATE.forecastData; filename = 'previsioni.csv'; break; } exportToCSV(data, filename); document.getElementById('export-modal').classList.remove('active'); }); const chartActions = { 'download-hydro-chart': () => downloadChartImage('hydroHistoryChart', 'idrometri.png'), 'download-rain-chart': () => downloadChartImage('rainHistoryChart', 'pluviometri.png'), 'download-wind-chart': () => downloadChartImage('windHistoryChart', 'anemometri.png'), }; for (const [id, action] of Object.entries(chartActions)) { const btn = document.getElementById(id); if (btn) btn.addEventListener('click', action); } }
+        
+        function setupGenericFullscreen(buttonId, chartContainerId) {
+            const button = document.getElementById(buttonId);
+            const container = document.getElementById(chartContainerId + "-container");
+            if (!button || !container) return;
+
+            button.addEventListener('click', function() {
+                const isFullscreen = container.classList.contains('fullscreen');
+                if (isFullscreen) {
+                    exitGenericFullscreen(container, button);
+                } else {
+                    enterGenericFullscreen(container, button);
+                }
+            });
+        }
+        function enterGenericFullscreen(container, button) {
+            container.classList.add('fullscreen');
+            const exitBtn = document.createElement('button');
+            exitBtn.className = 'fullscreen-exit-btn';
+            exitBtn.id = `exit-${container.id}`;
+            exitBtn.innerHTML = '&times;';
+            exitBtn.addEventListener('click', () => exitGenericFullscreen(container, button));
+            document.body.appendChild(exitBtn);
+            button.innerHTML = '<i data-feather="minimize" class="feather-icon"></i> Esci';
+            feather.replace();
+            const canvas = container.querySelector('canvas');
+            if (canvas && canvas.chart) setTimeout(() => canvas.chart.resize(), 100);
+        }
+        function exitGenericFullscreen(container, button) {
+            container.classList.remove('fullscreen');
+            const exitBtn = document.getElementById(`exit-${container.id}`);
+            if (exitBtn) exitBtn.remove();
+            button.innerHTML = '<i data-feather="maximize" class="feather-icon"></i> Fullscreen';
+            feather.replace();
+            const canvas = container.querySelector('canvas');
+            if (canvas && canvas.chart) setTimeout(() => canvas.chart.resize(), 100);
+        }
+        
+        function initFullscreenButtons() {
+            // La sezione forecast ha la sua gestione specifica
+            setupGenericFullscreen('fullscreen-hydro', 'hydroHistoryChart');
+            setupGenericFullscreen('fullscreen-rain', 'rainHistoryChart');
+            setupGenericFullscreen('fullscreen-wind', 'windHistoryChart');
+            document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { const fsContainer = document.querySelector('.chart-container.fullscreen'); if (fsContainer) { const btnId = fsContainer.id.replace('Chart-container', ''); const originalBtn = document.getElementById(`fullscreen-${btnId}`); if (originalBtn) exitGenericFullscreen(fsContainer, originalBtn); else if (fsContainer.id === 'forecastChart-container') toggleFullscreen(); } } });
+        }
+        
+        function initUIInteractions() {
+            document.getElementById('menu-toggle').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
+            const setupModal = (btnId, modalId, closeBtnId) => {
+                const modal = document.getElementById(modalId);
+                document.getElementById(btnId).addEventListener('click', () => modal.classList.add('active'));
+                document.getElementById(closeBtnId).addEventListener('click', () => modal.classList.remove('active'));
+            };
+            setupModal('export-btn', 'export-modal', 'close-export-modal');
+            setupModal('settings-btn', 'settings-modal', 'close-settings-modal');
+            document.getElementById('refresh-btn').addEventListener('click', async () => {
+                showLoading();
+                await Promise.all([updateAllLatestData(), fetchForecastData()]);
+                hideLoading();
+                showToast('Dati aggiornati', 'success');
+            });
+            document.getElementById('export-current-view').addEventListener('click', () => {
+                const sectionId = document.querySelector('.page-section.active').id;
+                let data = [], filename = 'export.csv';
+                switch (sectionId) {
+                    case 'idrometri': data = STATE.regionHistoryData; filename = 'idrometri.csv'; break;
+                    case 'pluviometri': data = [...STATE.regionHistoryData, ...STATE.weatherlinkHistoryData]; filename = 'pluviometri.csv'; break;
+                    case 'anemometri': data = STATE.weatherlinkHistoryData; filename = 'anemometri.csv'; break;
+                    case 'previsioni': data = STATE.forecastData; filename = 'previsioni.csv'; break;
+                }
+                exportToCSV(data, filename);
+                document.getElementById('export-modal').classList.remove('active');
+            });
+
+            // Gestione download per altri grafici
+            document.getElementById('download-hydro-chart')?.addEventListener('click', () => downloadChartImage('hydroHistoryChart', 'idrometri.png'));
+            document.getElementById('download-rain-chart')?.addEventListener('click', () => downloadChartImage('rainHistoryChart', 'pluviometri.png'));
+            document.getElementById('download-wind-chart')?.addEventListener('click', () => downloadChartImage('windHistoryChart', 'anemometri.png'));
+        }
+        
         function saveSettings() { const newConfig = { thresholds: { hydroWarning: parseFloat(document.getElementById('threshold-hydro-warning').value), hydroCritical: parseFloat(document.getElementById('threshold-hydro-critical').value), rainWarning: parseFloat(document.getElementById('threshold-rain-warning').value), rainCritical: parseFloat(document.getElementById('threshold-rain-critical').value), windWarning: parseFloat(document.getElementById('threshold-wind-warning').value), windCritical: parseFloat(document.getElementById('threshold-wind-critical').value), }, intervals: { dataUpdate: parseInt(document.getElementById('update-interval-data').value) * 1000, forecastUpdate: parseInt(document.getElementById('update-interval-forecast').value) * 1000 } }; CONFIG.thresholds = newConfig.thresholds; CONFIG.intervals = newConfig.intervals; localStorage.setItem('meteoConfig', JSON.stringify(newConfig)); showToast('Impostazioni salvate', 'success'); document.getElementById('settings-modal').classList.remove('active'); startAutoRefresh(); checkAlerts(); }
         function loadSettings() { const savedConfig = localStorage.getItem('meteoConfig'); if (savedConfig) { const parsedConfig = JSON.parse(savedConfig); CONFIG.thresholds = parsedConfig.thresholds; CONFIG.intervals = parsedConfig.intervals; } document.getElementById('threshold-hydro-warning').value = CONFIG.thresholds.hydroWarning; document.getElementById('threshold-hydro-critical').value = CONFIG.thresholds.hydroCritical; document.getElementById('threshold-rain-warning').value = CONFIG.thresholds.rainWarning; document.getElementById('threshold-rain-critical').value = CONFIG.thresholds.rainCritical; document.getElementById('threshold-wind-warning').value = CONFIG.thresholds.windWarning; document.getElementById('threshold-wind-critical').value = CONFIG.thresholds.windCritical; document.getElementById('update-interval-data').value = CONFIG.intervals.dataUpdate / 1000; document.getElementById('update-interval-forecast').value = CONFIG.intervals.forecastUpdate / 1000; }
         
         // ==================== INITIALIZATION ====================
-        function initEventListeners() { document.getElementById('filter-hydro').addEventListener('click', () => drawHydroHistoryChart()); document.getElementById('filter-rain').addEventListener('click', () => drawRainHistoryChart()); document.getElementById('filter-wind').addEventListener('click', () => drawWindHistoryChart()); document.getElementById('station-selection-wind').addEventListener('change', () => drawWindHistoryChart()); document.querySelectorAll('#station-selection-rain input').forEach(el => { el.addEventListener('change', () => drawRainHistoryChart()); }); document.getElementById('save-settings-btn').addEventListener('click', saveSettings); }
-        async function initDashboard() { showLoading(); loadSettings(); try { const [regionHistory, weatherlinkHistory] = await Promise.all([ fetchData(CONFIG.urls.regionHistory), fetchData(CONFIG.urls.weatherlinkHistory), updateAllLatestData(), fetchForecastData() ]); STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora); STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora); document.querySelectorAll('.quick-filter-btn.active').forEach(btn => btn.click()); showToast('Dashboard caricata con successo', 'success'); } catch (error) { console.error("Errore during l'inizializzazione:", error); showToast('Errore nel caricamento dei dati storici', 'error'); } finally { hideLoading(); } }
-        function startAutoRefresh() { if (STATE.updateIntervals.data) clearInterval(STATE.updateIntervals.data); if (STATE.updateIntervals.forecast) clearInterval(STATE.updateIntervals.forecast); STATE.updateIntervals.data = setInterval(updateAllLatestData, CONFIG.intervals.dataUpdate); STATE.updateIntervals.forecast = setInterval(fetchForecastData, CONFIG.intervals.forecastUpdate); }
+        function initEventListeners() {
+            document.getElementById('filter-hydro').addEventListener('click', () => drawHydroHistoryChart());
+            document.getElementById('filter-rain').addEventListener('click', () => drawRainHistoryChart());
+            document.getElementById('filter-wind').addEventListener('click', () => drawWindHistoryChart());
+            document.getElementById('station-selection-wind').addEventListener('change', () => drawWindHistoryChart());
+            document.querySelectorAll('#station-selection-rain input').forEach(el => { el.addEventListener('change', () => drawRainHistoryChart()); });
+            document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+        }
+
+        async function initDashboard() {
+            showLoading();
+            loadSettings();
+            try {
+                const [regionHistory, weatherlinkHistory] = await Promise.all([
+                    fetchData(CONFIG.urls.regionHistory),
+                    fetchData(CONFIG.urls.weatherlinkHistory),
+                    updateAllLatestData(),
+                    fetchForecastData() // Carica i dati di previsione all'avvio
+                ]);
+                STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora);
+                STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora);
+                document.querySelectorAll('.quick-filter-btn.active').forEach(btn => btn.click());
+                showToast('Dashboard caricata con successo', 'success');
+            } catch (error) {
+                console.error("Errore durante l'inizializzazione:", error);
+                showToast('Errore nel caricamento dei dati storici', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function startAutoRefresh() {
+            if (STATE.updateIntervals.data) clearInterval(STATE.updateIntervals.data);
+            if (STATE.updateIntervals.forecast) clearInterval(STATE.updateIntervals.forecast);
+            STATE.updateIntervals.data = setInterval(updateAllLatestData, CONFIG.intervals.dataUpdate);
+            STATE.updateIntervals.forecast = setInterval(fetchForecastData, CONFIG.intervals.forecastUpdate);
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Inizializzazione Dashboard Meteo Pro...');
             feather.replace();
             if ('Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); }
             
-            // Initialize all sections
             initNavigation();
             initQuickFilters();
             initUIInteractions();
-            initFullscreenButtons();
-            initEventListeners();
-            initForecastSection(); // Initialize new forecast section interactions
             
+            // Inizializzazioni specifiche
+            initForecastSection(); // Inizializza i bottoni della sezione previsioni
+            initFullscreenButtons(); // Inizializza i bottoni fullscreen delle altre sezioni
+            
+            initEventListeners();
             initDashboard();
             startAutoRefresh();
-            
             console.log('✅ Dashboard pronta!');
         });
+
         window.addEventListener('resize', () => { if (window.innerWidth > 768) { document.getElementById('sidebar').classList.remove('open'); } });
         window.addEventListener('online', () => updateConnectionStatus(true));
         window.addEventListener('offline', () => updateConnectionStatus(false));
