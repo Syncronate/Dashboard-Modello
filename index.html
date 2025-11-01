@@ -1485,7 +1485,7 @@
                     </div>
                     <div class="quick-stat-content">
                         <div class="quick-stat-label">Stazioni Attive</div>
-                        <div class="quick-stat-value">--<span class="quick-stat-unit">/15</span></div>
+                        <div class="quick-stat-value">--<span class="quick-stat-unit">/17</span></div>
                         <div class="quick-stat-trend trend-neutral">
                             <span>Monitoraggio attivo</span>
                         </div>
@@ -1622,6 +1622,14 @@
                         </div>
                         <div class="stat-card" id="hydro-cesano">
                             <div class="title">Cesano</div>
+                            <div class="value">--<span class="unit">m</span></div>
+                        </div>
+                        <div class="stat-card" id="hydro-corinaldo-nevola">
+                            <div class="title">Nevola (Corinaldo)</div>
+                            <div class="value">--<span class="unit">m</span></div>
+                        </div>
+                        <div class="stat-card" id="hydro-passo-ripe">
+                            <div class="title">Nevola (Passo Ripe)</div>
                             <div class="value">--<span class="unit">m</span></div>
                         </div>
                     </div>
@@ -1959,8 +1967,9 @@
                         <li>Serra dei Conti - Livello Misa</li>
                         <li>Pianello di Ostra - Livello Misa</li>
                         <li>Bettolelle - Livello Misa</li>
-                        <li>Corinaldo/Nevola - Livello</li>
+                        <li>Corinaldo/Nevola - Livello Nevola</li>
                         <li>Ponte Garibaldi - Livello Misa 2</li>
+                        <li>Passo Ripe - Livello Nevola</li>
                     </ul>
                 </div>
                 
@@ -2356,7 +2365,9 @@
                 { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
                 { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
                 { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
-                { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) }
+                { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
+                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
+                { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
             ];
 
             hydroStations.forEach(station => {
@@ -2547,6 +2558,8 @@
                     updateStatCard('hydro-ponte-garibaldi', d['Ponte Garibaldi - Livello Misa 2 (mt)'], 'm');
                     updateStatCard('hydro-serra-dei-conti', d['Serra dei Conti - Livello Misa (mt)'], 'm');
                     updateStatCard('hydro-cesano', d['Cesano - Livello Cesano (mt)'], 'm');
+                    updateStatCard('hydro-corinaldo-nevola', d['Nevola - Livello Nevola (mt)'], 'm');
+                    updateStatCard('hydro-passo-ripe', d['Passo Ripe - Livello Nevola (mt)'], 'm');
                     
                     const convertToHourRate = (rawValue) => (parseAndFixDecimal(rawValue) * 60);
                     updateStatCard('rain-arcevia', convertToHourRate(d['Arcevia - Intensita di pioggia (mm/min)']), 'mm/hr');
@@ -2592,7 +2605,9 @@
                 { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
                 { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
                 { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
-                { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) }
+                { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
+                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
+                { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
             ];
             const validHydro = hydroStations.filter(s => !isNaN(s.value));
             const maxHydroStation = validHydro.length > 0 ? validHydro.reduce((max, s) => s.value > max.value ? s : max) : { value: NaN, name: '--'};
@@ -2658,7 +2673,7 @@
             }
 
             // Active stations
-            const totalStations = 15;
+            const totalStations = 17;
             const activeStations = new Set();
             validHydro.forEach(s => activeStations.add(s.name));
             validWind.forEach(s => activeStations.add(s.name));
@@ -2909,7 +2924,9 @@
                 { col: 'Pianello di Ostra - Livello Misa (mt)', lbl: 'Misa (Pianello Ostra)' },
                 { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', lbl: 'Misa (P. Garibaldi)' },
                 { col: 'Serra dei Conti - Livello Misa (mt)', lbl: 'Misa (Serra dei Conti)' },
-                { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' }
+                { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' },
+                { col: 'Passo Ripe - Livello Nevola (m)', lbl: 'Nevola (Passo Ripe)' },
+                { col: 'Nevola - Livello Nevola (mt)', lbl: 'Nevola (Corinaldo)' }
             ].map((s, i) => ({
                 label: s.lbl, data: filteredData.map(r => parseAndFixDecimal(r[s.col])),
                 borderColor: CONFIG.defaults.chartColors[i], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2
@@ -3024,7 +3041,9 @@
                 { col: 'Pianello di Ostra - Livello Misa (mt)', name: 'Pianello di Ostra' },
                 { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', name: 'Ponte Garibaldi' },
                 { col: 'Serra dei Conti - Livello Misa (mt)', name: 'Serra dei Conti' },
-                { col: 'Cesano - Livello Cesano (mt)', name: 'Cesano' }
+                { col: 'Cesano - Livello Cesano (mt)', name: 'Cesano' },
+                { col: 'Passo Ripe - Livello Nevola (m)', name: 'Nevola (Passo Ripe)' },
+                { col: 'Nevola - Livello Nevola (mt)', name: 'Nevola (Corinaldo)' }
             ];
             
             tbody.innerHTML = '';
@@ -3079,7 +3098,7 @@
 
             const stations = [
                 // Stazioni Pluviometriche
-                { name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Misa - Intensita Pioggia (mm/min)', total: 'Misa - Pioggia TOT Oggi (mm)', source: 'region' } },
+                { name: 'Bettolelle', lat: 43.66250, lon: 13.16472 + 0.002, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Misa - Intensita Pioggia (mm/min)', total: 'Misa - Pioggia TOT Oggi (mm)', source: 'region' } },
                 { name: 'Arcevia', lat: 43.49722, lon: 12.93667, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Arcevia - Intensita di pioggia (mm/min)', total: 'Arcevia - Pioggia TOT Oggi (mm)', source: 'region' } },
                 { name: 'Barbara', lat: 43.58000, lon: 13.02889, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Barbara - Intensita di pioggia (mm/min)', total: 'Barbara - Pioggia TOT Oggi (mm)', source: 'region' } },
                 { name: 'Corinaldo', lat: 43.66028, lon: 13.04611, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Corinaldo - Intensita di pioggia (mm/min)', total: 'Corinaldo - Pioggia TOT Oggi (mm)', source: 'region' } },
@@ -3088,8 +3107,9 @@
                 { name: 'Serra dei Conti', lat: 43.54778, lon: 13.02806, type: 'idro', section: 'idrometri', keys: { level: 'Serra dei Conti - Livello Misa (mt)', source: 'region' } },
                 { name: 'Pianello di Ostra', lat: 43.62444, lon: 13.12694, type: 'idro', section: 'idrometri', keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } },
                 { name: 'Bettolelle (Idro)', lat: 43.66250, lon: 13.16472, type: 'idro', section: 'idrometri', keys: { level: 'Misa - Livello Misa (mt)', source: 'region' } },
-                { name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'idro', section: 'idrometri', keys: { level: 'Corinaldo/Nevola - Livello (mt)', source: 'region' } },
-                { name: 'Ponte Garibaldi', lat: 43.71500, lon: 13.21361, type: 'idro', section: 'idrometri', keys: { level: 'Ponte Garibaldi - Livello Misa 2 (mt)', source: 'region' } }
+                { name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'idro', section: 'idrometri', keys: { level: 'Nevola - Livello Nevola (mt)', source: 'region' } },
+                { name: 'Ponte Garibaldi', lat: 43.71500, lon: 13.21361, type: 'idro', section: 'idrometri', keys: { level: 'Ponte Garibaldi - Livello Misa 2 (mt)', source: 'region' } },
+                { name: 'Passo Ripe', lat: 43.65139, lon: 13.10556, type: 'idro', section: 'idrometri', keys: { level: 'Passo Ripe - Livello Nevola (mt)', source: 'region' } }
             ];
 
             const hydroIcon = L.divIcon({
