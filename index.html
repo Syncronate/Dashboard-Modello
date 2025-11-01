@@ -2122,6 +2122,7 @@
             weatherlinkLatestData: null,
             forecastData: [],
             map: null,  // Aggiunto per la mappa Leaflet
+            mapMarkers: {}, // Per memorizzare i marker della mappa
             charts: {
                 forecast: null,
                 hydroHistory: null,
@@ -2569,6 +2570,9 @@
                 updateLastUpdate();
                 checkAlerts();
                 updateOverviewStats();
+                if (STATE.map) { // Assicurati che la mappa sia stata inizializzata
+                    updateMapMarkers();
+                }
 
             } catch (error) {
                 console.error("Fallimento nell'aggiornare i dati più recenti:", error);
@@ -2893,9 +2897,11 @@
             });
         }
 
-        function drawHydroHistoryChart() {
-            const filteredData = filterDataByTime(STATE.regionHistoryData, 'Data_Ora',
-                document.getElementById('start-time-hydro').value, document.getElementById('end-time-hydro').value);
+        function drawHydroHistoryChart(startDate, endDate) {
+            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-hydro').value;
+            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-hydro').value;
+            
+            const filteredData = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end);
             
             const labels = filteredData.map(r => r['Data_Ora']);
             const datasets = [
@@ -2926,9 +2932,10 @@
             });
         }
 
-        function drawRainHistoryChart() {
-            const start = document.getElementById('start-time-rain').value;
-            const end = document.getElementById('end-time-rain').value;
+        function drawRainHistoryChart(startDate, endDate) {
+            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-rain').value;
+            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-rain').value;
+            
             const filteredRegion = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end);
             const filteredWeather = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end);
             
@@ -2966,11 +2973,13 @@
             });
         }
 
-        function drawWindHistoryChart() {
-            const filteredData = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora',
-                document.getElementById('start-time-wind').value, document.getElementById('end-time-wind').value);
-            
+        function drawWindHistoryChart(startDate, endDate) {
             const station = document.getElementById('station-selection-wind').value;
+            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-wind').value;
+            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-wind').value;
+            
+            const filteredData = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end);
+            
             const labels = filteredData.map(r => r['Data_Ora']);
             
             const datasets = [
@@ -3069,15 +3078,18 @@
             }).addTo(STATE.map);
 
             const stations = [
-                { name: 'Cumulata Sensore 2637 (Bettolelle)', lat: 43.66250, lon: 13.16472, type: 'pluvio', section: 'pluviometri' },
-                { name: 'Cumulata Sensore 1295 (Arcevia)', lat: 43.49722, lon: 12.93667, type: 'pluvio', section: 'pluviometri' },
-                { name: 'Cumulata Sensore 2858 (Barbara)', lat: 43.58000, lon: 13.02889, type: 'pluvio', section: 'pluviometri' },
-                { name: 'Cumulata Sensore 2964 (Corinaldo)', lat: 43.66028, lon: 13.04611, type: 'pluvio', section: 'pluviometri' },
-                { name: 'Livello Idrometrico Sensore 1008 [m] (Serra dei Conti)', lat: 43.54778, lon: 13.02806, type: 'idro', section: 'idrometri' },
-                { name: 'Livello Idrometrico Sensore 3072 [m] (Pianello di Ostra)', lat: 43.62444, lon: 13.12694, type: 'idro', section: 'idrometri' },
-                { name: 'Livello Idrometrico Sensore 1112 [m] (Bettolelle)', lat: 43.66250, lon: 13.16472, type: 'idro', section: 'idrometri' },
-                { name: 'Livello Idrometrico Sensore 1283 [m] (Corinaldo/Nevola)', lat: 43.63833, lon: 13.07667, type: 'idro', section: 'idrometri' },
-                { name: 'Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)', lat: 43.71500, lon: 13.21361, type: 'idro', section: 'idrometri' }
+                // Stazioni Pluviometriche
+                { name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Misa - Intensita Pioggia (mm/min)', total: 'Misa - Pioggia TOT Oggi (mm)', source: 'region' } },
+                { name: 'Arcevia', lat: 43.49722, lon: 12.93667, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Arcevia - Intensita di pioggia (mm/min)', total: 'Arcevia - Pioggia TOT Oggi (mm)', source: 'region' } },
+                { name: 'Barbara', lat: 43.58000, lon: 13.02889, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Barbara - Intensita di pioggia (mm/min)', total: 'Barbara - Pioggia TOT Oggi (mm)', source: 'region' } },
+                { name: 'Corinaldo', lat: 43.66028, lon: 13.04611, type: 'pluvio', section: 'pluviometri', keys: { intensity: 'Corinaldo - Intensita di pioggia (mm/min)', total: 'Corinaldo - Pioggia TOT Oggi (mm)', source: 'region' } },
+                
+                // Stazioni Idrometriche
+                { name: 'Serra dei Conti', lat: 43.54778, lon: 13.02806, type: 'idro', section: 'idrometri', keys: { level: 'Serra dei Conti - Livello Misa (mt)', source: 'region' } },
+                { name: 'Pianello di Ostra', lat: 43.62444, lon: 13.12694, type: 'idro', section: 'idrometri', keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } },
+                { name: 'Bettolelle (Idro)', lat: 43.66250, lon: 13.16472, type: 'idro', section: 'idrometri', keys: { level: 'Misa - Livello Misa (mt)', source: 'region' } },
+                { name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'idro', section: 'idrometri', keys: { level: 'Corinaldo/Nevola - Livello (mt)', source: 'region' } },
+                { name: 'Ponte Garibaldi', lat: 43.71500, lon: 13.21361, type: 'idro', section: 'idrometri', keys: { level: 'Ponte Garibaldi - Livello Misa 2 (mt)', source: 'region' } }
             ];
 
             const hydroIcon = L.divIcon({
@@ -3094,29 +3106,101 @@
                 iconAnchor: [15, 15]
             });
 
+            // Aggiungi marker per ogni stazione
             stations.forEach(station => {
-                const marker = L.marker([station.lat, station.lon], { icon: station.type === 'idro' ? hydroIcon : rainIcon }).addTo(STATE.map);
+                const initialIcon = station.type === 'idro' ? hydroIcon : rainIcon;
+                const marker = L.marker([station.lat, station.lon], { icon: initialIcon }).addTo(STATE.map);
+
+                // Memorizza marker e dati stazione per aggiornamenti futuri
+                STATE.mapMarkers[station.name] = { marker: marker, station: station };
+                
+                // Contenuto iniziale del popup
                 const popupContent = `
                     <div>
                         <h3>${station.name}</h3>
-                        <p><strong>Tipo:</strong> ${station.type === 'idro' ? 'Idrometro' : 'Pluviometro'}</p>
-                        <p><strong>Coordinate:</strong> ${station.lat.toFixed(5)}, ${station.lon.toFixed(5)}</p>
-                        <a href="#${station.section}" class="nav-link">Vedi Dettagli</a>
+                        <p>Caricamento dati in tempo reale...</p>
                     </div>
                 `;
                 marker.bindPopup(popupContent);
+
+                // Aggiungi evento click al link nel popup (gestito dinamicamente)
                 marker.on('popupopen', function() {
-                    document.querySelector('.leaflet-popup-content a').addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const targetSection = this.getAttribute('href');
-                        document.querySelectorAll('.nav-link').forEach(link => {
-                            if (link.getAttribute('href') === targetSection) link.click();
+                    // L'evento click viene aggiunto dinamicamente perché il contenuto del popup cambia
+                    const link = document.querySelector('.leaflet-popup-content a.nav-link');
+                    if (link) {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const targetSection = this.getAttribute('href');
+                            document.querySelectorAll('.nav-link').forEach(navLink => {
+                                if (navLink.getAttribute('href') === targetSection) {
+                                    navLink.click();
+                                }
+                            });
+                            STATE.map.closePopup();
                         });
-                        STATE.map.closePopup();
-                    });
+                    }
                 });
             });
+
             feather.replace();
+            // Alla fine della funzione initMap, prima della chiusura `}`
+            updateMapMarkers();
+        }
+        
+        function updateMapMarkers() {
+            if (!STATE.map || !STATE.regionLatestData) return;
+
+            Object.values(STATE.mapMarkers).forEach(markerData => {
+                const station = markerData.station;
+                const marker = markerData.marker;
+                let data, value = NaN, alertLevel = 'normal', popupContent = '';
+
+                const sourceData = station.keys.source === 'region' ? STATE.regionLatestData : STATE.weatherlinkLatestData;
+                if (!sourceData) return;
+
+                // Crea icona e popup in base al tipo di stazione
+                if (station.type === 'idro') {
+                    value = parseAndFixDecimal(sourceData[station.keys.level]);
+                    alertLevel = getAlertLevel(value, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+                    
+                    const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : '#00bcd4';
+                    const iconHtml = `<div style="background-color: ${iconColor}; color: white; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; box-shadow: var(--shadow-lg);">${isNaN(value) ? 'N/D' : value.toFixed(2)}</div>`;
+                    
+                    const newIcon = L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [40, 40], iconAnchor: [20, 20] });
+                    marker.setIcon(newIcon);
+
+                    popupContent = `
+                        <h3>${station.name}</h3>
+                        <p><strong>Tipo:</strong> Idrometro</p>
+                        <p><strong>Livello Attuale:</strong> ${isNaN(value) ? 'N/D' : `<strong>${value.toFixed(2)} m</strong>`}</p>
+                        <p><strong>Stato:</strong> <span style="color: ${iconColor}; font-weight: bold;">${alertLevel.toUpperCase()}</span></p>
+                        <a href="#${station.section}" class="nav-link">Vedi Dettagli</a>
+                    `;
+                } else if (station.type === 'pluvio') {
+                    const intensityMin = parseAndFixDecimal(sourceData[station.keys.intensity]);
+                    const intensityHour = !isNaN(intensityMin) ? intensityMin * 60 : NaN;
+                    const total = parseAndFixDecimal(sourceData[station.keys.total]);
+                    alertLevel = getAlertLevel(intensityHour, CONFIG.thresholds.rainWarning, CONFIG.thresholds.rainCritical);
+
+                    const iconColor = alertLevel !== 'normal' ? (alertLevel === 'critical' ? 'var(--danger-color)' : 'var(--warning-color)') : '#ffc107';
+                    const isRaining = !isNaN(intensityHour) && intensityHour > 0;
+                    const iconHtml = `<div style="background-color: ${iconColor}; color: white; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: var(--shadow-lg);">${isRaining ? '🌧️' : '☀️'}</div>`;
+                    
+                    const newIcon = L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [40, 40], iconAnchor: [20, 20] });
+                    marker.setIcon(newIcon);
+
+                    popupContent = `
+                        <h3>${station.name}</h3>
+                        <p><strong>Tipo:</strong> Pluviometro</p>
+                        <p><strong>Intensità:</strong> ${isNaN(intensityHour) ? 'N/D' : `<strong>${intensityHour.toFixed(1)} mm/h</strong>`}</p>
+                        <p><strong>Pioggia Oggi:</strong> ${isNaN(total) ? 'N/D' : `${total.toFixed(1)} mm`}</p>
+                        <p><strong>Stato:</strong> <span style="color: ${iconColor}; font-weight: bold;">${alertLevel.toUpperCase()}</span></p>
+                        <a href="#${station.section}" class="nav-link">Vedi Dettagli</a>
+                    `;
+                }
+
+                marker.setPopupContent(popupContent);
+            });
         }
 
         
@@ -3162,7 +3246,7 @@
                         
                         switch(targetSection.id) {
                             case 'overview': drawOverviewCharts(); break;
-                            case 'mappa': initMap(); break;
+                            case 'mappa': if (!STATE.map) initMap(); break;
                             case 'previsioni': if (!STATE.charts.forecast) fetchForecastData(); break;
                             case 'idrometri': if (!STATE.charts.hydroHistory) drawHydroHistoryChart(); break;
                             case 'pluviometri': if (!STATE.charts.rainHistory) drawRainHistoryChart(); break;
@@ -3191,12 +3275,23 @@
                     const startInput = section.querySelector('input[type="datetime-local"][id^="start-time"]');
                     const endInput = section.querySelector('input[type="datetime-local"][id^="end-time"]');
                     
+                    // Aggiorna i campi di input per coerenza visiva
                     if (startInput && endInput) {
                         startInput.value = toISOLocal(start);
                         endInput.value = toISOLocal(now);
-                        
-                        const filterBtn = section.querySelector('button[id^="filter-"]');
-                        if (filterBtn) filterBtn.click();
+                    }
+
+                    // Chiama direttamente la funzione di disegno corretta con i parametri Date
+                    switch(section.id) {
+                        case 'idrometri':
+                            drawHydroHistoryChart(start, now);
+                            break;
+                        case 'pluviometri':
+                            drawRainHistoryChart(start, now);
+                            break;
+                        case 'anemometri':
+                            drawWindHistoryChart(start, now);
+                            break;
                     }
                 });
             });
@@ -3382,13 +3477,13 @@
 
         // ==================== INITIALIZATION ====================
         function initEventListeners() {
-            document.getElementById('filter-hydro').addEventListener('click', drawHydroHistoryChart);
-            document.getElementById('filter-rain').addEventListener('click', drawRainHistoryChart);
-            document.getElementById('filter-wind').addEventListener('click', drawWindHistoryChart);
+            document.getElementById('filter-hydro').addEventListener('click', () => drawHydroHistoryChart());
+            document.getElementById('filter-rain').addEventListener('click', () => drawRainHistoryChart());
+            document.getElementById('filter-wind').addEventListener('click', () => drawWindHistoryChart());
             
-            document.getElementById('station-selection-wind').addEventListener('change', drawWindHistoryChart);
+            document.getElementById('station-selection-wind').addEventListener('change', () => drawWindHistoryChart());
             document.querySelectorAll('#station-selection-rain input').forEach(el => {
-                el.addEventListener('change', drawRainHistoryChart);
+                el.addEventListener('change', () => drawRainHistoryChart());
             });
 
             document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
