@@ -1520,7 +1520,7 @@
                     </div>
                     <div class="quick-stat-content">
                         <div class="quick-stat-label">Stazioni Attive</div>
-                        <div class="quick-stat-value">--<span class="quick-stat-unit">/17</span></div>
+                        <div class="quick-stat-value">--<span class="quick-stat-unit">/18</span></div>
                         <div class="quick-stat-trend trend-neutral">
                             <span>Monitoraggio attivo</span>
                         </div>
@@ -1656,7 +1656,8 @@
                             <div class="value">--<span class="unit">m</span></div>
                         </div>
                         <div class="stat-card" id="hydro-cesano">
-                            <div class="title">Cesano</div>
+                            <!-- MODIFICA: Nome stazione aggiornato -->
+                            <div class="title">Foce Cesano</div>
                             <div class="value">--<span class="unit">m</span></div>
                         </div>
                         <div class="stat-card" id="hydro-corinaldo-nevola">
@@ -2004,6 +2005,7 @@
                         <li>Corinaldo/Nevola - Livello Nevola</li>
                         <li>Ponte Garibaldi - Livello Misa 2</li>
                         <li>Passo Ripe - Livello Nevola</li>
+                        <li>Foce Cesano - Livello Cesano</li>
                     </ul>
                 </div>
                 
@@ -2427,7 +2429,8 @@
                 { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
                 { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
                 { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
-                { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
+                // MODIFICA: Nome stazione aggiornato
+                { name: 'Foce Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
                 { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
                 { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
             ];
@@ -2664,7 +2667,8 @@
                 { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
                 { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
                 { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
-                { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
+                // MODIFICA: Nome stazione aggiornato
+                { name: 'Foce Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
                 { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
                 { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
             ];
@@ -2728,8 +2732,9 @@
                     trendEl.textContent = `Stazione: ${maxWindStation.name}`;
                 }
             }
-
-            const totalStations = 17;
+            
+            // MODIFICA: Aggiornato il conteggio totale delle stazioni a 18
+            const totalStations = 18;
             const activeStations = new Set();
             validHydro.forEach(s => activeStations.add(s.name));
             validWind.forEach(s => activeStations.add(s.name));
@@ -2743,7 +2748,7 @@
             const activeCount = activeStations.size;
             const stationsCard = document.getElementById('overview-stations');
             if (stationsCard) {
-                stationsCard.querySelector('.quick-stat-value').innerHTML = `${activeCount}/${totalStations}`;
+                stationsCard.querySelector('.quick-stat-value').innerHTML = `${activeCount}<span class="quick-stat-unit">/${totalStations}</span>`;
             }
         }
 
@@ -2913,7 +2918,16 @@
                         title: { display: true, text: 'Previsione Livello Idrometrico - Sensore 1112 (Bettolelle)', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(3)} m` } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' } }
+                        // MODIFICA: Configurazione dello zoom migliorata per consentire il dezoom completo
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: {
+                                // 'original' permette di dezoommare fino alla vista completa dei dati
+                                x: { min: 'original', max: 'original' },
+                                y: { min: 'original', max: 'original' }
+                            }
+                        }
                     },
                     scales: {
                         x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
@@ -2980,7 +2994,8 @@
                 { col: 'Pianello di Ostra - Livello Misa (mt)', lbl: 'Misa (Pianello Ostra)' },
                 { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', lbl: 'Misa (P. Garibaldi)' },
                 { col: 'Serra dei Conti - Livello Misa (mt)', lbl: 'Misa (Serra dei Conti)' },
-                { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' },
+                // MODIFICA: Nome stazione aggiornato
+                { col: 'Cesano - Livello Cesano (mt)', lbl: 'Foce Cesano' },
                 { col: 'Passo Ripe - Livello Nevola (m)', lbl: 'Nevola (Passo Ripe)' },
                 { col: 'Nevola - Livello Nevola (mt)', lbl: 'Nevola (Corinaldo)' }
             ].map((s, i) => ({
@@ -3097,7 +3112,8 @@
                 { col: 'Pianello di Ostra - Livello Misa (mt)', name: 'Pianello di Ostra' },
                 { col: 'Ponte Garibaldi - Livello Misa 2 (mt)', name: 'Ponte Garibaldi' },
                 { col: 'Serra dei Conti - Livello Misa (mt)', name: 'Serra dei Conti' },
-                { col: 'Cesano - Livello Cesano (mt)', name: 'Cesano' },
+                // MODIFICA: Nome stazione aggiornato
+                { col: 'Cesano - Livello Cesano (mt)', name: 'Foce Cesano' },
                 { col: 'Passo Ripe - Livello Nevola (m)', name: 'Nevola (Passo Ripe)' },
                 { col: 'Nevola - Livello Nevola (mt)', name: 'Nevola (Corinaldo)' }
             ];
@@ -3202,7 +3218,9 @@
                 { name: 'Pianello di Ostra', lat: 43.62444, lon: 13.12694, type: 'idro', section: 'idrometri', keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } },
                 { name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'idro', section: 'idrometri', keys: { level: 'Nevola - Livello Nevola (mt)', source: 'region' } },
                 { name: 'Ponte Garibaldi', lat: 43.71500, lon: 13.21361, type: 'idro', section: 'idrometri', keys: { level: 'Ponte Garibaldi - Livello Misa 2 (mt)', source: 'region' } },
-                { name: 'Passo Ripe', lat: 43.65139, lon: 13.10556, type: 'idro', section: 'idrometri', keys: { level: 'Passo Ripe - Livello Nevola (mt)', source: 'region' } }
+                { name: 'Passo Ripe', lat: 43.65139, lon: 13.10556, type: 'idro', section: 'idrometri', keys: { level: 'Passo Ripe - Livello Nevola (mt)', source: 'region' } },
+                // MODIFICA: Aggiunta stazione Foce Cesano
+                { name: 'Foce Cesano', lat: 43.74, lon: 13.19, type: 'idro', section: 'idrometri', keys: { level: 'Cesano - Livello Cesano (mt)', source: 'region' } }
             ];
 
             stations.forEach(station => {
