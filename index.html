@@ -3542,58 +3542,112 @@ passwordInput.focus();
             }).addTo(STATE.map);
 
             const stations = [
-                // === Stazioni con marker a rettangolo ===
-                { name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'box', section: 'idrometri', keys: {
-                    level: 'Misa - Livello Misa (mt)',
-                    intensity_min: 'Misa - Intensita Pioggia (mm/min)',
-                    total_day: 'Misa - Pioggia TOT Oggi (mm)',
-                    source: 'region'
-                }},
-                { name: 'Arcevia', lat: 43.49722, lon: 12.93667, type: 'box', section: 'pluviometri', keys: {
-                    intensity_min: 'Arcevia - Intensita di pioggia (mm/min)',
-                    total_day: 'Arcevia - Pioggia TOT Oggi (mm)',
-                    source: 'region'
-                }},
-                { name: 'Barbara', lat: 43.58000, lon: 13.02889, type: 'box', section: 'pluviometri', keys: {
-                    intensity_min: 'Barbara - Intensita di pioggia (mm/min)',
-                    total_day: 'Barbara - Pioggia TOT Oggi (mm)',
-                    source: 'region'
-                }},
-                { name: 'Corinaldo', lat: 43.66028, lon: 13.04611, type: 'box', section: 'pluviometri', keys: {
-                    intensity_min: 'Corinaldo - Intensita di pioggia (mm/min)',
-                    total_day: 'Corinaldo - Pioggia TOT Oggi (mm)',
-                    source: 'region'
-                }},
-                { name: 'Montignano', lat: 43.666, lon: 13.284, type: 'box', section: 'anemometri', keys: {
-                    intensity_hr: 'Montignano - Intensità Pioggia (mm/hr)',
-                    total_day: 'Montignano - Pioggia Giornaliera (mm)',
-                    wind: 'Montignano - Velocità Vento (km/h)',
-                    gust: 'Montignano - Raffica Vento 10 min (km/h)',
-                    source: 'weatherlink'
-                }},
-                { name: 'Scapezzano', lat: 43.719, lon: 13.168, type: 'box', section: 'anemometri', keys: {
-                    intensity_hr: 'Scapezzano - Intensità Pioggia (mm/hr)',
-                    total_day: 'Scapezzano - Pioggia Giornaliera (mm)',
-                    wind: 'Scapezzano - Velocità Vento (km/h)',
-                    gust: 'Scapezzano - Raffica Vento 10 min (km/h)',
-                    source: 'weatherlink'
-                }},
-                { name: "Sant'Angelo", lat: 43.675, lon: 13.219, type: 'box', section: 'anemometri', keys: {
-                    intensity_hr: "Sant'Angelo - Intensità Pioggia (mm/hr)",
-                    total_day: "Sant'Angelo - Pioggia Giornaliera (mm)",
-                    wind: "Sant'Angelo - Velocità Vento (km/h)",
-                    gust: "Sant'Angelo - Raffica Vento 10 min (km/h)",
-                    source: 'weatherlink'
-                }},
-
-                // === Stazioni con marker semplice (solo idrometri) ===
-                { name: 'Serra dei Conti', lat: 43.54778, lon: 13.02806, type: 'idro', section: 'idrometri', keys: { level: 'Serra dei Conti - Livello Misa (mt)', source: 'region' } },
-                { name: 'Pianello di Ostra', lat: 43.62444, lon: 13.12694, type: 'idro', section: 'idrometri', keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } },
-                { name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'idro', section: 'idrometri', keys: { level: 'Nevola - Livello Nevola (mt)', source: 'region' } },
-                { name: 'Ponte Garibaldi', lat: 43.71500, lon: 13.21361, type: 'idro', section: 'idrometri', keys: { level: 'Ponte Garibaldi - Livello Misa 2 (mt)', source: 'region' } },
-                { name: 'Passo Ripe', lat: 43.65139, lon: 13.10556, type: 'idro', section: 'idrometri', keys: { level: 'Passo Ripe - Livello Nevola (mt)', source: 'region' } },
-                { name: 'Foce Cesano', lat: 43.74, lon: 13.19, type: 'idro', section: 'idrometri', keys: { level: 'Foce Cesano - Livello Cesano (mt)', source: 'region' } },
-                { name: 'Cesano', lat: 43.69, lon: 13.15, type: 'idro', section: 'idrometri', keys: { level: 'Cesano - Livello Cesano (mt)', source: 'region' } }
+                // Stazioni unificate con marker a cerchio
+                { 
+                    name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level', // Mostra il livello idrometrico nel cerchio
+                    keys: {
+                        level: 'Misa - Livello Misa (mt)',
+                        intensity_min: 'Misa - Intensita Pioggia (mm/min)',
+                        total_day: 'Misa - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                },
+                { 
+                    name: 'Arcevia', lat: 43.49722, lon: 12.93667, type: 'circle', section: 'pluviometri', 
+                    displayValue: 'rain_intensity', // Mostra l'intensità pioggia nel cerchio
+                    keys: {
+                        intensity_min: 'Arcevia - Intensita di pioggia (mm/min)',
+                        total_day: 'Arcevia - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                },
+                { 
+                    name: 'Barbara', lat: 43.58000, lon: 13.02889, type: 'circle', section: 'pluviometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_min: 'Barbara - Intensita di pioggia (mm/min)',
+                        total_day: 'Barbara - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                },
+                { 
+                    name: 'Corinaldo', lat: 43.66028, lon: 13.04611, type: 'circle', section: 'pluviometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_min: 'Corinaldo - Intensita di pioggia (mm/min)',
+                        total_day: 'Corinaldo - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                },
+                { 
+                    name: 'Montignano', lat: 43.666, lon: 13.284, type: 'circle', section: 'anemometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_hr: 'Montignano - Intensità Pioggia (mm/hr)',
+                        total_day: 'Montignano - Pioggia Giornaliera (mm)',
+                        wind: 'Montignano - Velocità Vento (km/h)',
+                        gust: 'Montignano - Raffica Vento 10 min (km/h)',
+                        source: 'weatherlink'
+                    }
+                },
+                { 
+                    name: 'Scapezzano', lat: 43.719, lon: 13.168, type: 'circle', section: 'anemometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_hr: 'Scapezzano - Intensità Pioggia (mm/hr)',
+                        total_day: 'Scapezzano - Pioggia Giornaliera (mm)',
+                        wind: 'Scapezzano - Velocità Vento (km/h)',
+                        gust: 'Scapezzano - Raffica Vento 10 min (km/h)',
+                        source: 'weatherlink'
+                    }
+                },
+                { 
+                    name: "Sant'Angelo", lat: 43.675, lon: 13.219, type: 'circle', section: 'anemometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_hr: "Sant'Angelo - Intensità Pioggia (mm/hr)",
+                        total_day: "Sant'Angelo - Pioggia Giornaliera (mm)",
+                        wind: "Sant'Angelo - Velocità Vento (km/h)",
+                        gust: "Sant'Angelo - Raffica Vento 10 min (km/h)",
+                        source: 'weatherlink'
+                    }
+                },
+                { 
+                    name: 'Serra dei Conti', lat: 43.54778, lon: 13.02806, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Serra dei Conti - Livello Misa (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Pianello di Ostra', lat: 43.62444, lon: 13.12694, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Nevola - Livello Nevola (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Ponte Garibaldi', lat: 43.71500, lon: 13.21361, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Ponte Garibaldi - Livello Misa 2 (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Passo Ripe', lat: 43.65139, lon: 13.10556, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Passo Ripe - Livello Nevola (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Foce Cesano', lat: 43.74, lon: 13.19, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Foce Cesano - Livello Cesano (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Cesano', lat: 43.69, lon: 13.15, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Cesano - Livello Cesano (mt)', source: 'region' } 
+                }
             ];
 
             stations.forEach(station => {
@@ -3623,78 +3677,70 @@ passwordInput.focus();
 
             Object.values(STATE.mapMarkers).forEach(markerData => {
                 const { station, marker } = markerData;
-                let popupContent = '';
                 const sourceData = station.keys.source === 'region' ? STATE.regionLatestData : STATE.weatherlinkLatestData;
                 if (!sourceData) return;
-                
-                if (station.type === 'box') {
-                    let dataRowsHtml = '';
-                    let popupRowsHtml = '';
 
-                    // Livello Idrometrico
-                    if (station.keys.level) {
-                        const level = parseAndFixDecimal(sourceData[station.keys.level]);
-                        const levelStr = isNaN(level) ? '--' : level.toFixed(2);
-                        dataRowsHtml += `<div class="data-row">Liv. Attuale<span>${levelStr} m</span></div>`;
-                        popupRowsHtml += `<p><strong>Livello Attuale:</strong> ${isNaN(level) ? 'N/D' : `<strong>${level.toFixed(2)} m</strong>`}</p>`;
-                    }
+                let displayValue = NaN;
+                let alertLevel = 'normal';
+                let valueStr = 'N/D';
+                let popupContent = `<h3>${station.name}</h3>`;
 
-                    // Intensità Pioggia (gestisce sia mm/min che mm/hr)
-                    let rainHour = NaN;
+                // Determina il valore da visualizzare e il livello di allerta
+                if (station.displayValue === 'hydro_level' && station.keys.level) {
+                    displayValue = parseAndFixDecimal(sourceData[station.keys.level]);
+                    alertLevel = getAlertLevel(displayValue, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+                    valueStr = isNaN(displayValue) ? 'N/D' : displayValue.toFixed(2);
+                } else if (station.displayValue === 'rain_intensity') {
                     if (station.keys.intensity_min) {
                         const rainMin = parseAndFixDecimal(sourceData[station.keys.intensity_min]);
-                        if (!isNaN(rainMin)) rainHour = rainMin * 60;
+                        if (!isNaN(rainMin)) displayValue = rainMin * 60;
                     } else if (station.keys.intensity_hr) {
-                        rainHour = parseAndFixDecimal(sourceData[station.keys.intensity_hr]);
+                        displayValue = parseAndFixDecimal(sourceData[station.keys.intensity_hr]);
                     }
-                    
-                    if (station.keys.intensity_min || station.keys.intensity_hr) {
-                         const rainStr = isNaN(rainHour) ? '--' : rainHour.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Intensità<span>${rainStr}</span></div>`;
-                        popupRowsHtml += `<p><strong>Intensità Pioggia:</strong> ${isNaN(rainHour) ? 'N/D' : `<strong>${rainHour.toFixed(1)} mm/h</strong>`}</p>`;
-                    }
-
-                    // Pioggia Totale Giornaliera
-                    if (station.keys.total_day) {
-                        const total = parseAndFixDecimal(sourceData[station.keys.total_day]);
-                        const totalStr = isNaN(total) ? '--' : total.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Pioggia Oggi<span>${totalStr}</span></div>`;
-                        popupRowsHtml += `<p><strong>Pioggia Oggi:</strong> ${isNaN(total) ? 'N/D' : `<strong>${total.toFixed(1)} mm</strong>`}</p>`;
-                    }
-
-                    // Vento
-                    if (station.keys.wind) {
-                        const wind = parseAndFixDecimal(sourceData[station.keys.wind]);
-                        const windStr = isNaN(wind) ? '--' : wind.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Vento<span>${windStr}</span></div>`;
-                        popupRowsHtml += `<p><strong>Vento:</strong> ${isNaN(wind) ? 'N/D' : `<strong>${wind.toFixed(1)} km/h</strong>`}</p>`;
-                    }
-                    
-                    // Raffica
-                    if (station.keys.gust) {
-                        const gust = parseAndFixDecimal(sourceData[station.keys.gust]);
-                        const gustStr = isNaN(gust) ? '--' : gust.toFixed(1);
-                        dataRowsHtml += `<div class="data-row">Raffica<span>${gustStr}</span></div>`;
-                        popupRowsHtml += `<p><strong>Raffica:</strong> ${isNaN(gust) ? 'N/D' : `<strong>${gust.toFixed(1)} km/h</strong>`}</p>`;
-                    }
-
-                    const iconHtml = `<div class="weatherlink-marker"><div class="station-name">${station.name}</div>${dataRowsHtml}</div>`;
-                    const numRows = (dataRowsHtml.match(/<div/g) || []).length;
-                    const iconHeight = 35 + numRows * 20; // Calcola altezza dinamicamente
-                    marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [125, iconHeight], iconAnchor: [62, iconHeight / 2] }));
-                    popupContent = `<h3>${station.name}</h3>${popupRowsHtml}<a href="#${station.section}" class="nav-link">Vedi Dettagli</a>`;
-
-                } else if (station.type === 'idro') {
-                    const value = parseAndFixDecimal(sourceData[station.keys.level]);
-                    const alertLevel = getAlertLevel(value, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
-                    const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : '#00bcd4';
-                    
-                    const iconHtml = `<div style="background-color: ${iconColor}; color: white; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; box-shadow: var(--shadow-lg);">${isNaN(value) ? 'N/D' : value.toFixed(2)}</div>`;
-                    marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [40, 40], iconAnchor: [20, 20] }));
-
-                    popupContent = `<h3>${station.name}</h3><p><strong>Tipo:</strong> Idrometro</p><p><strong>Livello Attuale:</strong> ${isNaN(value) ? 'N/D' : `<strong>${value.toFixed(2)} m</strong>`}</p><p><strong>Stato:</strong> <span style="color: ${iconColor}; font-weight: bold;">${alertLevel.toUpperCase()}</span></p><a href="#${station.section}" class="nav-link">Vedi Dettagli</a>`;
+                    alertLevel = getAlertLevel(displayValue, CONFIG.thresholds.rainWarning, CONFIG.thresholds.rainCritical);
+                    valueStr = isNaN(displayValue) ? 'N/D' : displayValue.toFixed(1);
                 }
 
+                // Colora il marker in base all'allerta
+                const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : '#00bcd4';
+                
+                // Crea l'icona a cerchio
+                const iconHtml = `
+                    <div style="background-color: ${iconColor}; color: white; width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 14px; font-weight: bold; box-shadow: var(--shadow-lg);">
+                        <div>${station.name.substring(0, 3).toUpperCase()}</div>
+                        <div style="font-size: 12px; font-weight: normal;">${valueStr}</div>
+                    </div>`;
+                marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [50, 50], iconAnchor: [25, 25] }));
+
+                // Costruisce il contenuto del popup in modo dinamico
+                if (station.keys.level) {
+                    const level = parseAndFixDecimal(sourceData[station.keys.level]);
+                    popupContent += `<p><strong>Livello Idrometrico:</strong> ${isNaN(level) ? 'N/D' : `<strong>${level.toFixed(2)} m</strong>`}</p>`;
+                }
+                let rainHour = NaN;
+                if (station.keys.intensity_min) {
+                    const rainMin = parseAndFixDecimal(sourceData[station.keys.intensity_min]);
+                    if (!isNaN(rainMin)) rainHour = rainMin * 60;
+                } else if (station.keys.intensity_hr) {
+                    rainHour = parseAndFixDecimal(sourceData[station.keys.intensity_hr]);
+                }
+                if (!isNaN(rainHour)) {
+                    popupContent += `<p><strong>Intensità Pioggia:</strong> <strong>${rainHour.toFixed(1)} mm/h</strong></p>`;
+                }
+                if (station.keys.total_day) {
+                    const total = parseAndFixDecimal(sourceData[station.keys.total_day]);
+                    popupContent += `<p><strong>Pioggia Oggi:</strong> ${isNaN(total) ? 'N/D' : `<strong>${total.toFixed(1)} mm</strong>`}</p>`;
+                }
+                if (station.keys.wind) {
+                    const wind = parseAndFixDecimal(sourceData[station.keys.wind]);
+                    popupContent += `<p><strong>Vento:</strong> ${isNaN(wind) ? 'N/D' : `<strong>${wind.toFixed(1)} km/h</strong>`}</p>`;
+                }
+                if (station.keys.gust) {
+                    const gust = parseAndFixDecimal(sourceData[station.keys.gust]);
+                    popupContent += `<p><strong>Raffica:</strong> ${isNaN(gust) ? 'N/D' : `<strong>${gust.toFixed(1)} km/h</strong>`}</p>`;
+                }
+                
+                popupContent += `<a href="#${station.section}" class="nav-link">Vedi Dettagli</a>`;
                 marker.setPopupContent(popupContent);
             });
         }
