@@ -4492,19 +4492,19 @@ passwordInput.focus();
                 const isMobile = window.innerWidth <= 768;
 
                 if (isMobile) {
-                    if (sidebar.classList.contains('open')) {
-                        closeMobileMenu();
-                    } else {
-                        openMobileMenu();
-                    }
-
-                    // Create overlay and add listener if it doesn't exist
+                    // Ensure overlay exists BEFORE toggling the menu
                     let overlay = document.querySelector('.sidebar-overlay');
                     if (!overlay) {
                         overlay = document.createElement('div');
                         overlay.className = 'sidebar-overlay';
                         document.body.appendChild(overlay);
                         overlay.addEventListener('click', closeMobileMenu);
+                    }
+
+                    if (sidebar.classList.contains('open')) {
+                        closeMobileMenu();
+                    } else {
+                        openMobileMenu();
                     }
                 } else {
                     sidebar.classList.toggle('collapsed');
