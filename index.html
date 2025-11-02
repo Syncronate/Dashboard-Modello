@@ -2048,6 +2048,19 @@ max-width: 400px;
         <section id="previsioni" class="page-section">
             <div class="header">
                 <h1><i data-feather="activity" class="feather-icon"></i> Previsione Idrometrica Misa (Bettolelle)</h1>
+                <button id="toggle-instructions-btn" class="toggle-btn">
+                    <i data-feather="book-open" class="feather-icon"></i> Mostra Istruzioni
+                </button>
+                <div id="instructions-container" class="instructions">
+                    <p class="subtitle">
+                        <b>🖱️ Sposta:</b> Trascina il grafico con il mouse per spostarti nel tempo.<br/>
+                        <b>🔍 Zoom:</b> Usa la rotellina del mouse per ingrandire/rimpicciolire.<br/>
+                        <b>🔄 Reset:</b> Clicca "Reset Zoom" per tornare alla vista completa.<br/>
+                        <b>✨ Interazione:</b> Passa il mouse sulla tabella per evidenziare i punti corrispondenti sul grafico.<br/>
+                        <b>📊 Quantili:</b> Q10 (minimo), Q50 (mediana), Q90 (massimo) rappresentano la fascia di previsione.
+                    </p>
+                    <button id="resetZoomBtn">🔄 Reset Zoom Grafico</button>
+                </div>
             </div>
             
             <div class="container">
@@ -2630,6 +2643,7 @@ max-width: 400px;
                         <li>Serra dei Conti - Livello Misa</li>
                         <li>Pianello di Ostra - Livello Misa</li>
                         <li>Corinaldo/Nevola - Livello Nevola</li>
+                        <li>Bettolelle - Livello Misa</li>
                         <li>Ponte Garibaldi - Livello Misa 2</li>
                         <li>Passo Ripe - Livello Nevola</li>
                         <li>Foce Cesano - Livello Cesano</li>
@@ -2640,8 +2654,7 @@ max-width: 400px;
                     <h3 style="color: var(--primary-color); margin-top: 0;">
                         <span class="legend-icon triangle"></span> Stazioni Pluviometriche e Meteo
                     </h3>
-                    <ul style="color: var(--text-color); line-height: 1.8;">
-                        <li>Bettolelle - Pioggia/Livello Idro</li>
+                    <ul style="color: var(--text-color); line-height: 1.8;"
                         <li>Arcevia - Pioggia Cumulata</li>
                         <li>Barbara - Pioggia Cumulata</li>
                         <li>Corinaldo - Pioggia Cumulata</li>
@@ -4854,6 +4867,14 @@ passwordInput.focus();
             });
 
             // Forecast page buttons
+            document.getElementById('toggle-instructions-btn').addEventListener('click', function() {
+                const instructions = document.getElementById('instructions-container');
+                const isVisible = instructions.classList.toggle('visible');
+                const icon = this.querySelector('.feather-icon');
+                this.childNodes[2].nodeValue = isVisible ? ' Nascondi Istruzioni' : ' Mostra Istruzioni';
+                icon.setAttribute('data-feather', isVisible ? 'book' : 'book-open');
+                feather.replace();
+            });
             document.getElementById('resetZoomBtn').addEventListener('click', () => {
                 if (STATE.charts.forecast) STATE.charts.forecast.resetZoom();
             });
