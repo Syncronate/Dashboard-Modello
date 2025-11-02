@@ -2825,7 +2825,7 @@ passwordInput.focus();
         // === UTILITY FUNCTIONS ===
         const utils = {
             // Controlla se siamo su mobile
-            isMobile: () => window.innerWidth <= UI_CONSTANTS.MOBILE_BREAKPOINT, // ✅ FIX: Corretto bug ricorsione infinita
+            isMobile: () => utils.isMobile(),
             
             // Formatta numeri con fallback
             formatNumber: (value, decimals = 2, fallback = 'N/D') => {
@@ -3414,7 +3414,7 @@ passwordInput.focus();
             // Chiudi sidebar quando si clicca su un link (mobile)
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function() {
-                    if (utils.isMobile()) { // ✅ FIX: Usato utils.isMobile()
+                    if (window.innerWidth <= 768) {
                         document.getElementById('sidebar').classList.remove('open');
                         const overlay = document.querySelector('.sidebar-overlay');
                         if (overlay) overlay.classList.remove('active');
@@ -3656,24 +3656,14 @@ passwordInput.focus();
             }
         }
         
-        // ✅ FIX: Funzione di cleanup grafici migliorata
         function createChart(canvasId, config, chartKey) {
-            const canvas = document.getElementById(canvasId);
-            
-            // Cleanup completo
-            if (canvas.chart) {
-                canvas.chart.destroy();
-                canvas.chart = null;
-            }
-            
             if (chartKey && STATE.charts[chartKey]) {
                 STATE.charts[chartKey].destroy();
-                STATE.charts[chartKey] = null;
             }
             
-            const ctx = canvas.getContext('2d', { willReadFrequently: false });
+            const ctx = document.getElementById(canvasId).getContext('2d');
             const newChart = new Chart(ctx, config);
-            canvas.chart = newChart;
+            document.getElementById(canvasId).chart = newChart; 
             
             if (chartKey) {
                 STATE.charts[chartKey] = newChart;
@@ -3785,7 +3775,7 @@ passwordInput.focus();
         }
 
         function updateForecastTable(data) {
-            const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
+            const isMobile = utils.isMobile();
             
             const desktopTableContainer = document.getElementById('desktop-forecast-table');
             const mobileListContainer = document.getElementById('mobile-forecast-list');
@@ -3919,7 +3909,7 @@ passwordInput.focus();
         }
 
         function updateForecastTableBettolelle3h(data) {
-            const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
+            const isMobile = utils.isMobile();
 
             const desktopTableContainer = document.getElementById('desktop-forecast-table-bettolelle-3h');
             const mobileListContainer = document.getElementById('mobile-forecast-list-bettolelle-3h');
@@ -4037,7 +4027,7 @@ passwordInput.focus();
         }
 
         function updateForecastTablePonteGaribaldi6h(data) {
-            const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
+            const isMobile = utils.isMobile();
             
             const desktopTableContainer = document.getElementById('desktop-forecast-table-ponte-garibaldi-6h');
             const mobileListContainer = document.getElementById('mobile-forecast-list-ponte-garibaldi-6h');
@@ -4447,7 +4437,7 @@ passwordInput.focus();
                 // Colora il marker in base all'allerta
                 const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : '#00bcd4';
                 
-                const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
+                const isMobile = utils.isMobile();
                 const iconSize = isMobile ? MAP_CONSTANTS.ICON_SIZE_MOBILE : MAP_CONSTANTS.ICON_SIZE_DESKTOP;
                 const fontSize = isMobile ? '20px' : '18px';
 
@@ -4571,11 +4561,6 @@ passwordInput.focus();
                     iconSize: [iconSize, iconSize], 
                     iconAnchor: [iconSize/2, iconSize] // Ancoraggio alla base
                 }));
-                
-                // ✅ FIX: Aggiunte classi per animazioni marker
-                if (alertLevel === 'critical' || alertLevel === 'warning') {
-                    marker._icon.classList.add(`alert-${alertLevel}`);
-                }
 
                 // Costruisce il contenuto del popup in modo dinamico
                 if (station.keys.level) {
@@ -4650,7 +4635,7 @@ passwordInput.focus();
                     if (targetSection) {
                         targetSection.classList.add('active');
                         
-                        if (utils.isMobile()) { // ✅ FIX: Usato utils.isMobile()
+                        if (utils.isMobile()) {
                             closeMobileMenu();
                         }
                         
@@ -4803,7 +4788,7 @@ passwordInput.focus();
             // Sidebar Toggle
             document.getElementById('menu-toggle').addEventListener('click', () => {
                 const sidebar = document.getElementById('sidebar');
-                const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
+                const isMobile = utils.isMobile();
 
                 if (isMobile) {
                     // Ensure overlay exists BEFORE toggling the menu
@@ -5013,10 +4998,13 @@ passwordInput.focus();
                 STATE.map.invalidateSize();
             }
         }
-        
-        // ✅ FIX: Implementato debounce corretto per il resize
-        const debouncedHandleResize = utils.debounce(handleResize, UI_CONSTANTS.DEBOUNCE_DELAY);
-        window.addEventListener('resize', debouncedHandleResize);
+
+        // Aggiungi listener debounced per resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(handleResize, 250);
+        });
 
         // Aggiungi listener per cambio orientamento
         window.addEventListener('orientationchange', () => {
