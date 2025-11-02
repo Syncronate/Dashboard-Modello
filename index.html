@@ -4514,7 +4514,7 @@ passwordInput.focus();
                 }
 
                 // Colora il marker in base all'allerta
-                const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : '#00bcd4';
+                const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)';
                 
                 const isMobile = utils.isMobile();
                 const iconSize = isMobile ? MAP_CONSTANTS.ICON_SIZE_MOBILE : MAP_CONSTANTS.ICON_SIZE_DESKTOP;
