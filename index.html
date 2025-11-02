@@ -3310,7 +3310,6 @@ passwordInput.focus();
                 if (STATE.map) {
                     updateMapMarkers();
                 }
-
             } catch (error) {
                 console.error("Fallimento nell'aggiornare i dati più recenti:", error);
             }
@@ -3655,8 +3654,9 @@ passwordInput.focus();
             }
         }
 
-        function fetchForecastData() {
-            fetchData(CONFIG.urls.forecast).then(data => {
+        async function fetchForecastData() {
+            try {
+                const data = await fetchData(CONFIG.urls.forecast);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 STATE.forecastData = filteredData;
                 
@@ -3668,7 +3668,9 @@ passwordInput.focus();
                 // Update table AND chart
                 updateForecastTable(filteredData);
                 drawForecastChart(labels, q10, q50, q90);
-            });
+            } catch (error) {
+                console.error('Error fetching forecast data:', error);
+            }
         }
 
         // New functions for Bettolelle 3h
@@ -3772,8 +3774,9 @@ passwordInput.focus();
             }
         }
 
-        function fetchForecastDataBettolelle3h() {
-            fetchData(CONFIG.urls.forecastBettolelle3h).then(data => {
+        async function fetchForecastDataBettolelle3h() {
+            try {
+                const data = await fetchData(CONFIG.urls.forecastBettolelle3h);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 const labels = filteredData.map(row => row['Timestamp Previsione']);
                 const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
@@ -3783,7 +3786,9 @@ passwordInput.focus();
                 // Update table AND chart
                 updateForecastTableBettolelle3h(filteredData);
                 drawForecastChartBettolelle3h(labels, q10, q50, q90);
-            });
+            } catch (error) {
+                console.error('Error fetching Bettolelle 3h forecast data:', error);
+            }
         }
 
         // New functions for Ponte Garibaldi 6h
@@ -3887,8 +3892,9 @@ passwordInput.focus();
             }
         }
 
-        function fetchForecastDataPonteGaribaldi6h() {
-            fetchData(CONFIG.urls.forecastPonteGaribaldi6h).then(data => {
+        async function fetchForecastDataPonteGaribaldi6h() {
+            try {
+                const data = await fetchData(CONFIG.urls.forecastPonteGaribaldi6h);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 const labels = filteredData.map(row => row['Timestamp Previsione']);
                 const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q10)']));
@@ -3898,7 +3904,9 @@ passwordInput.focus();
                 // Update table AND chart
                 updateForecastTablePonteGaribaldi6h(filteredData);
                 drawForecastChartPonteGaribaldi6h(labels, q10, q50, q90);
-            });
+            } catch (error) {
+                console.error('Error fetching Ponte Garibaldi 6h forecast data:', error);
+            }
         }
 
         function drawHydroHistoryChart(startDate, endDate) {
@@ -4527,14 +4535,20 @@ passwordInput.focus();
             // Refresh Button
             document.getElementById('refresh-btn').addEventListener('click', async () => {
                 showLoading();
-                await Promise.all([
-                    updateAllLatestData(), 
-                    fetchForecastData(), 
-                    fetchForecastDataBettolelle3h(), 
-                    fetchForecastDataPonteGaribaldi6h()
-                ]);
-                hideLoading();
-                showToast('Dati aggiornati', 'success');
+                try {
+                    await Promise.all([
+                        updateAllLatestData(),
+                        fetchForecastData(),
+                        fetchForecastDataBettolelle3h(),
+                        fetchForecastDataPonteGaribaldi6h()
+                    ]);
+                    showToast('Dati aggiornati', 'success');
+                } catch (error) {
+                    console.error('Error during manual refresh:', error);
+                    showToast('Errore durante l\'aggiornamento', 'error');
+                } finally {
+                    hideLoading();
+                }
             });
             
             // Export actions
@@ -4644,10 +4658,9 @@ passwordInput.focus();
             loadSettings();
 
             try {
-                const [regionHistory, weatherlinkHistory] = await Promise.all([
+                const [regionHistory, weatherlinkHistory, forecastData, forecastDataBettolelle3h, forecastDataPonteGaribaldi6h] = await Promise.all([
                     fetchData(CONFIG.urls.regionHistory),
                     fetchData(CONFIG.urls.weatherlinkHistory),
-                    updateAllLatestData(),
                     fetchForecastData(),
                     fetchForecastDataBettolelle3h(),
                     fetchForecastDataPonteGaribaldi6h()
@@ -4655,6 +4668,9 @@ passwordInput.focus();
 
                 STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora);
                 STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora);
+
+                // Now update latest data
+                await updateAllLatestData();
 
                 document.querySelectorAll('.quick-filter-btn.active').forEach(btn => btn.click());
                 
@@ -4730,14 +4746,11 @@ passwordInput.focus();
             initUIInteractions();
             initFullscreenButtons();
             initEventListeners();
-            initDashboard();
+            await initDashboard();
             startAutoRefresh();
             
             initTouchGestures();
-            initPullToRefresh();
             
-            console.log('✅ Dashboard pronta!');
-
             // Lazy Loading per Grafici
             const observerOptions = {
                 root: null,
@@ -4798,50 +4811,6 @@ passwordInput.focus();
                     if (overlay) overlay.classList.remove('active');
                 }
             }
-        }
-
-        function initPullToRefresh() {
-            if (window.innerWidth > 768) return;
-            
-            let startY = 0;
-            let currentY = 0;
-            let pulling = false;
-            
-            const mainContent = document.getElementById('main-content');
-            
-            mainContent.addEventListener('touchstart', (e) => {
-                if (mainContent.scrollTop === 0) {
-                    startY = e.touches[0].pageY;
-                    pulling = true;
-                }
-            }, { passive: true });
-            
-            mainContent.addEventListener('touchmove', (e) => {
-                if (!pulling) return;
-                
-                currentY = e.touches[0].pageY;
-                const pullDistance = currentY - startY;
-                
-                if (pullDistance > 0 && pullDistance < 150) {
-                    // Mostra indicatore visivo
-                    mainContent.style.transform = `translateY(${pullDistance * 0.5}px)`;
-                }
-            }, { passive: true });
-            
-            mainContent.addEventListener('touchend', async (e) => {
-                if (!pulling) return;
-                
-                const pullDistance = currentY - startY;
-                mainContent.style.transform = '';
-                pulling = false;
-                
-                if (pullDistance > 80) {
-                    // Refresh!
-                    showToast('Aggiornamento dati...', 'info');
-                    await updateAllLatestData();
-                    showToast('Dati aggiornati!', 'success');
-                }
-            });
         }
 
         window.addEventListener('resize', () => {
