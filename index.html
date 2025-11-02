@@ -1257,7 +1257,63 @@
             box-shadow: var(--shadow);
         }
 
+        /* === STILI ALLERTE REGIONALI === */
+        #official-alerts-container {
+            padding: 15px 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            grid-column: span 2;
+            align-content: start;
+        }
+
+        .official-alerts-day {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .official-alerts-day h3 {
+            color: var(--text-color);
+            font-size: 1.1em;
+            font-weight: 500;
+            margin: 0 0 5px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .official-alert-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .official-alert-item:hover {
+            transform: scale(1.03);
+        }
+
+        .official-alert-item .feather-icon {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.5;
+        }
+
         /* === RESPONSIVE === */
+        @media (max-width: 1200px) {
+            #official-alerts-container {
+                grid-column: span 1;
+            }
+        }
+         @media (max-width: 600px) {
+            #official-alerts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 1024px) {
             .quick-stats {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
