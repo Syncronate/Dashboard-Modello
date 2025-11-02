@@ -1481,10 +1481,13 @@ max-width: 400px;
         bottom: 0;
         background: rgba(0,0,0,0.7);
         z-index: 999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
-    
+
     .sidebar-overlay.active {
         display: block;
+        opacity: 1;
     }
     
     .sidebar ul li a {
@@ -1799,6 +1802,14 @@ max-width: 400px;
     input:focus-visible {
         outline: 3px solid var(--primary-color);
         outline-offset: 2px;
+    }
+
+    button:active,
+    .icon-btn:active,
+    .chart-btn:active,
+    .nav-link:active {
+        transform: scale(0.95);
+        opacity: 0.8;
     }
 }
 
@@ -4325,6 +4336,33 @@ passwordInput.focus();
                     if (targetSection) {
                         targetSection.classList.add('active');
                         
+                        // CHIUDI SIDEBAR E OVERLAY SU MOBILE + FORZA RESIZE
+                        if (window.innerWidth <= 768) {
+                            const sidebar = document.getElementById('sidebar');
+                            const overlay = document.querySelector('.sidebar-overlay');
+                            
+                            sidebar.classList.remove('open');
+                            if (overlay) {
+                                overlay.classList.remove('active');
+                                // AGGIUNGI TIMEOUT PER EVITARE GLITCH VISIVI
+                                setTimeout(() => {
+                                    overlay.style.display = 'none';
+                                }, 300);
+                            }
+                            
+                            // FORZA IL RIDIMENSIONAMENTO DEI GRAFICI
+                            setTimeout(() => {
+                                Object.values(STATE.charts).forEach(chart => {
+                                    if (chart && typeof chart.resize === 'function') {
+                                        chart.resize();
+                                    }
+                                });
+                                if (STATE.map) {
+                                    STATE.map.invalidateSize();
+                                }
+                            }, 300);
+                        }
+                        
                         switch(targetSection.id) {
                             case 'overview': drawOverviewCharts(); break;
                             case 'mappa': if (!STATE.map) initMap(); else STATE.map.invalidateSize(); break;
@@ -4334,9 +4372,6 @@ passwordInput.focus();
                             case 'anemometri': if (!STATE.charts.windHistory) drawWindHistoryChart(); break;
                             case 'analisi': updateStatisticsTables(); break;
                         }
-                    }
-                    if (window.innerWidth <= 768) {
-                        document.getElementById('sidebar').classList.remove('open');
                     }
                 });
             });
@@ -4451,14 +4486,24 @@ passwordInput.focus();
             // Sidebar Toggle
             document.getElementById('menu-toggle').addEventListener('click', () => {
                 const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menu-toggle');
                 const isMobile = window.innerWidth <= 768;
-    
+
                 if (isMobile) {
-                    sidebar.classList.toggle('open');
-                    sidebar.classList.remove('collapsed'); // Assicura che non sia collassata
-                    document.getElementById('main-content').classList.remove('expanded'); // Rimuovi l'espansione del contenuto
+                    const isOpen = sidebar.classList.toggle('open');
+                    sidebar.classList.remove('collapsed');
+                    document.getElementById('main-content').classList.remove('expanded');
                     
-                    // Crea/rimuovi overlay
+                    // AGGIUNGI INDICATORE VISIVO
+                    menuToggle.innerHTML = isOpen ? '✕' : '☰';
+
+                    // BLOCCA/SBLOCCA SCROLL BODY
+                    if (isOpen) {
+                        document.body.style.overflow = 'hidden';
+                    } else {
+                        document.body.style.overflow = '';
+                    }
+                    
                     let overlay = document.querySelector('.sidebar-overlay');
                     if (!overlay) {
                         overlay = document.createElement('div');
@@ -4468,6 +4513,8 @@ passwordInput.focus();
                         overlay.addEventListener('click', () => {
                             sidebar.classList.remove('open');
                             overlay.classList.remove('active');
+                            menuToggle.innerHTML = '☰'; // RESET ICONA
+                            document.body.style.overflow = ''; // SBLOCCA ANCHE QUI
                         });
                     }
                     overlay.classList.toggle('active');
@@ -4642,6 +4689,44 @@ passwordInput.focus();
                 fetchForecastDataPonteGaribaldi6h();
             }, CONFIG.intervals.forecastUpdate);
         }
+
+        function handleResize() {
+            // Ridimensiona tutti i grafici
+            Object.values(STATE.charts).forEach(chart => {
+                if (chart && typeof chart.resize === 'function') {
+                    chart.resize();
+                }
+            });
+            
+            // Ridimensiona la mappa
+            if (STATE.map) {
+                STATE.map.invalidateSize();
+            }
+        }
+
+        // Aggiungi listener debounced per resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                handleResize();
+                
+                // RICARICA LE TABELLE SE SIAMO NELLA SEZIONE PREVISIONI
+                const activeSection = document.querySelector('.page-section.active');
+                if (activeSection && activeSection.id === 'previsioni') {
+                    if (STATE.forecastData.length > 0) {
+                        updateForecastTable(STATE.forecastData);
+                        updateForecastTableBettolelle3h(STATE.forecastData);
+                        updateForecastTablePonteGaribaldi6h(STATE.forecastData);
+                    }
+                }
+            }, 250);
+        });
+
+        // Aggiungi listener per cambio orientamento
+        window.addEventListener('orientationchange', () => {
+            setTimeout(handleResize, 300);
+        });
 
         // ==================== START APPLICATION ====================
         // La logica della dashboard deve essere dentro una funzione come questa
