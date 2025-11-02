@@ -1259,34 +1259,41 @@
 
         /* === STILI ALLERTE REGIONALI === */
         #official-alerts-container {
-            padding: 15px 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            display: flex; /* Changed from grid to flex */
+            gap: 15px; /* Reduced gap */
+            align-items: stretch;
         }
 
         .official-alerts-day {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px; /* Reduced gap */
+            flex: 1; /* Make columns equal width */
+        }
+
+        /* Add a separator between the two days */
+        .official-alerts-day + .official-alerts-day {
+            border-left: 1px solid var(--border-color);
+            padding-left: 15px;
         }
 
         .official-alerts-day h3 {
             color: var(--text-color);
-            font-size: 1.1em;
+            font-size: 0.9em; /* Reduced font size */
             font-weight: 500;
-            margin: 0 0 5px 0;
-            padding-bottom: 10px;
+            margin: 0 0 8px 0; /* Adjusted margin */
+            padding-bottom: 5px; /* Reduced padding */
             border-bottom: 1px solid var(--border-color);
         }
 
         .official-alert-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
+            gap: 8px; /* Reduced gap */
+            padding: 5px 8px; /* Reduced padding */
             border-radius: 6px;
-            font-weight: 600;
+            font-weight: 500; /* Reduced font weight */
+            font-size: 0.85em; /* Reduced font size */
             transition: transform 0.2s ease-in-out;
         }
 
@@ -1295,9 +1302,9 @@
         }
 
         .official-alert-item .feather-icon {
-            width: 20px;
-            height: 20px;
-            stroke-width: 2.5;
+            width: 16px; /* Reduced size */
+            height: 16px; /* Reduced size */
+            stroke-width: 2; /* Reduced stroke */
         }
 
         /* === RESPONSIVE === */
@@ -2045,7 +2052,12 @@ max-width: 400px;
         
         <!-- OVERVIEW PAGE -->
         <section id="overview" class="page-section active">
-            <h1><i data-feather="bar-chart-2" class="feather-icon"></i> Panoramica Generale</h1>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                <h1><i data-feather="bar-chart-2" class="feather-icon"></i> Panoramica Generale</h1>
+                <div class="card" id="official-alerts-container" style="padding: 10px 15px; min-width: 500px;">
+                    <p style="color: var(--text-muted); text-align: center; margin: 0;">Caricamento allerte...</p>
+                </div>
+            </div>
             
             <div class="quick-stats" id="overview-quick-stats">
                 <div class="quick-stat-card" id="overview-hydro-max">
@@ -2116,12 +2128,6 @@ max-width: 400px;
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- NUOVO BLOCCO ALLERTE REGIONALI -->
-            <h2 style="margin-top: 30px;"><i data-feather="shield" class="feather-icon"></i> Allerta Meteo Regionale</h2>
-            <div class="card" id="official-alerts-container">
-                <p style="color: var(--text-muted); text-align: center;">Caricamento allerte...</p>
             </div>
 
             <div class="overview-grid-container">
