@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -1261,10 +1262,8 @@
         #official-alerts-container {
             padding: 15px 20px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            grid-column: span 2;
-            align-content: start;
         }
 
         .official-alerts-day {
@@ -1303,17 +1302,6 @@
         }
 
         /* === RESPONSIVE === */
-        @media (max-width: 1200px) {
-            #official-alerts-container {
-                grid-column: span 1;
-            }
-        }
-         @media (max-width: 600px) {
-            #official-alerts-container {
-                grid-template-columns: 1fr;
-            }
-        }
-
         @media (max-width: 1024px) {
             .quick-stats {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -2129,10 +2117,6 @@ max-width: 400px;
                         </div>
                     </div>
                 </div>
-
-                <div class="card" id="official-alerts-container">
-                    <p style="color: var(--text-muted); text-align: center;">Caricamento allerte...</p>
-                </div>
             </div>
 
             <div class="overview-grid-container">
@@ -2148,6 +2132,12 @@ max-width: 400px;
                         <p style="color: var(--text-muted); text-align: center;">Nessuna allerta al momento</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- NUOVO BLOCCO ALLERTE REGIONALI -->
+            <h2 style="margin-top: 30px;"><i data-feather="shield" class="feather-icon"></i> Allerta Meteo Regionale</h2>
+            <div class="card" id="official-alerts-container">
+                <p style="color: var(--text-muted); text-align: center;">Caricamento allerte...</p>
             </div>
         </section>
 
@@ -3073,7 +3063,9 @@ passwordInput.focus();
                 regionLatest: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1216509518&single=true&output=csv',
                 weatherlinkLatest: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=377471478&single=true&output=csv',
                 regionHistory: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1332614523&single=true&output=csv',
-                weatherlinkHistory: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=277108921&single=true&output=csv'
+                weatherlinkHistory: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=277108921&single=true&output=csv',
+                alertsToday: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=62264278&single=true&output=csv',
+                alertsTomorrow: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=903050518&single=true&output=csv'
             },
             intervals: {
                 dataUpdate: 60000,      // 1 minuto
@@ -3122,7 +3114,8 @@ passwordInput.focus();
                 data: null,
                 forecast: null
             },
-            countdownInterval: null
+            countdownInterval: null,
+            officialAlerts: null
         };
 
         // ==================== UTILITY FUNCTIONS ====================
@@ -3523,6 +3516,101 @@ passwordInput.focus();
                 </div>
             `}).join('');
             
+            feather.replace();
+        }
+
+        // ==================== OFFICIAL ALERTS FUNCTIONS ====================
+        async function updateOfficialAlerts() {
+            try {
+                const [todayData, tomorrowData] = await Promise.all([
+                    fetchData(CONFIG.urls.alertsToday),
+                    fetchData(CONFIG.urls.alertsTomorrow)
+                ]);
+
+                const alertLevels = { 'Verde': 1, 'Gialla': 2, 'Arancione': 3, 'Rossa': 4 };
+                const risks = ['idraulica', 'idrogeologica', 'mareggiate', 'neve', 'temporali', 'vento'];
+
+                const processAlerts = (data) => {
+                    const maxAlerts = {};
+                    risks.forEach(risk => maxAlerts[risk] = 'Verde');
+
+                    if (data && data.length > 0) {
+                        for (const row of data) {
+                            for (const risk of risks) {
+                                const currentLevel = row[risk] || 'Verde';
+                                if (alertLevels[currentLevel] > alertLevels[maxAlerts[risk]]) {
+                                    maxAlerts[risk] = currentLevel;
+                                }
+                            }
+                        }
+                    }
+                    return maxAlerts;
+                };
+
+                STATE.officialAlerts = {
+                    today: processAlerts(todayData),
+                    tomorrow: processAlerts(tomorrowData)
+                };
+
+                updateOfficialAlertsDisplay(STATE.officialAlerts);
+
+            } catch (error) {
+                console.error("Errore nel caricamento delle allerte regionali:", error);
+                const container = document.getElementById('official-alerts-container');
+                if(container) container.innerHTML = '<p style="color: var(--danger-color); text-align: center;">Impossibile caricare le allerte regionali.</p>';
+            }
+        }
+
+        function updateOfficialAlertsDisplay(alerts) {
+            const container = document.getElementById('official-alerts-container');
+            if (!container || !alerts) return;
+
+            const riskConfig = {
+                idraulica:     { icon: 'droplet', label: 'Idraulico' },
+                idrogeologica: { icon: 'bar-chart-2', label: 'Idrogeologico' },
+                temporali:     { icon: 'cloud-lightning', label: 'Temporali' },
+                vento:         { icon: 'wind', label: 'Vento' },
+                neve:          { icon: 'cloud-snow', label: 'Neve' },
+                mareggiate:    { icon: 'anchor', label: 'Mareggiate' }
+            };
+
+            const createAlertsHtml = (dayAlerts) => {
+                let html = '';
+                const allAlerts = Object.entries(dayAlerts)
+                    .filter(([risk]) => riskConfig[risk]);
+
+                const alertColors = {
+                    'Verde': 'var(--success-color)',
+                    'Gialla': 'var(--warning-color)',
+                    'Arancione': '#ff9800',
+                    'Rossa': 'var(--danger-color)'
+                };
+
+                allAlerts.forEach(([risk, level]) => {
+                    const config = riskConfig[risk];
+                    const color = alertColors[level] || 'var(--text-muted)';
+                    
+                    html += `
+                        <div class="official-alert-item" style="color: ${color}; border: 1px solid ${color}33; background-color: ${color}1A;">
+                            <i data-feather="${config.icon}" class="feather-icon"></i>
+                            <span>Rischio ${config.label}</span>
+                        </div>
+                    `;
+                });
+                return html;
+            };
+
+            container.innerHTML = `
+                <div class="official-alerts-day">
+                    <h3>Oggi</h3>
+                    ${createAlertsHtml(alerts.today)}
+                </div>
+                <div class="official-alerts-day">
+                    <h3>Domani</h3>
+                    ${createAlertsHtml(alerts.tomorrow)}
+                </div>
+            `;
+
             feather.replace();
         }
 
@@ -5067,7 +5155,7 @@ passwordInput.focus();
             loadSettings();
 
             try {
-                const [regionHistory, weatherlinkHistory, forecastData, forecastDataBettolelle3h, forecastDataPonteGaribaldi6h] = await Promise.all([
+                const [regionHistory, weatherlinkHistory] = await Promise.all([
                     fetchData(CONFIG.urls.regionHistory),
                     fetchData(CONFIG.urls.weatherlinkHistory),
                     fetchForecastData(),
