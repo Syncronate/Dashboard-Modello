@@ -4986,16 +4986,45 @@ passwordInput.focus();
             }
         }
         
-        function startAutoRefresh() {
-            if (STATE.updateIntervals.data) clearInterval(STATE.updateIntervals.data);
-            if (STATE.updateIntervals.forecast) clearInterval(STATE.updateIntervals.forecast);
+        // ==================== AUTO REFRESH ====================
+        // Ciclo di aggiornamento per i dati principali (più frequente)
+        async function runDataUpdateLoop() {
+            try {
+                await updateAllLatestData();
+            } catch (error) {
+                console.error("Errore nel ciclo di aggiornamento dati:", error);
+                // In caso di errore, attende un po' di più prima di riprovare
+                await utils.sleep(5000); 
+            } finally {
+                // Pianifica la prossima esecuzione in ogni caso (successo o fallimento)
+                STATE.updateIntervals.data = setTimeout(runDataUpdateLoop, CONFIG.intervals.dataUpdate);
+            }
+        }
 
-            STATE.updateIntervals.data = setInterval(updateAllLatestData, CONFIG.intervals.dataUpdate);
-            STATE.updateIntervals.forecast = setInterval(() => {
-                fetchForecastData();
-                fetchForecastDataBettolelle3h();
-                fetchForecastDataPonteGaribaldi6h();
-            }, CONFIG.intervals.forecastUpdate);
+        // Ciclo di aggiornamento per le previsioni (meno frequente)
+        async function runForecastUpdateLoop() {
+            try {
+                // Esegue le tre chiamate in parallelo per efficienza
+                await Promise.all([
+                    fetchForecastData(),
+                    fetchForecastDataBettolelle3h(),
+                    fetchForecastDataPonteGaribaldi6h()
+                ]);
+            } catch (error) {
+                console.error("Errore nel ciclo di aggiornamento previsioni:", error);
+            } finally {
+                STATE.updateIntervals.forecast = setTimeout(runForecastUpdateLoop, CONFIG.intervals.forecastUpdate);
+            }
+        }
+
+        function startAutoRefresh() {
+            // Interrompe i cicli precedenti se esistono
+            if (STATE.updateIntervals.data) clearTimeout(STATE.updateIntervals.data);
+            if (STATE.updateIntervals.forecast) clearTimeout(STATE.updateIntervals.forecast);
+
+            // Avvia i nuovi cicli di aggiornamento
+            runDataUpdateLoop();
+            runForecastUpdateLoop();
         }
 
         function handleResize() {
