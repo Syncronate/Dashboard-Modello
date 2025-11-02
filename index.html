@@ -1990,6 +1990,20 @@ max-width: 400px;
                     <span class="alert-badge normal">NORMALE</span>
                 </div>
 
+                <div class="quick-stat-card" id="overview-rain-intensity">
+                    <div class="quick-stat-icon">
+                        <i data-feather="cloud-drizzle" class="feather-icon"></i>
+                    </div>
+                    <div class="quick-stat-content">
+                        <div class="quick-stat-label">Intensità Pioggia Max</div>
+                        <div class="quick-stat-value">--<span class="quick-stat-unit">mm/h</span></div>
+                        <div class="quick-stat-trend trend-neutral">
+                            <span>--</span>
+                        </div>
+                    </div>
+                    <span class="alert-badge normal">NORMALE</span>
+                </div>
+
                 <div class="quick-stat-card" id="overview-stations">
                     <div class="quick-stat-icon">
                         <i data-feather="radio" class="feather-icon"></i>
@@ -3552,9 +3566,37 @@ passwordInput.focus();
                     trendEl.textContent = `Stazione: ${maxWindStation.name}`;
                 }
             }
+
+            // Rain Intensity
+            const rainIntensityStations = [
+                { name: 'Arcevia', value: parseAndFixDecimal(region['Arcevia - Intensita di pioggia (mm/min)']) * 60 },
+                { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Intensita di pioggia (mm/min)']) * 60 },
+                { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Intensita di pioggia (mm/min)']) * 60 },
+                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Intensita Pioggia (mm/min)']) * 60 },
+                { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Intensità Pioggia (mm/hr)']) },
+                { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Intensità Pioggia (mm/hr)"]) },
+                { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Intensità Pioggia (mm/hr)']) }
+            ];
+            const validRainIntensity = rainIntensityStations.filter(s => !isNaN(s.value));
+            const maxRainIntensityStation = validRainIntensity.length > 0 ? validRainIntensity.reduce((max, s) => s.value > max.value ? s : max) : { value: NaN, name: '--'};
+            
+            const rainIntensityCard = document.getElementById('overview-rain-intensity');
+            if (rainIntensityCard) {
+                const valueEl = rainIntensityCard.querySelector('.quick-stat-value');
+                const badgeEl = rainIntensityCard.querySelector('.alert-badge');
+                const trendEl = rainIntensityCard.querySelector('.quick-stat-trend span');
+
+                if (!isNaN(maxRainIntensityStation.value)) {
+                    valueEl.innerHTML = `${maxRainIntensityStation.value.toFixed(1)}<span class="quick-stat-unit">mm/h</span>`;
+                    const level = getAlertLevel(maxRainIntensityStation.value, CONFIG.thresholds.rainWarning, CONFIG.thresholds.rainCritical);
+                    badgeEl.className = `alert-badge ${level}`;
+                    badgeEl.textContent = level.toUpperCase();
+                    trendEl.textContent = `Stazione: ${maxRainIntensityStation.name}`;
+                }
+            }
             
             // MODIFICA: Aggiornato il conteggio totale delle stazioni a 18
-            const totalStations = 18;
+            const totalStations = 15;
             const activeStations = new Set();
             validHydro.forEach(s => activeStations.add(s.name));
             validWind.forEach(s => activeStations.add(s.name));
