@@ -310,6 +310,21 @@
             background: var(--medium-bg);
         }
 
+/* Animazione pulse per icone in allerta */
+@keyframes markerPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.custom-marker.alert-critical > div {
+    animation: markerPulse 2s ease-in-out infinite;
+}
+
+.custom-marker.alert-warning > div {
+    animation: markerPulse 3s ease-in-out infinite;
+}
+
         /* Stile per i marker delle stazioni WeatherLink e combinate */
         .weatherlink-marker {
             background: rgba(30, 30, 30, 0.85);
@@ -2780,6 +2795,135 @@ if (event.key === 'Enter') { checkPassword(); }
 passwordInput.focus();
 });
         // ==================== CONFIGURATION ====================
+        // Costanti UI
+        const UI_CONSTANTS = {
+            MOBILE_BREAKPOINT: 768,
+            DEBOUNCE_DELAY: 250,
+            TOAST_DURATION: 5000,
+            FADE_DURATION: 300,
+            PULL_THRESHOLD: 100,
+            SWIPE_THRESHOLD: 50
+        };
+
+        // Costanti Mappa
+        const MAP_CONSTANTS = {
+            CENTER_LAT: 43.63,
+            CENTER_LON: 13.10,
+            DEFAULT_ZOOM: 11,
+            ICON_SIZE_DESKTOP: 50,
+            ICON_SIZE_MOBILE: 60
+        };
+
+        // Messaggi Errore
+        const ERROR_MESSAGES = {
+            FETCH_FAILED: 'Errore nel caricamento dei dati',
+            CHART_ERROR: 'Errore nella creazione del grafico',
+            PARSE_ERROR: 'Errore nell\'elaborazione dei dati',
+            NO_DATA: 'Nessun dato disponibile'
+        };
+
+        // === UTILITY FUNCTIONS ===
+        const utils = {
+            // Controlla se siamo su mobile
+            isMobile: () => window.innerWidth <= UI_CONSTANTS.MOBILE_BREAKPOINT, // ✅ FIX: Corretto bug ricorsione infinita
+            
+            // Formatta numeri con fallback
+            formatNumber: (value, decimals = 2, fallback = 'N/D') => {
+                const num = parseAndFixDecimal(value);
+                return isNaN(num) ? fallback : num.toFixed(decimals);
+            },
+            
+            // Debounce generico
+            debounce: (func, delay) => {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, delay);
+                };
+            },
+            
+            // Sleep helper
+            sleep: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
+            
+            // Controlla se un valore è valido
+            isValidValue: (value) => {
+                return value !== null && 
+                       value !== undefined && 
+                       value !== 'N/A' && 
+                       value !== '' && 
+                       !isNaN(parseAndFixDecimal(value));
+            }
+        };
+
+        // Sistema di logging
+        const LOG = {
+            errors: [],
+            warnings: [],
+            
+            error: (message, data) => {
+                const entry = {
+                    type: 'error',
+                    message,
+                    data,
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent
+                };
+                LOG.errors.push(entry);
+                console.error('🔴 ERROR:', entry);
+                
+                // Mantieni solo ultimi 50 errori
+                if (LOG.errors.length > 50) {
+                    LOG.errors.shift();
+                }
+            },
+            
+            warn: (message, data) => {
+                const entry = {
+                    type: 'warning',
+                    message,
+                    data,
+                    timestamp: new Date().toISOString()
+                };
+                LOG.warnings.push(entry);
+                console.warn('🟡 WARNING:', entry);
+            },
+            
+            // Esporta log per debug
+            export: () => {
+                const blob = new Blob([JSON.stringify({
+                    errors: LOG.errors,
+                    warnings: LOG.warnings,
+                    userAgent: navigator.userAgent,
+                    timestamp: new Date().toISOString()
+                }, null, 2)], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `dashboard-log-${Date.now()}.json`;
+                link.click();
+            }
+        };
+
+        // Cattura errori globali
+        window.addEventListener('error', (e) => {
+            LOG.error('Uncaught error', {
+                message: e.message,
+                filename: e.filename,
+                lineno: e.lineno,
+                colno: e.colno
+            });
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            LOG.error('Unhandled promise rejection', {
+                reason: e.reason,
+                promise: e.promise
+            });
+        });
         // Configurazione di base, può essere sovrascritta dalle impostazioni salvate
         let CONFIG = {
             urls: {
@@ -2886,6 +3030,19 @@ passwordInput.focus();
 
             // Se il parsing fallisce, avvisa in console. La vecchia funzione falliva silenziosamente.
             // console.warn(`Impossibile analizzare la data: "${dateString}"`); // Abilitare per debug
+            
+            // Fallback: prova formato ISO standard
+            try {
+                const isoDate = new Date(dateString);
+                if (!isNaN(isoDate.getTime())) {
+                    console.warn(`Data parsata con fallback ISO: ${dateString}`);
+                    return isoDate;
+                }
+            } catch (e) {
+                // Ignora
+            }
+            
+            console.error(`⚠️ Impossibile parsare la data: "${dateString}"`);
             return null;
         }
 
@@ -3257,7 +3414,7 @@ passwordInput.focus();
             // Chiudi sidebar quando si clicca su un link (mobile)
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function() {
-                    if (window.innerWidth <= 768) {
+                    if (utils.isMobile()) { // ✅ FIX: Usato utils.isMobile()
                         document.getElementById('sidebar').classList.remove('open');
                         const overlay = document.querySelector('.sidebar-overlay');
                         if (overlay) overlay.classList.remove('active');
@@ -3477,14 +3634,46 @@ passwordInput.focus();
         }
 
         // ==================== CHART FUNCTIONS ====================
+        function safeCreateChart(canvasId, config, chartKey) {
+            try {
+                return createChart(canvasId, config, chartKey);
+            } catch (error) {
+                console.error(`Errore creazione grafico ${chartKey}:`, error);
+                
+                // Mostra messaggio di errore nel canvas
+                const canvas = document.getElementById(canvasId);
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#f44336';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('❌ Errore caricamento grafico', canvas.width / 2, canvas.height / 2);
+                    ctx.fillText('Riprova tra qualche istante', canvas.width / 2, canvas.height / 2 + 30);
+                }
+                
+                showToast(`Errore nel grafico ${chartKey}`, 'error');
+                return null;
+            }
+        }
+        
+        // ✅ FIX: Funzione di cleanup grafici migliorata
         function createChart(canvasId, config, chartKey) {
-            if (chartKey && STATE.charts[chartKey]) {
-                STATE.charts[chartKey].destroy();
+            const canvas = document.getElementById(canvasId);
+            
+            // Cleanup completo
+            if (canvas.chart) {
+                canvas.chart.destroy();
+                canvas.chart = null;
             }
             
-            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (chartKey && STATE.charts[chartKey]) {
+                STATE.charts[chartKey].destroy();
+                STATE.charts[chartKey] = null;
+            }
+            
+            const ctx = canvas.getContext('2d', { willReadFrequently: false });
             const newChart = new Chart(ctx, config);
-            document.getElementById(canvasId).chart = newChart; 
+            canvas.chart = newChart;
             
             if (chartKey) {
                 STATE.charts[chartKey] = newChart;
@@ -3561,7 +3750,7 @@ passwordInput.focus();
                 </tr>
             `;
 
-            createChart('forecastChart', {
+            safeCreateChart('forecastChart', {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -3596,7 +3785,7 @@ passwordInput.focus();
         }
 
         function updateForecastTable(data) {
-            const isMobile = window.innerWidth <= 768;
+            const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
             
             const desktopTableContainer = document.getElementById('desktop-forecast-table');
             const mobileListContainer = document.getElementById('mobile-forecast-list');
@@ -3703,7 +3892,7 @@ passwordInput.focus();
                 </tr>
             `;
 
-            createChart('forecastChartBettolelle3h', {
+            safeCreateChart('forecastChartBettolelle3h', {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -3730,7 +3919,7 @@ passwordInput.focus();
         }
 
         function updateForecastTableBettolelle3h(data) {
-            const isMobile = window.innerWidth <= 768;
+            const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
 
             const desktopTableContainer = document.getElementById('desktop-forecast-table-bettolelle-3h');
             const mobileListContainer = document.getElementById('mobile-forecast-list-bettolelle-3h');
@@ -3821,7 +4010,7 @@ passwordInput.focus();
                 </tr>
             `;
 
-            createChart('forecastChartPonteGaribaldi6h', {
+            safeCreateChart('forecastChartPonteGaribaldi6h', {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -3848,7 +4037,7 @@ passwordInput.focus();
         }
 
         function updateForecastTablePonteGaribaldi6h(data) {
-            const isMobile = window.innerWidth <= 768;
+            const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
             
             const desktopTableContainer = document.getElementById('desktop-forecast-table-ponte-garibaldi-6h');
             const mobileListContainer = document.getElementById('mobile-forecast-list-ponte-garibaldi-6h');
@@ -3930,7 +4119,7 @@ passwordInput.focus();
                 borderColor: CONFIG.defaults.chartColors[i], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2
             }));
 
-            createChart('hydroHistoryChart', {
+            safeCreateChart('hydroHistoryChart', {
                 type: 'line', data: { labels, datasets },
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
@@ -3971,7 +4160,7 @@ passwordInput.focus();
                 };
             });
 
-            createChart('rainHistoryChart', {
+            safeCreateChart('rainHistoryChart', {
                 type: 'line', data: { labels, datasets },
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
@@ -4002,7 +4191,7 @@ passwordInput.focus();
                 { label: `Raffica (${station})`, data: filteredData.map(r => parseAndFixDecimal(r[`${station} - Raffica Vento 10 min (km/h)`])), borderColor: CONFIG.defaults.chartColors[1], borderDash: [5, 5], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2 }
             ];
 
-            createChart('windHistoryChart', {
+            safeCreateChart('windHistoryChart', {
                 type: 'line', data: { labels, datasets },
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
@@ -4258,21 +4447,135 @@ passwordInput.focus();
                 // Colora il marker in base all'allerta
                 const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : '#00bcd4';
                 
-                const isMobile = window.innerWidth <= 768;
-                const iconSize = isMobile ? 60 : 50;
+                const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
+                const iconSize = isMobile ? MAP_CONSTANTS.ICON_SIZE_MOBILE : MAP_CONSTANTS.ICON_SIZE_DESKTOP;
                 const fontSize = isMobile ? '20px' : '18px';
 
-                // Crea l'icona a cerchio
-                const iconHtml = `
-                    <div style="background-color: ${iconColor}; color: white; 
-                        width: ${iconSize}px; height: ${iconSize}px; 
-                        border-radius: 50%; border: 3px solid white; 
-                        display: flex; align-items: center; justify-content: center; 
-                        text-align: center; font-size: ${fontSize}; font-weight: bold; 
-                        box-shadow: var(--shadow-lg);">
-                        ${valueStr}
-                    </div>`;
-                marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [iconSize, iconSize], iconAnchor: [iconSize/2, iconSize/2] }));
+                let iconShape = 'circle'; // circle, droplet, rain, wind
+                let iconEmoji = '';
+
+                // Determina icona in base al tipo di dato
+                if (station.displayValue === 'hydro_level') {
+                    iconShape = 'droplet';
+                    iconEmoji = '💧';
+                } else if (station.displayValue === 'rain_intensity') {
+                    iconShape = 'rain';
+                    iconEmoji = '🌧️';
+                }
+
+                // Se la stazione ha dati vento, usa icona vento
+                if (station.keys.wind) {
+                    iconShape = 'wind';
+                    iconEmoji = '💨';
+                }
+
+                // Crea l'icona in base alla forma
+                let iconHtml = '';
+
+                if (iconShape === 'droplet') {
+                    // Icona a goccia per idrometri
+                    iconHtml = `
+                        <div style="
+                            width: 0;
+                            height: 0;
+                            border-left: ${iconSize/2}px solid transparent;
+                            border-right: ${iconSize/2}px solid transparent;
+                            border-bottom: ${iconSize}px solid ${iconColor};
+                            border-radius: 50%;
+                            position: relative;
+                            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+                        ">
+                            <div style="
+                                position: absolute;
+                                top: ${iconSize * 0.3}px;
+                                left: -${iconSize/4}px;
+                                width: ${iconSize/2}px;
+                                color: white;
+                                font-size: ${parseFloat(fontSize) * 0.7}px;
+                                font-weight: bold;
+                                text-align: center;
+                                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+                            ">${valueStr}</div>
+                        </div>
+                    `;
+                } else if (iconShape === 'rain') {
+                    // Icona nuvola per pluviometri
+                    iconHtml = `
+                        <div style="
+                            background: linear-gradient(to bottom, ${iconColor} 60%, rgba(255,255,255,0.2));
+                            width: ${iconSize}px;
+                            height: ${iconSize * 0.7}px;
+                            border-radius: ${iconSize * 0.5}px ${iconSize * 0.5}px 0 0;
+                            border: 3px solid white;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            box-shadow: var(--shadow-lg);
+                            position: relative;
+                        ">
+                            <div style="color: white; font-size: ${parseFloat(fontSize) * 0.8}px; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                                ${valueStr}
+                            </div>
+                            <div style="
+                                position: absolute;
+                                bottom: -8px;
+                                left: 50%;
+                                transform: translateX(-50%);
+                                font-size: ${parseFloat(fontSize) * 0.6}px;
+                            ">💧💧💧</div>
+                        </div>
+                    `;
+                } else if (iconShape === 'wind') {
+                    // Icona freccia per anemometri
+                    const windValue = parseFloat(valueStr);
+                    const rotation = windValue > 30 ? 'rotate(45deg)' : 'rotate(0deg)';
+                    
+                    iconHtml = `
+                        <div style="
+                            background: ${iconColor};
+                            width: ${iconSize}px;
+                            height: ${iconSize}px;
+                            border-radius: 10px;
+                            border: 3px solid white;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            box-shadow: var(--shadow-lg);
+                            transform: ${rotation};
+                            transition: transform 0.5s ease;
+                        ">
+                            <div style="font-size: ${parseFloat(fontSize) * 1.2}px; color: white;">➤</div>
+                            <div style="color: white; font-size: ${parseFloat(fontSize) * 0.6}px; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                                ${valueStr}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Fallback: cerchio standard
+                    iconHtml = `
+                        <div style="background-color: ${iconColor}; color: white; 
+                            width: ${iconSize}px; height: ${iconSize}px; 
+                            border-radius: 50%; border: 3px solid white; 
+                            display: flex; align-items: center; justify-content: center; 
+                            text-align: center; font-size: ${fontSize}; font-weight: bold; 
+                            box-shadow: var(--shadow-lg);">
+                            ${valueStr}
+                        </div>
+                    `;
+                }
+
+                marker.setIcon(L.divIcon({ 
+                    className: 'custom-marker', 
+                    html: iconHtml, 
+                    iconSize: [iconSize, iconSize], 
+                    iconAnchor: [iconSize/2, iconSize] // Ancoraggio alla base
+                }));
+                
+                // ✅ FIX: Aggiunte classi per animazioni marker
+                if (alertLevel === 'critical' || alertLevel === 'warning') {
+                    marker._icon.classList.add(`alert-${alertLevel}`);
+                }
 
                 // Costruisce il contenuto del popup in modo dinamico
                 if (station.keys.level) {
@@ -4347,7 +4650,7 @@ passwordInput.focus();
                     if (targetSection) {
                         targetSection.classList.add('active');
                         
-                        if (window.innerWidth <= 768) {
+                        if (utils.isMobile()) { // ✅ FIX: Usato utils.isMobile()
                             closeMobileMenu();
                         }
                         
@@ -4500,7 +4803,7 @@ passwordInput.focus();
             // Sidebar Toggle
             document.getElementById('menu-toggle').addEventListener('click', () => {
                 const sidebar = document.getElementById('sidebar');
-                const isMobile = window.innerWidth <= 768;
+                const isMobile = utils.isMobile(); // ✅ FIX: Usato utils.isMobile()
 
                 if (isMobile) {
                     // Ensure overlay exists BEFORE toggling the menu
@@ -4710,13 +5013,10 @@ passwordInput.focus();
                 STATE.map.invalidateSize();
             }
         }
-
-        // Aggiungi listener debounced per resize
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(handleResize, 250);
-        });
+        
+        // ✅ FIX: Implementato debounce corretto per il resize
+        const debouncedHandleResize = utils.debounce(handleResize, UI_CONSTANTS.DEBOUNCE_DELAY);
+        window.addEventListener('resize', debouncedHandleResize);
 
         // Aggiungi listener per cambio orientamento
         window.addEventListener('orientationchange', () => {
@@ -4786,7 +5086,7 @@ passwordInput.focus();
         }
 
         function initTouchGestures() {
-            if (window.innerWidth > 768) return;
+            if (!utils.isMobile()) return;
             
             const sidebar = document.getElementById('sidebar');
             let touchStartX = 0;
@@ -4814,7 +5114,7 @@ passwordInput.focus();
         }
 
         window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
+            if (!utils.isMobile()) {
                 document.getElementById('sidebar').classList.remove('open');
             }
         });
