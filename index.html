@@ -4459,29 +4459,13 @@ passwordInput.focus();
                 const iconSize = isMobile ? MAP_CONSTANTS.ICON_SIZE_MOBILE : MAP_CONSTANTS.ICON_SIZE_DESKTOP;
                 const fontSize = isMobile ? '20px' : '18px';
 
-                let iconShape = 'circle'; // circle, droplet, rain, wind
-                let iconEmoji = '';
+                const rainStations = ['Arcevia', 'Barbara', 'Corinaldo', 'Scapezzano', 'Montignano', "Sant'Angelo"];
+                let iconShape = rainStations.includes(station.name) ? 'triangle' : 'circle';
 
-                // Determina icona in base al tipo di dato
-                if (station.displayValue === 'hydro_level') {
-                    iconShape = 'droplet';
-                    iconEmoji = '💧';
-                } else if (station.displayValue === 'rain_intensity') {
-                    iconShape = 'rain';
-                    iconEmoji = '🌧️';
-                }
-
-                // Se la stazione ha dati vento, usa icona vento
-                if (station.keys.wind) {
-                    iconShape = 'wind';
-                    iconEmoji = '💨';
-                }
-
-                // Crea l'icona in base alla forma
                 let iconHtml = '';
 
-                if (iconShape === 'droplet') {
-                    // Icona a goccia per idrometri
+                if (iconShape === 'triangle') {
+                    // Icona a triangolo per pluviometri
                     iconHtml = `
                         <div style="
                             width: 0;
@@ -4489,78 +4473,24 @@ passwordInput.focus();
                             border-left: ${iconSize/2}px solid transparent;
                             border-right: ${iconSize/2}px solid transparent;
                             border-bottom: ${iconSize}px solid ${iconColor};
-                            border-radius: 50%;
                             position: relative;
                             filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
                         ">
                             <div style="
                                 position: absolute;
-                                top: ${iconSize * 0.3}px;
-                                left: -${iconSize/4}px;
-                                width: ${iconSize/2}px;
+                                top: ${iconSize * 0.4}px;
+                                left: -${iconSize/2.5}px;
+                                width: ${iconSize/1.25}px;
                                 color: white;
-                                font-size: ${parseFloat(fontSize) * 0.7}px;
+                                font-size: ${parseFloat(fontSize) * 0.8}px;
                                 font-weight: bold;
                                 text-align: center;
                                 text-shadow: 0 1px 3px rgba(0,0,0,0.5);
                             ">${valueStr}</div>
                         </div>
                     `;
-                } else if (iconShape === 'rain') {
-                    // Icona nuvola per pluviometri
-                    iconHtml = `
-                        <div style="
-                            background: linear-gradient(to bottom, ${iconColor} 60%, rgba(255,255,255,0.2));
-                            width: ${iconSize}px;
-                            height: ${iconSize * 0.7}px;
-                            border-radius: ${iconSize * 0.5}px ${iconSize * 0.5}px 0 0;
-                            border: 3px solid white;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            box-shadow: var(--shadow-lg);
-                            position: relative;
-                        ">
-                            <div style="color: white; font-size: ${parseFloat(fontSize) * 0.8}px; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
-                                ${valueStr}
-                            </div>
-                            <div style="
-                                position: absolute;
-                                bottom: -8px;
-                                left: 50%;
-                                transform: translateX(-50%);
-                                font-size: ${parseFloat(fontSize) * 0.6}px;
-                            ">💧💧💧</div>
-                        </div>
-                    `;
-                } else if (iconShape === 'wind') {
-                    // Icona freccia per anemometri
-                    const windValue = parseFloat(valueStr);
-                    const rotation = windValue > 30 ? 'rotate(45deg)' : 'rotate(0deg)';
-                    
-                    iconHtml = `
-                        <div style="
-                            background: ${iconColor};
-                            width: ${iconSize}px;
-                            height: ${iconSize}px;
-                            border-radius: 10px;
-                            border: 3px solid white;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            justify-content: center;
-                            box-shadow: var(--shadow-lg);
-                            transform: ${rotation};
-                            transition: transform 0.5s ease;
-                        ">
-                            <div style="font-size: ${parseFloat(fontSize) * 1.2}px; color: white;">➤</div>
-                            <div style="color: white; font-size: ${parseFloat(fontSize) * 0.6}px; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
-                                ${valueStr}
-                            </div>
-                        </div>
-                    `;
                 } else {
-                    // Fallback: cerchio standard
+                    // Icona a cerchio per idrometri
                     iconHtml = `
                         <div style="background-color: ${iconColor}; color: white; 
                             width: ${iconSize}px; height: ${iconSize}px; 
