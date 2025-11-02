@@ -1402,6 +1402,431 @@ max-width: 400px;
 .login-box button:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
 .login-box .error-message { color: var(--danger-color); margin-top: 15px; height: 20px; font-size: 0.9em; }
 .content-hidden { visibility: hidden; opacity: 0; transition: opacity 0.5s ease-in; }
+
+
+/* Mobile: sotto 768px */
+@media (max-width: 768px) {
+    .top-header {
+        height: auto;
+        min-height: 60px;
+        padding: 10px 15px;
+        flex-wrap: wrap;
+    }
+    
+    .header-left {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .header-title {
+        font-size: 1em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .header-right {
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    
+    /* Mostra info essenziali anche su mobile */
+    .last-update {
+        display: block !important;
+        font-size: 0.7em;
+        width: 100%;
+        text-align: right;
+        margin-top: 5px;
+    }
+    
+    #next-update {
+        display: none; /* Solo ultimo aggiornamento su mobile */
+    }
+    
+    .status-indicator {
+        display: flex !important;
+        font-size: 0.75em;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 60px;
+        left: -100%; /* Nascosta di default */
+        width: 80%; /* Max 80% schermo */
+        max-width: 300px;
+        height: calc(100vh - 60px);
+        z-index: 1000;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+    }
+    
+    .sidebar.open {
+        left: 0;
+    }
+    
+    /* Overlay scuro quando sidebar aperta */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 999;
+    }
+    
+    .sidebar-overlay.active {
+        display: block;
+    }
+    
+    .sidebar ul li a {
+        padding: 15px 20px; /* Touch target più grande */
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 768px) {
+    .quick-stats {
+        grid-template-columns: 1fr; /* Una colonna su mobile */
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .quick-stat-card {
+        padding: 15px;
+    }
+    
+    .quick-stat-icon {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .quick-stat-value {
+        font-size: 1.6em;
+    }
+}
+
+@media (max-width: 768px) {
+    .data-groups-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .stats-container {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
+    
+    .stat-card {
+        padding: 12px;
+    }
+    
+    .stat-card .title {
+        font-size: 0.8em;
+    }
+    
+    .stat-card .value {
+        font-size: 1.4em;
+    }
+}
+
+@media (max-width: 768px) {
+    .wind-bar-widget {
+        padding: 15px;
+    }
+    
+    .wind-bar-widget .widget-title {
+        font-size: 1.1em;
+    }
+    
+    .wind-bar-widget .bar-label {
+        font-size: 0.85em;
+    }
+    
+    .wind-bar-widget .bar-value {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-container {
+        flex-direction: column;
+        gap: 12px;
+        padding: 15px;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .filter-group label {
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+    
+    .filter-container input,
+    .filter-container select,
+    .filter-container button {
+        width: 100%;
+        padding: 12px 15px; /* Touch-friendly */
+        font-size: 1em;
+    }
+    
+    .quick-filters {
+        justify-content: space-between;
+    }
+    
+    .quick-filter-btn {
+        flex: 1;
+        min-width: 60px;
+        padding: 8px 10px;
+        font-size: 0.85em;
+        text-align: center;
+    }
+    
+    .checkbox-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .checkbox-container label {
+        padding: 10px 15px;
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .chart-wrapper {
+        min-width: 100%;
+    }
+    
+    .chart-container {
+        min-height: 350px;
+        max-height: 400px;
+    }
+    
+    .chart-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .chart-title {
+        text-align: center;
+        font-size: 1em;
+    }
+    
+    .chart-actions {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .chart-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        max-height: 400px;
+        border-radius: 8px;
+    }
+    
+    table {
+        font-size: 0.85em;
+    }
+    
+    th, td {
+        padding: 10px 8px;
+        white-space: nowrap;
+    }
+    
+    /* Tabella forecast: nascondi colonna meno importante su schermi piccoli */
+    #dataTable th:nth-child(2),
+    #dataTable td:nth-child(2) {
+        display: none;
+    }
+    
+    /* Mostra solo Q50 e Q90 su mobile */
+}
+
+@media (max-width: 480px) {
+    /* Su schermi molto piccoli, mostra solo Q50 */
+    #dataTable th:nth-child(4),
+    #dataTable td:nth-child(4) {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-mobile-card {
+        display: none; /* Nasconde la tabella standard */
+    }
+    
+    .table-mobile-list {
+        display: block;
+    }
+    
+    .table-mobile-item {
+        background: var(--light-bg);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .table-mobile-item .timestamp {
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+    }
+    
+    .table-mobile-item .data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+}
+
+@media (max-width: 768px) {
+    #map-container {
+        height: 400px; /* Ridotta ma ancora usabile */
+        border-radius: 8px;
+    }
+    
+    /* Marker più grandi per touch */
+    .custom-marker > div {
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 20px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        max-height: 85vh;
+        padding: 20px 15px;
+        margin: 20px;
+    }
+    
+    .modal-title {
+        font-size: 1.1em;
+    }
+    
+    .modal-option {
+        padding: 15px;
+        margin-bottom: 12px;
+    }
+    
+    .modal-option h4 {
+        font-size: 1em;
+    }
+    
+    .settings-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .settings-item input[type="number"] {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Disabilita alcune animazioni pesanti su mobile */
+@media (max-width: 768px) {
+    .wind-bar-widget .progress-bar-fill:after {
+        animation: none;
+    }
+    
+    @keyframes alertPulse {
+        /* Animazione più leggera */
+        0%, 100% { background: var(--light-bg); }
+        50% { background: rgba(244, 67, 54, 0.05); }
+    }
+}
+
+/* Touch target minimi di 44x44px */
+@media (max-width: 768px) {
+    button, 
+    a, 
+    .icon-btn,
+    .chart-btn,
+    .quick-filter-btn,
+    input[type="checkbox"] {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Spaziatura tra elementi cliccabili */
+    .header-actions {
+        gap: 12px;
+    }
+    
+    .chart-actions {
+        gap: 12px;
+    }
+    
+    /* Focus visibile per navigazione da tastiera */
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible {
+        outline: 3px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .top-header {
+        height: 50px;
+        padding: 8px 15px;
+    }
+    
+    .sidebar {
+        top: 50px;
+        height: calc(100vh - 50px);
+    }
+    
+    #main-content {
+        margin-top: 50px;
+    }
+    
+    .chart-container {
+        min-height: 250px;
+        max-height: 60vh;
+    }
+    
+    #map-container {
+        height: 60vh;
+    }
+    
+    /* Quick stats su 2 colonne in landscape */
+    .quick-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
@@ -2811,6 +3236,16 @@ passwordInput.focus();
                     }
                 });
             });
+            // Chiudi sidebar quando si clicca su un link (mobile)
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('sidebar').classList.remove('open');
+                        const overlay = document.querySelector('.sidebar-overlay');
+                        if (overlay) overlay.classList.remove('active');
+                    }
+                });
+            });
         }
 
         async function updateAllLatestData() {
@@ -3704,12 +4139,21 @@ passwordInput.focus();
                 // Colora il marker in base all'allerta
                 const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : '#00bcd4';
                 
+                const isMobile = window.innerWidth <= 768;
+                const iconSize = isMobile ? 60 : 50;
+                const fontSize = isMobile ? '20px' : '18px';
+
                 // Crea l'icona a cerchio
                 const iconHtml = `
-                    <div style="background-color: ${iconColor}; color: white; width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 18px; font-weight: bold; box-shadow: var(--shadow-lg);">
+                    <div style="background-color: ${iconColor}; color: white; 
+                        width: ${iconSize}px; height: ${iconSize}px; 
+                        border-radius: 50%; border: 3px solid white; 
+                        display: flex; align-items: center; justify-content: center; 
+                        text-align: center; font-size: ${fontSize}; font-weight: bold; 
+                        box-shadow: var(--shadow-lg);">
                         ${valueStr}
                     </div>`;
-                marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [50, 50], iconAnchor: [25, 25] }));
+                marker.setIcon(L.divIcon({ className: 'custom-marker', html: iconHtml, iconSize: [iconSize, iconSize], iconAnchor: [iconSize/2, iconSize/2] }));
 
                 // Costruisce il contenuto del popup in modo dinamico
                 if (station.keys.level) {
@@ -3909,8 +4353,29 @@ passwordInput.focus();
         function initUIInteractions() {
             // Sidebar Toggle
             document.getElementById('menu-toggle').addEventListener('click', () => {
-                document.getElementById('sidebar').classList.toggle('collapsed');
-                document.getElementById('main-content').classList.toggle('expanded');
+                const sidebar = document.getElementById('sidebar');
+                const isMobile = window.innerWidth <= 768;
+    
+                if (isMobile) {
+                    sidebar.classList.toggle('open');
+                    
+                    // Crea/rimuovi overlay
+                    let overlay = document.querySelector('.sidebar-overlay');
+                    if (!overlay) {
+                        overlay = document.createElement('div');
+                        overlay.className = 'sidebar-overlay';
+                        document.body.appendChild(overlay);
+                        
+                        overlay.addEventListener('click', () => {
+                            sidebar.classList.remove('open');
+                            overlay.classList.remove('active');
+                        });
+                    }
+                    overlay.classList.toggle('active');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    document.getElementById('main-content').classList.toggle('expanded');
+                }
             });
 
             // Modals
@@ -4105,7 +4570,115 @@ passwordInput.focus();
             initDashboard();
             startAutoRefresh();
             
+            initTouchGestures();
+            initPullToRefresh();
+            
             console.log('✅ Dashboard pronta!');
+
+            // Lazy Loading per Grafici
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const sectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !entry.target.dataset.loaded) {
+                        const sectionId = entry.target.id;
+                        entry.target.dataset.loaded = 'true';
+                        
+                        switch(sectionId) {
+                            case 'idrometri':
+                                if (!STATE.charts.hydroHistory) drawHydroHistoryChart();
+                                break;
+                            case 'pluviometri':
+                                if (!STATE.charts.rainHistory) drawRainHistoryChart();
+                                break;
+                            case 'anemometri':
+                                if (!STATE.charts.windHistory) drawWindHistoryChart();
+                                break;
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // Osserva tutte le sezioni
+            document.querySelectorAll('.page-section').forEach(section => {
+                sectionObserver.observe(section);
+            });
+        }
+
+        function initTouchGestures() {
+            if (window.innerWidth > 768) return;
+            
+            const sidebar = document.getElementById('sidebar');
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            sidebar.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            
+            sidebar.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+            
+            function handleSwipe() {
+                const swipeDistance = touchStartX - touchEndX;
+                
+                // Swipe left to close (almeno 50px)
+                if (swipeDistance > 50) {
+                    sidebar.classList.remove('open');
+                    const overlay = document.querySelector('.sidebar-overlay');
+                    if (overlay) overlay.classList.remove('active');
+                }
+            }
+        }
+
+        function initPullToRefresh() {
+            if (window.innerWidth > 768) return;
+            
+            let startY = 0;
+            let currentY = 0;
+            let pulling = false;
+            
+            const mainContent = document.getElementById('main-content');
+            
+            mainContent.addEventListener('touchstart', (e) => {
+                if (mainContent.scrollTop === 0) {
+                    startY = e.touches[0].pageY;
+                    pulling = true;
+                }
+            }, { passive: true });
+            
+            mainContent.addEventListener('touchmove', (e) => {
+                if (!pulling) return;
+                
+                currentY = e.touches[0].pageY;
+                const pullDistance = currentY - startY;
+                
+                if (pullDistance > 0 && pullDistance < 150) {
+                    // Mostra indicatore visivo
+                    mainContent.style.transform = `translateY(${pullDistance * 0.5}px)`;
+                }
+            }, { passive: true });
+            
+            mainContent.addEventListener('touchend', async (e) => {
+                if (!pulling) return;
+                
+                const pullDistance = currentY - startY;
+                mainContent.style.transform = '';
+                pulling = false;
+                
+                if (pullDistance > 80) {
+                    // Refresh!
+                    showToast('Aggiornamento dati...', 'info');
+                    await updateAllLatestData();
+                    showToast('Dati aggiornati!', 'success');
+                }
+            });
         }
 
         window.addEventListener('resize', () => {
