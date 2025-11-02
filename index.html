@@ -1427,8 +1427,10 @@ max-width: 400px;
     
     .header-right {
         gap: 10px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap; /* Prevent icons from wrapping */
         justify-content: flex-end;
+        align-items: center;
+        flex-basis: 50%; /* Assign a base width */
     }
     
     /* Mostra info essenziali anche su mobile */
@@ -1436,8 +1438,10 @@ max-width: 400px;
         display: block !important;
         font-size: 0.7em;
         width: 100%;
-        text-align: right;
+        text-align: left; /* Aligned to the left under the title */
         margin-top: 5px;
+        flex-basis: 100%; /* Ensures it takes full width */
+        order: 2; /* Puts it after the icons */
     }
     
     #next-update {
@@ -2050,7 +2054,7 @@ max-width: 400px;
                         </table>
                     </div>
                 </div>
-                <div class="table-container card">
+                <div class="table-container card" id="desktop-forecast-table">
                     <table id="dataTable">
                         <thead>
                             <tr>
@@ -2063,6 +2067,7 @@ max-width: 400px;
                         <tbody></tbody>
                     </table>
                 </div>
+                <div id="mobile-forecast-list" class="table-mobile-list card"></div>
             </div>
 
             <hr style="border-color: var(--border-color); margin: 40px 0;">
@@ -2118,7 +2123,7 @@ max-width: 400px;
                         </table>
                     </div>
                 </div>
-                <div class="table-container card">
+                <div class="table-container card" id="desktop-forecast-table-bettolelle-3h">
                     <table id="dataTableBettolelle3h">
                         <thead>
                             <tr>
@@ -2131,6 +2136,7 @@ max-width: 400px;
                         <tbody></tbody>
                     </table>
                 </div>
+                <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card"></div>
             </div>
 
             <hr style="border-color: var(--border-color); margin: 40px 0;">
@@ -2186,7 +2192,7 @@ max-width: 400px;
                         </table>
                     </div>
                 </div>
-                <div class="table-container card">
+                <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h">
                     <table id="dataTablePonteGaribaldi6h">
                         <thead>
                             <tr>
@@ -2199,6 +2205,7 @@ max-width: 400px;
                         <tbody></tbody>
                     </table>
                 </div>
+                <div id="mobile-forecast-list-ponte-garibaldi-6h" class="table-mobile-list card"></div>
             </div>
         </section>
 
@@ -3579,32 +3586,62 @@ passwordInput.focus();
         }
 
         function updateForecastTable(data) {
-            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
+            const isMobile = window.innerWidth <= 768;
             
-            data.forEach((row, index) => {
-                let tr = tableBody.insertRow();
-                tr.dataset.index = index;
-                tr.innerHTML = `
-                    <td>${row['Timestamp Previsione']}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
-                `;
+            const desktopTableContainer = document.getElementById('desktop-forecast-table');
+            const mobileListContainer = document.getElementById('mobile-forecast-list');
+
+            if (isMobile) {
+                desktopTableContainer.style.display = 'none';
+                mobileListContainer.style.display = 'block';
+                mobileListContainer.innerHTML = '';
                 
-                tr.addEventListener('mouseenter', () => {
-                    STATE.currentHighlightedIndex = index;
-                    document.querySelectorAll('#dataTable tbody tr').forEach(r => r.classList.remove('highlighted'));
-                    tr.classList.add('highlighted');
-                    if (STATE.charts.forecast) STATE.charts.forecast.update('none');
+                data.forEach((row, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'table-mobile-item';
+                    card.innerHTML = `
+                        <div class="timestamp">${row['Timestamp Previsione']}</div>
+                        <div class="data-row">
+                            <span>Q50 (Mediana):</span>
+                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)} m</strong>
+                        </div>
+                        <div class="data-row">
+                            <span>Q90 (Massimo):</span>
+                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)} m</strong>
+                        </div>
+                    `;
+                    mobileListContainer.appendChild(card);
                 });
+            } else {
+                desktopTableContainer.style.display = 'block';
+                mobileListContainer.style.display = 'none';
+                const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';
                 
-                tr.addEventListener('mouseleave', () => {
-                    STATE.currentHighlightedIndex = -1;
-                    tr.classList.remove('highlighted');
-                    if (STATE.charts.forecast) STATE.charts.forecast.update('none');
+                data.forEach((row, index) => {
+                    let tr = tableBody.insertRow();
+                    tr.dataset.index = index;
+                    tr.innerHTML = `
+                        <td>${row['Timestamp Previsione']}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
+                    `;
+                    
+                    tr.addEventListener('mouseenter', () => {
+                        STATE.currentHighlightedIndex = index;
+                        document.querySelectorAll('#dataTable tbody tr').forEach(r => r.classList.remove('highlighted'));
+                        tr.classList.add('highlighted');
+                        if (STATE.charts.forecast) STATE.charts.forecast.update('none');
+                    });
+                    
+                    tr.addEventListener('mouseleave', () => {
+                        STATE.currentHighlightedIndex = -1;
+                        tr.classList.remove('highlighted');
+                        if (STATE.charts.forecast) STATE.charts.forecast.update('none');
+                    });
                 });
-            });
+            }
         }
 
         function fetchForecastData() {
@@ -3679,18 +3716,48 @@ passwordInput.focus();
         }
 
         function updateForecastTableBettolelle3h(data) {
-            const tableBody = document.getElementById('dataTableBettolelle3h').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
-            
-            data.forEach((row, index) => {
-                let tr = tableBody.insertRow();
-                tr.innerHTML = `
-                    <td>${row['Timestamp Previsione']}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
-                `;
-            });
+            const isMobile = window.innerWidth <= 768;
+
+            const desktopTableContainer = document.getElementById('desktop-forecast-table-bettolelle-3h');
+            const mobileListContainer = document.getElementById('mobile-forecast-list-bettolelle-3h');
+
+            if (isMobile) {
+                desktopTableContainer.style.display = 'none';
+                mobileListContainer.style.display = 'block';
+                mobileListContainer.innerHTML = '';
+
+                data.forEach((row, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'table-mobile-item';
+                    card.innerHTML = `
+                        <div class="timestamp">${row['Timestamp Previsione']}</div>
+                        <div class="data-row">
+                            <span>Q50 (Mediana):</span>
+                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)} m</strong>
+                        </div>
+                        <div class="data-row">
+                            <span>Q90 (Massimo):</span>
+                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)} m</strong>
+                        </div>
+                    `;
+                    mobileListContainer.appendChild(card);
+                });
+            } else {
+                desktopTableContainer.style.display = 'block';
+                mobileListContainer.style.display = 'none';
+                const tableBody = document.getElementById('dataTableBettolelle3h').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';
+                
+                data.forEach((row, index) => {
+                    let tr = tableBody.insertRow();
+                    tr.innerHTML = `
+                        <td>${row['Timestamp Previsione']}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
+                    `;
+                });
+            }
         }
 
         function fetchForecastDataBettolelle3h() {
@@ -3763,18 +3830,48 @@ passwordInput.focus();
         }
 
         function updateForecastTablePonteGaribaldi6h(data) {
-            const tableBody = document.getElementById('dataTablePonteGaribaldi6h').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = '';
+            const isMobile = window.innerWidth <= 768;
             
-            data.forEach((row, index) => {
-                let tr = tableBody.insertRow();
-                tr.innerHTML = `
-                    <td>${row['Timestamp Previsione']}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q10)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q90)']).toFixed(3)}</td>
-                `;
-            });
+            const desktopTableContainer = document.getElementById('desktop-forecast-table-ponte-garibaldi-6h');
+            const mobileListContainer = document.getElementById('mobile-forecast-list-ponte-garibaldi-6h');
+
+            if (isMobile) {
+                desktopTableContainer.style.display = 'none';
+                mobileListContainer.style.display = 'block';
+                mobileListContainer.innerHTML = '';
+
+                data.forEach((row, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'table-mobile-item';
+                    card.innerHTML = `
+                        <div class="timestamp">${row['Timestamp Previsione']}</div>
+                        <div class="data-row">
+                            <span>Q50 (Mediana):</span>
+                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)']).toFixed(3)} m</strong>
+                        </div>
+                        <div class="data-row">
+                            <span>Q90 (Massimo):</span>
+                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q90)']).toFixed(3)} m</strong>
+                        </div>
+                    `;
+                    mobileListContainer.appendChild(card);
+                });
+            } else {
+                desktopTableContainer.style.display = 'block';
+                mobileListContainer.style.display = 'none';
+                const tableBody = document.getElementById('dataTablePonteGaribaldi6h').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';
+                
+                data.forEach((row, index) => {
+                    let tr = tableBody.insertRow();
+                    tr.innerHTML = `
+                        <td>${row['Timestamp Previsione']}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q10)']).toFixed(3)}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)']).toFixed(3)}</td>
+                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q90)']).toFixed(3)}</td>
+                    `;
+                });
+            }
         }
 
         function fetchForecastDataPonteGaribaldi6h() {
@@ -4358,6 +4455,8 @@ passwordInput.focus();
     
                 if (isMobile) {
                     sidebar.classList.toggle('open');
+                    sidebar.classList.remove('collapsed'); // Assicura che non sia collassata
+                    document.getElementById('main-content').classList.remove('expanded'); // Rimuovi l'espansione del contenuto
                     
                     // Crea/rimuovi overlay
                     let overlay = document.querySelector('.sidebar-overlay');
