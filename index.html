@@ -4464,6 +4464,7 @@ passwordInput.focus();
             const overlay = document.querySelector('.sidebar-overlay');
             const menuToggle = document.getElementById('menu-toggle');
 
+            sidebar.classList.remove('collapsed'); // Ensure collapsed is removed
             sidebar.classList.add('open');
             overlay?.classList.add('active');
             menuToggle.innerHTML = '✕';
