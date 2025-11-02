@@ -3665,6 +3665,7 @@ passwordInput.focus();
                 const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
                 const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
                 
+                // Update table AND chart
                 updateForecastTable(filteredData);
                 drawForecastChart(labels, q10, q50, q90);
             });
@@ -3779,6 +3780,7 @@ passwordInput.focus();
                 const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
                 const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
                 
+                // Update table AND chart
                 updateForecastTableBettolelle3h(filteredData);
                 drawForecastChartBettolelle3h(labels, q10, q50, q90);
             });
@@ -3893,6 +3895,7 @@ passwordInput.focus();
                 const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)']));
                 const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q90)']));
                 
+                // Update table AND chart
                 updateForecastTablePonteGaribaldi6h(filteredData);
                 drawForecastChartPonteGaribaldi6h(labels, q10, q50, q90);
             });
@@ -4696,19 +4699,7 @@ passwordInput.focus();
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                handleResize();
-                
-                // RICARICA LE TABELLE SE SIAMO NELLA SEZIONE PREVISIONI
-                const activeSection = document.querySelector('.page-section.active');
-                if (activeSection && activeSection.id === 'previsioni') {
-                    if (STATE.forecastData.length > 0) {
-                        updateForecastTable(STATE.forecastData);
-                        updateForecastTableBettolelle3h(STATE.forecastData);
-                        updateForecastTablePonteGaribaldi6h(STATE.forecastData);
-                    }
-                }
-            }, 250);
+            resizeTimeout = setTimeout(handleResize, 250);
         });
 
         // Aggiungi listener per cambio orientamento
