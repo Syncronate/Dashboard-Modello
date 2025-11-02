@@ -4526,30 +4526,32 @@ passwordInput.focus();
                 let iconHtml = '';
 
                 if (iconShape === 'triangle') {
-                    // Icona a triangolo per pluviometri
-                    iconHtml = `
-                        <div style="
-                            width: 0;
-                            height: 0;
-                            border-left: ${iconSize/2}px solid transparent;
-                            border-right: ${iconSize/2}px solid transparent;
-                            border-bottom: ${iconSize}px solid ${iconColor};
-                            position: relative;
-                            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-                        ">
-                            <div style="
-                                position: absolute;
-                                top: ${iconSize * 0.4}px;
-                                left: -${iconSize/2.5}px;
-                                width: ${iconSize/1.25}px;
-                                color: white;
-                                font-size: ${parseFloat(fontSize) * 0.8}px;
-                                font-weight: bold;
-                                text-align: center;
-                                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-                            ">${valueStr}</div>
-                        </div>
-                    `;
+    // Icona a triangolo per pluviometri
+    iconHtml = `
+        <div style="
+            width: 0;
+            height: 0;
+            border-left: ${iconSize/2}px solid transparent;
+            border-right: ${iconSize/2}px solid transparent;
+            border-bottom: ${iconSize}px solid ${iconColor};
+            position: relative;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        ">
+            <div style="
+                position: absolute;
+                bottom: ${iconSize * 0.15}px; /* NUOVO: Posiziona il testo dal basso */
+                left: 50%;                 /* NUOVO: Inizia il centraggio orizzontale */
+                transform: translateX(-50%); /* NUOVO: Completa il centraggio */
+                width: 100%;               /* Occupa la larghezza disponibile per il testo */
+                color: white;
+                font-size: ${fontSize};     /* MODIFICATO: Stessa grandezza del cerchio */
+                font-weight: bold;         /* Grassetto (già corretto) */
+                text-align: center;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5); /* Ombra per leggibilità (già corretto) */
+            ">${valueStr}</div>
+        </div>
+    `;
+}
                 } else {
                     // Icona a cerchio per idrometri
                     iconHtml = `
