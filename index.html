@@ -2825,7 +2825,7 @@ passwordInput.focus();
         // === UTILITY FUNCTIONS ===
         const utils = {
             // Controlla se siamo su mobile
-            isMobile: () => utils.isMobile(),
+            isMobile: () => window.innerWidth <= UI_CONSTANTS.MOBILE_BREAKPOINT,
             
             // Formatta numeri con fallback
             formatNumber: (value, decimals = 2, fallback = 'N/D') => {
@@ -3414,7 +3414,7 @@ passwordInput.focus();
             // Chiudi sidebar quando si clicca su un link (mobile)
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function() {
-                    if (window.innerWidth <= 768) {
+                    if (utils.isMobile()) {
                         document.getElementById('sidebar').classList.remove('open');
                         const overlay = document.querySelector('.sidebar-overlay');
                         if (overlay) overlay.classList.remove('active');
@@ -3657,13 +3657,22 @@ passwordInput.focus();
         }
         
         function createChart(canvasId, config, chartKey) {
-            if (chartKey && STATE.charts[chartKey]) {
-                STATE.charts[chartKey].destroy();
+            const canvas = document.getElementById(canvasId);
+            
+            // Cleanup completo
+            if (canvas.chart) {
+                canvas.chart.destroy();
+                canvas.chart = null;
             }
             
-            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (chartKey && STATE.charts[chartKey]) {
+                STATE.charts[chartKey].destroy();
+                STATE.charts[chartKey] = null;
+            }
+            
+            const ctx = canvas.getContext('2d', { willReadFrequently: false });
             const newChart = new Chart(ctx, config);
-            document.getElementById(canvasId).chart = newChart; 
+            canvas.chart = newChart;
             
             if (chartKey) {
                 STATE.charts[chartKey] = newChart;
@@ -4384,10 +4393,19 @@ passwordInput.focus();
             ];
 
             stations.forEach(station => {
-                const marker = L.marker([station.lat, station.lon]).addTo(STATE.map);
+                // Marker inizialmente invisibile
+                const marker = L.marker([station.lat, station.lon], {
+                    opacity: 0
+                }).addTo(STATE.map);
+                
                 STATE.mapMarkers[station.name] = { marker: marker, station: station };
                 
                 marker.bindPopup(`<h3>${station.name}</h3><p>Caricamento dati...</p>`);
+                
+                // Fade in progressivo
+                setTimeout(() => {
+                    marker.setOpacity(1);
+                }, 100 * stations.indexOf(station));
 
                 marker.on('popupopen', function() {
                     const link = document.querySelector('.leaflet-popup-content a.nav-link');
@@ -4561,6 +4579,10 @@ passwordInput.focus();
                     iconSize: [iconSize, iconSize], 
                     iconAnchor: [iconSize/2, iconSize] // Ancoraggio alla base
                 }));
+
+                if (alertLevel === 'critical' || alertLevel === 'warning') {
+                    marker._icon.classList.add(`alert-${alertLevel}`);
+                }
 
                 // Costruisce il contenuto del popup in modo dinamico
                 if (station.keys.level) {
@@ -5000,11 +5022,8 @@ passwordInput.focus();
         }
 
         // Aggiungi listener debounced per resize
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(handleResize, 250);
-        });
+        const debouncedHandleResize = utils.debounce(handleResize, UI_CONSTANTS.DEBOUNCE_DELAY);
+        window.addEventListener('resize', debouncedHandleResize);
 
         // Aggiungi listener per cambio orientamento
         window.addEventListener('orientationchange', () => {
