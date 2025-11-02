@@ -62,6 +62,25 @@
             height: 24px;
         }
 
+        /* Stili per le icone della legenda della mappa */
+        .legend-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+        }
+        .legend-icon.circle {
+            background-color: var(--primary-color);
+            border-radius: 50%;
+        }
+        .legend-icon.triangle {
+            width: 0;
+            height: 0;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-bottom: 18px solid var(--primary-color);
+        }
+
         /* === TOP HEADER === */
         .top-header {
             position: fixed;
@@ -257,7 +276,7 @@
         /* === MAP CONTAINER === */
         #map-container {
             width: 100%;
-            height: 600px;
+            height: 700px;
             border-radius: 12px;
             overflow: hidden;
             box-shadow: var(--shadow);
@@ -2618,7 +2637,7 @@ max-width: 400px;
             <div class="data-groups-container" style="margin-top: 25px;">
                 <div class="card">
                     <h3 style="color: var(--primary-color); margin-top: 0;">
-                        <i data-feather="droplet" class="feather-icon"></i> Stazioni Idrometriche
+                        <span class="legend-icon circle"></span> Stazioni Idrometriche
                     </h3>
                     <ul style="color: var(--text-color); line-height: 1.8;">
                         <li>Serra dei Conti - Livello Misa</li>
@@ -2632,7 +2651,7 @@ max-width: 400px;
                 
                 <div class="card">
                     <h3 style="color: var(--primary-color); margin-top: 0;">
-                        <i data-feather="cloud-rain" class="feather-icon"></i> Stazioni Pluviometriche e Meteo
+                        <span class="legend-icon triangle"></span> Stazioni Pluviometriche e Meteo
                     </h3>
                     <ul style="color: var(--text-color); line-height: 1.8;">
                         <li>Bettolelle - Pioggia/Livello Idro</li>
