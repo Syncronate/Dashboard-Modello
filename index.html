@@ -2275,19 +2275,6 @@ max-width: 400px;
                     <span class="alert-badge normal">NORMALE</span>
                 </div>
 
-                <div class="quick-stat-card" id="overview-stations">
-                    <div class="quick-stat-icon">
-                        <i data-feather="radio" class="feather-icon"></i>
-                    </div>
-                    <div class="quick-stat-content">
-                        <div class="quick-stat-label">Stazioni Attive</div>
-                        <div class="quick-stat-value">--<span class="quick-stat-unit">/18</span></div>
-                        <div class="quick-stat-trend trend-neutral">
-                            <span>Monitoraggio attivo</span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Card Allerte OGGI -->
                 <div class="quick-stat-card" id="overview-alerts-today">
                     <div class="quick-stat-icon">
@@ -4843,7 +4830,7 @@ async function updateAllLatestData() {
             if (!mapContainer) return;
 
             STATE.dashboardMap = L.map('dashboard-map-container', {
-                scrollWheelZoom: false,
+                scrollWheelZoom: true,
                 zoomControl: true
             }).setView([MAP_CONSTANTS.CENTER_LAT, MAP_CONSTANTS.CENTER_LON], MAP_CONSTANTS.DEFAULT_ZOOM);
 
