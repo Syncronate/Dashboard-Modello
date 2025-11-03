@@ -2800,9 +2800,10 @@ max-width: 400px;
                         <span class="legend-icon triangle"></span> Stazioni Pluviometriche e Meteo
                     </h3>
                     <ul style="color: var(--text-color); line-height: 1.8;">
-                        <li>Arcevia - Pioggia Cumulata</li>
-                        <li>Barbara - Pioggia Cumulata</li>
-                        <li>Corinaldo - Pioggia Cumulata</li>
+                        <li>Arcevia - Intensità Pioggia</li>
+                        <li>Barbara - Intensità Pioggia</li>
+                        <li>Corinaldo - Intensità Pioggia</li>
+                        <li>Senigallia - Intensità Pioggia</li>
                         <li>Montignano (WeatherLink) - Pioggia/Vento</li>
                         <li>Scapezzano (WeatherLink) - Pioggia/Vento</li>
                         <li>Sant'Angelo (WeatherLink) - Pioggia/Vento</li>
@@ -3927,7 +3928,7 @@ passwordInput.focus();
             }
             
             // MODIFICA: Aggiornato il conteggio totale delle stazioni a 18
-            const totalStations = 15;
+            const totalStations = 16;
             const activeStations = new Set();
             validHydro.forEach(s => activeStations.add(s.name));
             validWind.forEach(s => activeStations.add(s.name));
@@ -3935,7 +3936,8 @@ passwordInput.focus();
                 { name: 'Arcevia', value: parseAndFixDecimal(region['Arcevia - Pioggia TOT Oggi (mm)']) },
                 { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Pioggia TOT Oggi (mm)']) },
                 { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Pioggia TOT Oggi (mm)']) },
-                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']) }
+                { name: 'Misa', value: parseAndFixDecimal(region['Misa - Pioggia TOT Oggi (mm)']) },
+                { name: 'Senigallia', value: parseAndFixDecimal(region['Senigallia - Pioggia TOT Oggi (mm)']) }
             ];
             rainStationData.forEach(s => { if (!isNaN(s.value)) activeStations.add(s.name); });
             const activeCount = activeStations.size;
@@ -4847,7 +4849,7 @@ passwordInput.focus();
                 const iconSize = isMobile ? MAP_CONSTANTS.ICON_SIZE_MOBILE : MAP_CONSTANTS.ICON_SIZE_DESKTOP;
                 const fontSize = isMobile ? '20px' : '18px';
 
-                const rainStations = ['Arcevia', 'Barbara', 'Corinaldo', 'Scapezzano', 'Montignano', "Sant'Angelo"];
+                const rainStations = ['Arcevia', 'Barbara', 'Corinaldo', 'Scapezzano', 'Montignano', "Sant'Angelo", 'Senigallia'];
                 let iconShape = rainStations.includes(station.name) ? 'triangle' : 'circle';
 
                 let iconHtml = '';
