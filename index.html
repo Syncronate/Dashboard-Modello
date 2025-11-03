@@ -4523,12 +4523,18 @@ passwordInput.focus();
             const datasets = selected.map((col, i) => {
                 const name = col.split(' - ')[0];
                 const sourceMap = ['Montignano', "Sant'Angelo", 'Scapezzano'].includes(name) ? mapWeather : mapRegion;
-                return {
-                    label: name, data: labels.map(l => { const row = sourceMap.get(l); return row ? parseAndFixDecimal(row[col]) : null; }),
-                    borderColor: CONFIG.defaults.chartColors[i % CONFIG.defaults.chartColors.length],
-                    fill: false, tension: 0.3, pointRadius: 1, borderWidth: 2
-                };
-            });
+                const data = labels.map(l => { const row = sourceMap.get(l); return row ? parseAndFixDecimal(row[col]) : null; });
+                
+                // Only return the dataset if it has at least one valid data point
+                if (data.some(d => d !== null && !isNaN(d))) {
+                    return {
+                        label: name, data: data,
+                        borderColor: CONFIG.defaults.chartColors[i % CONFIG.defaults.chartColors.length],
+                        fill: false, tension: 0.3, pointRadius: 1, borderWidth: 2
+                    };
+                }
+                return null; // Return null for datasets with no data
+            }).filter(Boolean); // Filter out the null datasets
 
             safeCreateChart('rainHistoryChart', {
                 type: 'line', data: { labels, datasets },
