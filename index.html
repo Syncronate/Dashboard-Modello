@@ -3443,6 +3443,7 @@ passwordInput.focus();
                 { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Intensita di pioggia (mm/min)']) * 60 },
                 { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Intensita di pioggia (mm/min)']) * 60 },
                 { name: 'Misa', value: parseAndFixDecimal(region['Misa - Intensita Pioggia (mm/min)']) * 60 },
+                { name: 'Senigallia', value: parseAndFixDecimal(region['Senigallia - Intensita Pioggia (mm/min)']) * 60 },
                 { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Intensità Pioggia (mm/hr)']) },
                 { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Intensità Pioggia (mm/hr)"]) },
                 { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Intensità Pioggia (mm/hr)']) }
@@ -3902,6 +3903,7 @@ passwordInput.focus();
                 { name: 'Barbara', value: parseAndFixDecimal(region['Barbara - Intensita di pioggia (mm/min)']) * 60 },
                 { name: 'Corinaldo', value: parseAndFixDecimal(region['Corinaldo - Intensita di pioggia (mm/min)']) * 60 },
                 { name: 'Misa', value: parseAndFixDecimal(region['Misa - Intensita Pioggia (mm/min)']) * 60 },
+                { name: 'Senigallia', value: parseAndFixDecimal(region['Senigallia - Intensita Pioggia (mm/min)']) * 60 },
                 { name: 'Montignano', value: parseAndFixDecimal(weather['Montignano - Intensità Pioggia (mm/hr)']) },
                 { name: "Sant'Angelo", value: parseAndFixDecimal(weather["Sant'Angelo - Intensità Pioggia (mm/hr)"]) },
                 { name: 'Scapezzano', value: parseAndFixDecimal(weather['Scapezzano - Intensità Pioggia (mm/hr)']) }
@@ -4482,7 +4484,7 @@ passwordInput.focus();
                 { col: 'Serra dei Conti - Livello Misa (mt)', lbl: 'Misa (Serra dei Conti)' },
                 { col: 'Foce Cesano - Livello Cesano (mt)', lbl: 'Foce Cesano' },
                 { col: 'Cesano - Livello Cesano (mt)', lbl: 'Cesano' },
-                { col: 'Passo Ripe - Livello Nevola (m)', lbl: 'Nevola (Passo Ripe)' },
+                { col: 'Passo Ripe - Livello Nevola (mt)', lbl: 'Nevola (Passo Ripe)' },
                 { col: 'Nevola - Livello Nevola (mt)', lbl: 'Nevola (Corinaldo)' }
             ].map((s, i) => ({
                 label: s.lbl, data: filteredData.map(r => parseAndFixDecimal(r[s.col])),
@@ -4606,7 +4608,7 @@ passwordInput.focus();
                 { col: 'Serra dei Conti - Livello Misa (mt)', name: 'Serra dei Conti' },
                 { col: 'Foce Cesano - Livello Cesano (mt)', name: 'Foce Cesano' },
                 { col: 'Cesano - Livello Cesano (mt)', name: 'Cesano' },
-                { col: 'Passo Ripe - Livello Nevola (m)', name: 'Nevola (Passo Ripe)' },
+                { col: 'Passo Ripe - Livello Nevola (mt)', name: 'Nevola (Passo Ripe)' },
                 { col: 'Nevola - Livello Nevola (mt)', name: 'Nevola (Corinaldo)' }
             ];
             
