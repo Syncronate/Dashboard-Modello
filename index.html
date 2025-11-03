@@ -642,7 +642,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
     /* FIX: Calcolo corretto del margine per centrare */
-    margin-top: -6px; /* (20px - 8px) / 2 = 6px */
+    margin-top: -10px; /* Valore aggiustato per centrare visivamente */
     position: relative;
     z-index: 15;
 }
@@ -5698,9 +5698,9 @@ function updateSliderUI(index) {
     const maxIndex = this.frames.length - 1;
     const percentage = maxIndex > 0 ? (validIndex / maxIndex) * 100 : 0;
     
-    // Rimuovi le transizioni durante l'animazione per evitare lag
+    // Disabilita la transizione durante il trascinamento manuale per eliminare il ritardo.
     const isAnimating = this.isPlaying;
-    const transitionDuration = isAnimating ? '0s' : '0.2s';
+    const transitionDuration = isAnimating ? '0.2s' : '0s';
     
     if(progressBar) {
         progressBar.style.transition = `width ${transitionDuration} linear`;
