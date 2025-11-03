@@ -5588,10 +5588,8 @@ async function updateAllLatestData() {
 
                     timelineSlider.addEventListener('input', (e) => {
                         radarState.stopRadarAnimation();
-                        // Calcola l'indice in base al valore percentuale dello slider
-                        const percentage = parseFloat(e.target.value);
-                        const index = Math.round(percentage / 100 * (radarState.frames.length - 1));
-                        radarState.showFrame(index);
+                        const newIndex = parseInt(e.target.value, 10);
+                        radarState.showFrame(newIndex);
                     });
 
 
@@ -5636,22 +5634,26 @@ async function updateAllLatestData() {
                 }
                 
                 this.currentIndex = index;
-                
-                const percentage = this.frames.length > 1 ? (index / (this.frames.length - 1)) * 100 : 50;
-                this.updateSliderUI(percentage);
+                this.updateSliderUI(index);
             }
 
-            function updateSliderUI(percentage) {
+            function updateSliderUI(index) {
                 const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
                 const timeLabel = document.getElementById(`radar-time-label-${this.prefix}`);
                 const progressBar = document.getElementById(`radar-slider-progress-${this.prefix}`);
                 const futureBar = document.getElementById(`radar-slider-future-${this.prefix}`);
 
-                if(timelineSlider) timelineSlider.value = percentage;
+                if (!timelineSlider) return;
+
+                // Aggiorna il valore dello slider con l'indice
+                timelineSlider.value = index;
+
+                // Calcola la percentuale per gli elementi stilizzati
+                const percentage = this.frames.length > 1 ? (index / (this.frames.length - 1)) * 100 : 0;
                 
                 if(timeLabel) {
                     timeLabel.style.left = `${percentage}%`;
-                    const frame = this.frames[this.currentIndex];
+                    const frame = this.frames[index];
                     if (frame) {
                         const currentTime = new Date(frame.time * 1000);
                         const hours = String(currentTime.getHours()).padStart(2, '0');
