@@ -581,7 +581,7 @@
     -webkit-appearance: none;
     width: 100%;
     height: 8px;
-    background: transparent; /* Trasparente, usiamo gli elementi sottostanti */
+    background: transparent !important; /* Trasparente, usiamo gli elementi sottostanti */
     border-radius: 5px;
     outline: none;
     cursor: pointer;
@@ -610,6 +610,17 @@
 #radar-timeline-slider::-webkit-slider-thumb:active {
     cursor: grabbing;
     transform: scale(1.1);
+}
+        /* Rende la traccia dello slider completamente trasparente su Chrome/Safari */
+#radar-timeline-slider::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+}
+
+/* Rende la traccia dello slider completamente trasparente su Firefox */
+#radar-timeline-slider::-moz-range-track {
+    background: transparent;
+    border: none;
 }
 
 /* Thumb Firefox */
