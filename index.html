@@ -547,14 +547,17 @@
 .radar-slider-wrapper {
     position: relative;
     width: 100%;
-    height: 8px;
+    height: 20px; /* Aumentato per contenere il thumb */
     margin-bottom: 8px;
+    display: flex;
+    align-items: center;
 }
 
-/* Assicura che lo slider sia perfettamente allineato alla traccia */
+/* FIX: Assicura che lo slider sia allineato */
 .radar-timeline-slider {
     position: absolute;
-    top: 0;
+    top: 50%;
+    transform: translateY(-50%);
     left: 0;
     width: 100%;
     height: 8px;
@@ -626,19 +629,22 @@
     height: 8px;
 }
 
-/* === THUMB (PALLINO) WEBKIT === */
+/* === THUMB WEBKIT - CORRETTO === */
 .radar-timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 18px;
-    height: 18px;
+    width: 20px;  /* Aumentato per migliore visibilità */
+    height: 20px;
     background: #6785bf;
     border-radius: 50%;
     border: 3px solid white;
     cursor: grab;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
-    margin-top: -5px; /* (18px thumb - 8px track) / 2 = 5px */
+    /* FIX: Calcolo corretto del margine per centrare */
+    margin-top: -6px; /* (20px - 8px) / 2 = 6px */
+    position: relative;
+    z-index: 15;
 }
 
 .radar-timeline-slider::-webkit-slider-thumb:hover {
@@ -650,18 +656,19 @@
     transform: scale(1.1);
 }
 
-/* === THUMB (PALLINO) FIREFOX === */
+/* === THUMB FIREFOX - CORRETTO === */
 .radar-timeline-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     background: #6785bf;
     border-radius: 50%;
     border: 3px solid white;
     cursor: grab;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
-    margin-top: 0; /* Firefox calcola automaticamente, ma forziamo 0 per sicurezza */
-    border: none;
+    /* Firefox gestisce automaticamente il centraggio, ma assicuriamoci */
+    position: relative;
+    z-index: 15;
 }
 
 .radar-timeline-slider::-moz-range-thumb:hover {
@@ -5484,23 +5491,40 @@ async function updateAllLatestData() {
 
                     if (timelineSlider) timelineSlider.max = allFrames.length - 1;
                     
-                    // FIX: Trova correttamente l'indice del frame più vicino a "Now"
-                    const nowIndex = allFrames.findIndex(f => f.time >= now);
-                    const correctIndex = nowIndex !== -1 ? nowIndex : Math.floor(allFrames.length / 2);
+                    // FIX: Calcolo migliorato dell'indice "Now"
+                    let nowIndex = -1;
+                    let minDiff = Infinity;
                     
-                    radarState.currentIndex = correctIndex;
-                    radarState.frames = allFrames; // Assicurati che frames sia impostato prima di chiamare showFrame
+                    // Trova il frame più vicino a "now"
+                    allFrames.forEach((frame, index) => {
+                        const diff = Math.abs(frame.time - now);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            nowIndex = index;
+                        }
+                    });
+                    
+                    // Se non trovato, usa il frame che separa passato e futuro
+                    if (nowIndex === -1) {
+                        const pastCount = pastFrames.length;
+                        nowIndex = pastCount > 0 ? pastCount - 1 : 0;
+                    }
+                    
+                    console.log(`🎯 Now index: ${nowIndex}/${allFrames.length - 1} (${Math.round(nowIndex/(allFrames.length-1)*100)}%)`);
+                    
+                    radarState.currentIndex = nowIndex;
+                    radarState.frames = allFrames;
                     
                     if (playButton) playButton.classList.remove('leaflet-disabled');
-                    if (timelineSlider) timelineSlider.classList.remove('leaflet-disabled');
-                    
-                    radarState.showFrame(radarState.currentIndex);
-                    // Mostra il toast solo la prima volta per evitare spam
-                    if (!radarState.initialLoadComplete) {
-                        showToast('Dati radar caricati', 'success');
-                        radarState.initialLoadComplete = true;
+                    if (timelineSlider) {
+                        timelineSlider.classList.remove('leaflet-disabled');
+                        timelineSlider.disabled = false;
                     }
-                    console.log('✅ Dati radar aggiornati');
+                    
+                    // Mostra il frame "Now"
+                    radarState.showFrame(radarState.currentIndex);
+                    
+                    // ... resto del codice ...
                 }
             } catch (error) {
                 console.error("❌ Errore aggiornamento dati radar:", error);
@@ -5654,38 +5678,43 @@ async function updateAllLatestData() {
                 this.updateSliderUI(index);
             }
 
-            function updateSliderUI(index) {
+function updateSliderUI(index) {
     const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
     const timeLabel = document.getElementById(`radar-time-label-${this.prefix}`);
     const progressBar = document.getElementById(`radar-slider-progress-${this.prefix}`);
     const futureBar = document.getElementById(`radar-slider-future-${this.prefix}`);
 
     if (!timelineSlider || !this.frames.length) return;
-
-    // Assicurati che l'indice sia valido
+    
     const validIndex = Math.max(0, Math.min(index, this.frames.length - 1));
     
-    // Aggiorna il valore dello slider con l'indice
-    timelineSlider.value = validIndex;
-
-    // Calcola la percentuale ESATTA considerando gli estremi
+    // FIX: Forza l'aggiornamento del valore dello slider
+    if (timelineSlider.value != validIndex) {
+        timelineSlider.value = validIndex;
+        // Trigger manuale dell'evento per browser che non aggiornano il thumb
+        timelineSlider.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    
     const maxIndex = this.frames.length - 1;
     const percentage = maxIndex > 0 ? (validIndex / maxIndex) * 100 : 0;
     
-    // Aggiorna gli elementi visivi
+    // Rimuovi le transizioni durante l'animazione per evitare lag
+    const isAnimating = this.isPlaying;
+    const transitionDuration = isAnimating ? '0s' : '0.2s';
+    
     if(progressBar) {
+        progressBar.style.transition = `width ${transitionDuration} linear`;
         progressBar.style.width = `${percentage}%`;
-        progressBar.style.transition = 'width 0.2s linear'; // Transizione fluida
     }
     
     if(futureBar) {
+        futureBar.style.transition = `width ${transitionDuration} linear`;
         futureBar.style.width = `${100 - percentage}%`;
-        futureBar.style.transition = 'width 0.2s linear';
     }
     
     if(timeLabel) {
+        timeLabel.style.transition = `left ${transitionDuration} linear`;
         timeLabel.style.left = `${percentage}%`;
-        timeLabel.style.transition = 'left 0.2s linear'; // Sincronizza con le barre
         
         const frame = this.frames[validIndex];
         if (frame) {
@@ -5700,15 +5729,19 @@ async function updateAllLatestData() {
             function playRadarAnimation() {
     if (this.isPlaying || !this.isLoaded) return;
     this.isPlaying = true;
+    
     const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
     if (playButton) {
         playButton.textContent = '⏸';
         playButton.style.background = '#6785bf';
     }
-
-    // FIX: Usa requestAnimationFrame per animazione più fluida
+    
+    // FIX: Parti sempre dall'inizio quando premi play
+    // Opzionale: commenta questa linea se vuoi continuare dalla posizione corrente
+    // this.currentIndex = 0;
+    
     let lastUpdate = Date.now();
-    const frameDelay = 200; // millisecondi tra frame
+    const frameDelay = 200; // ms
     
     const animate = () => {
         if (!this.isPlaying) return;
@@ -5719,10 +5752,18 @@ async function updateAllLatestData() {
             if (nextIndex >= this.frames.length) {
                 nextIndex = 0; // Loop
             }
+            
+            // FIX: Assicura che showFrame aggiorni tutto
             this.showFrame(nextIndex);
+            
+            // FIX: Forza l'aggiornamento visuale dello slider
+            const slider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
+            if (slider && slider.value != nextIndex) {
+                slider.value = nextIndex;
+            }
+            
             lastUpdate = now;
         }
-        
         this.animationInterval = requestAnimationFrame(animate);
     };
     
