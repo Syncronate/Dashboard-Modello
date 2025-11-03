@@ -3793,7 +3793,7 @@ passwordInput.focus();
             });
         }
 
-        async function updateAllLatestData() {
+async function updateAllLatestData() {
             try {
                 const [regionData, weatherlinkData] = await Promise.all([
                     fetchData(CONFIG.urls.regionLatest),
@@ -3804,20 +3804,20 @@ passwordInput.focus();
                     const d = regionData[0];
                     STATE.regionLatestData = d;
                     updateStatCard('hydro-misa-bettolelle', d['Misa - Livello Misa (mt)'], 'm');
-                    updateStatCard('hydro-pianello-ostra', d['Pianello di Ostra - Livello Misa (mt)'], 'm'); // Corretto
+                    updateStatCard('hydro-pianello-ostra', d['Pianello di Ostra - Livello Misa (mt)'], 'm');
                     updateStatCard('hydro-ponte-garibaldi', d['Ponte Garibaldi - Livello Misa 2 (mt)'], 'm');
                     updateStatCard('hydro-serra-dei-conti', d['Serra dei Conti - Livello Misa (mt)'], 'm');
                     updateStatCard('hydro-foce-cesano', d['Foce Cesano - Livello Cesano (mt)'], 'm');
                     updateStatCard('hydro-cesano', d['Cesano - Livello Cesano (mt)'], 'm');
                     updateStatCard('hydro-corinaldo-nevola', d['Nevola - Livello Nevola (mt)'], 'm');
-                    updateStatCard('hydro-passo-ripe', d['Passo Ripe - Livello Nevola (mt)'], 'm'); // Corretto
+                    updateStatCard('hydro-passo-ripe', d['Passo Ripe - Livello Nevola (mt)'], 'm');
                     
                     const convertToHourRate = (rawValue) => (parseAndFixDecimal(rawValue) * 60);
                     updateStatCard('rain-arcevia', convertToHourRate(d['Arcevia - Intensita di pioggia (mm/min)']), 'mm/hr');
                     updateStatCard('rain-barbara', convertToHourRate(d['Barbara - Intensita di pioggia (mm/min)']), 'mm/hr');
                     updateStatCard('rain-corinaldo', convertToHourRate(d['Corinaldo - Intensita di pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-misa', convertToHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr'); // Corretto
-                    updateStatCard('rain-senigallia', convertToHourRate(d['Senigallia - Intensita Pioggia (mm/min)']), 'mm/hr'); // Corretto
+                    updateStatCard('rain-misa', convertToHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr');
+                    updateStatCard('rain-senigallia', convertToHourRate(d['Senigallia - Intensita Pioggia (mm/min)']), 'mm/hr');
                 }
 
                 if (weatherlinkData && weatherlinkData.length > 0) {
@@ -3838,9 +3838,13 @@ passwordInput.focus();
                 if (STATE.map) {
                     updateMapMarkers();
                 }
+                
+                // --- AGGIUNGI QUESTA SEZIONE ---
                 if (STATE.dashboardMap) {
                     updateDashboardMapMarkers();
                 }
+                // -----------------------------
+
             } catch (error) {
                 console.error("Fallimento nell'aggiornare i dati più recenti:", error);
             }
