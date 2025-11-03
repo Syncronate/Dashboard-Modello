@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -1262,8 +1261,10 @@
         #official-alerts-container {
             padding: 15px 20px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
+            grid-column: span 2;
+            align-content: start;
         }
 
         .official-alerts-day {
@@ -1302,6 +1303,17 @@
         }
 
         /* === RESPONSIVE === */
+        @media (max-width: 1200px) {
+            #official-alerts-container {
+                grid-column: span 1;
+            }
+        }
+         @media (max-width: 600px) {
+            #official-alerts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 1024px) {
             .quick-stats {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -2117,6 +2129,10 @@ max-width: 400px;
                         </div>
                     </div>
                 </div>
+
+                <div class="card" id="official-alerts-container">
+                    <p style="color: var(--text-muted); text-align: center;">Caricamento allerte...</p>
+                </div>
             </div>
 
             <div class="overview-grid-container">
@@ -2132,12 +2148,6 @@ max-width: 400px;
                         <p style="color: var(--text-muted); text-align: center;">Nessuna allerta al momento</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- NUOVO BLOCCO ALLERTE REGIONALI -->
-            <h2 style="margin-top: 30px;"><i data-feather="shield" class="feather-icon"></i> Allerta Meteo Regionale</h2>
-            <div class="card" id="official-alerts-container">
-                <p style="color: var(--text-muted); text-align: center;">Caricamento allerte...</p>
             </div>
         </section>
 
@@ -3521,11 +3531,15 @@ passwordInput.focus();
 
         // ==================== OFFICIAL ALERTS FUNCTIONS ====================
         async function updateOfficialAlerts() {
+            console.log('updateOfficialAlerts START');
             try {
+                console.log('Fetching official alerts data...');
                 const [todayData, tomorrowData] = await Promise.all([
                     fetchData(CONFIG.urls.alertsToday),
                     fetchData(CONFIG.urls.alertsTomorrow)
                 ]);
+
+                console.log('Official alerts data fetched:', { today: todayData?.length, tomorrow: tomorrowData?.length });
 
                 const alertLevels = { 'Verde': 1, 'Gialla': 2, 'Arancione': 3, 'Rossa': 4 };
                 const risks = ['idraulica', 'idrogeologica', 'mareggiate', 'neve', 'temporali', 'vento'];
@@ -3551,8 +3565,11 @@ passwordInput.focus();
                     today: processAlerts(todayData),
                     tomorrow: processAlerts(tomorrowData)
                 };
+                
+                console.log('Processed alerts:', STATE.officialAlerts);
 
                 updateOfficialAlertsDisplay(STATE.officialAlerts);
+                console.log('updateOfficialAlerts END');
 
             } catch (error) {
                 console.error("Errore nel caricamento delle allerte regionali:", error);
@@ -3567,7 +3584,7 @@ passwordInput.focus();
 
             const riskConfig = {
                 idraulica:     { icon: 'droplet', label: 'Idraulico' },
-                idrogeologica: { icon: 'bar-chart-2', label: 'Idrogeologico' },
+                idrogeologica:{ icon: 'bar-chart-2', label: 'Idrogeologico' },
                 temporali:     { icon: 'cloud-lightning', label: 'Temporali' },
                 vento:         { icon: 'wind', label: 'Vento' },
                 neve:          { icon: 'cloud-snow', label: 'Neve' },
