@@ -726,6 +726,44 @@
             font-size: 18px;
             padding: 0;
         }
+        
+.update-error-badge { 
+    display: inline-block; 
+    margin-left: 10px; 
+    padding: 4px 8px; 
+    background: #ff6b6b; 
+    color: white; 
+    border-radius: 4px; 
+    font-size: 0.85em; 
+    animation: pulse-error 2s infinite; 
+} 
+
+@keyframes pulse-error { 
+    0%, 100% { opacity: 1; } 50% { opacity: 0.6; } 
+} 
+
+.loading-pulse { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    padding: 8px 12px; 
+    background: rgba(74, 144, 226, 0.1); 
+    border-radius: 4px; 
+    font-size: 0.9em; 
+    color: #4a90e2; 
+} 
+
+.pulse-dot { 
+    width: 8px; 
+    height: 8px; 
+    background: #4a90e2; 
+    border-radius: 50%; 
+    animation: pulse-dot 1.5s ease-in-out infinite; 
+} 
+
+@keyframes pulse-dot { 
+    0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 
+}
 
         /* === CARDS & TYPOGRAPHY === */
         h1, h2 {
@@ -3077,6 +3115,26 @@ max-width: 400px;
                     </div>
                 </div>
 
+                <!-- Nel modal delle impostazioni, dopo gli intervalli esistenti --> 
+                <div class="settings-section"> 
+                    <h3>⚙️ Impostazioni Avanzate</h3> 
+                    <div class="setting-item"> 
+                        <label for="fetch-timeout">Timeout richieste (secondi)</label> 
+                        <input type="number" id="fetch-timeout" min="5" max="60" value="15"> 
+                        <small>Tempo massimo di attesa per ogni richiesta</small> 
+                    </div> 
+                    <div class="setting-item"> 
+                        <label for="max-retries">Numero di tentativi</label> 
+                        <input type="number" id="max-retries" min="1" max="5" value="3"> 
+                        <small>Quante volte riprovare in caso di errore</small> 
+                    </div> 
+                    <div class="setting-item"> 
+                        <label> <input type="checkbox" id="prevent-overlap" checked> 
+                        Previeni sovrapposizione aggiornamenti </label> 
+                        <small>Salta un ciclo se il precedente è ancora in corso</small> 
+                    </div> 
+                </div>
+
                 <button class="filter-container button" id="save-settings-btn" style="width: 100%; margin-top: 20px; justify-content: center;">
                     <i data-feather="save" class="feather-icon" style="width: 16px; height: 16px;"></i> Salva Impostazioni
                 </button>
@@ -3276,6 +3334,53 @@ passwordInput.focus();
                 promise: e.promise
             });
         });
+
+        function fetchDataWithTimeout(url, timeout = CONFIG.advanced.fetchTimeout) {
+            return new Promise((resolve, reject) => {
+                const timeoutId = setTimeout(() => {
+                    reject(new Error(`Timeout: la richiesta a ${url} ha impiegato più di ${timeout}ms`));
+                }, timeout);
+                Papa.parse(`${url}&t=${Date.now()}`, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        clearTimeout(timeoutId);
+                        resolve(results.data);
+                    },
+                    error: function(error) {
+                        clearTimeout(timeoutId);
+                        reject(error);
+                    }
+                });
+            });
+        }
+
+        async function executeWithRetry(fn, context = 'operazione', maxRetries = CONFIG.advanced.maxRetries) {
+            let lastError;
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const result = await fn();
+                    if (STATE.updateStats.consecutiveErrors > 0) {
+                        console.log(`✅ ${context} ripristinata dopo ${STATE.updateStats.consecutiveErrors} errori`);
+                        STATE.updateStats.consecutiveErrors = 0;
+                    }
+                    return result;
+                } catch (error) {
+                    lastError = error;
+                    console.warn(`⚠️ Tentativo ${attempt}/${maxRetries} fallito per ${context}:`, error.message);
+                    if (attempt < maxRetries) {
+                        const delay = CONFIG.advanced.retryDelay * Math.pow(2, attempt - 1);
+                        console.log(`⏳ Riprovo tra ${delay}ms...`);
+                        await utils.sleep(delay);
+                    }
+                }
+            }
+            STATE.updateStats.consecutiveErrors++;
+            STATE.updateStats.lastError = new Date();
+            throw new Error(`${context} fallita dopo ${maxRetries} tentativi: ${lastError.message}`);
+        }
+
         // Configurazione di base, può essere sovrascritta dalle impostazioni salvate
         let CONFIG = {
             urls: {
@@ -3305,6 +3410,12 @@ passwordInput.focus();
                 rainCritical: 40,       // mm/h
                 windWarning: 40,        // km/h
                 windCritical: 60        // km/h
+            },
+            advanced: {
+                fetchTimeout: 15000,
+                maxRetries: 3,
+                retryDelay: 2000,
+                preventOverlap: true
             }
         };
 
@@ -3339,7 +3450,16 @@ passwordInput.focus();
                 forecast: null
             },
             countdownInterval: null,
-            officialAlerts: null
+            officialAlerts: null,
+            isUpdating: {
+                data: false,
+                forecast: false
+            },
+            updateStats: {
+                lastSuccess: null,
+                lastError: null,
+                consecutiveErrors: 0
+            }
         };
 
         // ==================== UTILITY FUNCTIONS ====================
@@ -3578,6 +3698,50 @@ passwordInput.focus();
             document.getElementById(`gust-bar-${station}`).style.width = `${gustPercent}%`;
         }
 
+        /** * Mostra errore di aggiornamento all'utente */ 
+        function showUpdateError(type) { 
+            const errorBadge = document.getElementById('update-status-badge'); 
+            if (!errorBadge) { 
+                // Crealo se non esiste 
+                const badge = document.createElement('span'); 
+                badge.id = 'update-status-badge'; 
+                badge.className = 'update-error-badge'; 
+                badge.innerHTML = '⚠️ Errore aggiornamento'; 
+                badge.title = `Problemi nell'aggiornamento ${type}. Riproverò automaticamente.`; 
+                const lastUpdateEl = document.getElementById('last-update'); 
+                if (lastUpdateEl) { 
+                    lastUpdateEl.parentNode.insertBefore(badge, lastUpdateEl.nextSibling); 
+                } 
+            } // Rimuovi il badge dopo 10 secondi se tutto torna normale 
+            setTimeout(() => { 
+                if (STATE.updateStats.consecutiveErrors === 0) { 
+                    errorBadge?.remove(); 
+                } 
+            }, 10000); 
+        }
+
+        /** * Indicatore di caricamento durante aggiornamento */ 
+        function showLoadingIndicator(show = true) { 
+            let indicator = document.getElementById('loading-indicator'); 
+            if (show) { 
+                if (!indicator) { 
+                    indicator = document.createElement('div'); 
+                    indicator.id = 'loading-indicator'; 
+                    indicator.className = 'loading-pulse'; 
+                    indicator.innerHTML = '<span class="pulse-dot"></span> Aggiornamento in corso...'; 
+                    const header = document.querySelector('.dashboard-header'); 
+                    if (header) { 
+                        header.appendChild(indicator); 
+                    } 
+                } 
+                indicator.style.display = 'flex'; 
+            } else { 
+                if (indicator) { 
+                    indicator.style.display = 'none'; 
+                } 
+            } 
+        }
+
         // ==================== ALERT SYSTEM ====================
         function checkAlerts() {
             STATE.alerts = [];
@@ -3750,8 +3914,8 @@ passwordInput.focus();
             try {
                 console.log('Fetching official alerts data...');
                 const [todayData, tomorrowData] = await Promise.all([
-                    fetchData(CONFIG.urls.alertsToday),
-                    fetchData(CONFIG.urls.alertsTomorrow)
+                    fetchDataWithTimeout(CONFIG.urls.alertsToday),
+                    fetchDataWithTimeout(CONFIG.urls.alertsTomorrow)
                 ]);
 
                 console.log('Official alerts data fetched:', { today: todayData?.length, tomorrow: tomorrowData?.length });
@@ -3935,47 +4099,13 @@ passwordInput.focus();
 
 
         // ==================== DATA FETCHING ====================
-        function fetchData(url) {
-            return new Promise((resolve, reject) => {
-                Papa.parse(`${url}&t=${Date.now()}`, {
-                    download: true,
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (results) => {
-                        if (results.errors.length > 0) {
-                            console.error('Errori nel parsing CSV:', results.errors);
-                            updateConnectionStatus(false);
-                            reject(results.errors);
-                        } else {
-                            updateConnectionStatus(true);
-                            resolve(results.data);
-                        }
-                    },
-                    error: (error) => {
-                        console.error('Errore nel caricamento dati:', error);
-                        updateConnectionStatus(false);
-                        showToast('Errore nel caricamento dei dati', 'error');
-                        reject(error);
-                    }
-                });
-            });
-            // Chiudi sidebar quando si clicca su un link (mobile)
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', function() {
-                    if (utils.isMobile()) {
-                        document.getElementById('sidebar').classList.remove('open');
-                        const overlay = document.querySelector('.sidebar-overlay');
-                        if (overlay) overlay.classList.remove('active');
-                    }
-                });
-            });
-        }
 
 async function updateAllLatestData() {
+            showLoadingIndicator(true);
             try {
                 const [regionData, weatherlinkData] = await Promise.all([
-                    fetchData(CONFIG.urls.regionLatest),
-                    fetchData(CONFIG.urls.weatherlinkLatest)
+                    fetchDataWithTimeout(CONFIG.urls.regionLatest),
+                    fetchDataWithTimeout(CONFIG.urls.weatherlinkLatest)
                 ]);
 
                 if (regionData && regionData.length > 0) {
@@ -4025,6 +4155,9 @@ async function updateAllLatestData() {
 
             } catch (error) {
                 console.error("Fallimento nell'aggiornare i dati più recenti:", error);
+            }
+            finally { 
+                showLoadingIndicator(false); 
             }
         }
 
@@ -4430,7 +4563,7 @@ async function updateAllLatestData() {
 
         async function fetchForecastData() {
             try {
-                const data = await fetchData(CONFIG.urls.forecast);
+                const data = await fetchDataWithTimeout(CONFIG.urls.forecast);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 STATE.forecastData = filteredData;
                 
@@ -4550,7 +4683,7 @@ async function updateAllLatestData() {
 
         async function fetchForecastDataBettolelle3h() {
             try {
-                const data = await fetchData(CONFIG.urls.forecastBettolelle3h);
+                const data = await fetchDataWithTimeout(CONFIG.urls.forecastBettolelle3h);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 const labels = filteredData.map(row => row['Timestamp Previsione']);
                 const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
@@ -4668,7 +4801,7 @@ async function updateAllLatestData() {
 
         async function fetchForecastDataPonteGaribaldi6h() {
             try {
-                const data = await fetchData(CONFIG.urls.forecastPonteGaribaldi6h);
+                const data = await fetchDataWithTimeout(CONFIG.urls.forecastPonteGaribaldi6h);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 const labels = filteredData.map(row => row['Timestamp Previsione']);
                 const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q10)']));
@@ -5706,31 +5839,30 @@ async function updateAllLatestData() {
         }
 
         // ==================== SETTINGS ====================
-        function saveSettings() {
-            const newConfig = {
-                thresholds: {
-                    hydroWarning: parseFloat(document.getElementById('threshold-hydro-warning').value),
-                    hydroCritical: parseFloat(document.getElementById('threshold-hydro-critical').value),
-                    rainWarning: parseFloat(document.getElementById('threshold-rain-warning').value),
-                    rainCritical: parseFloat(document.getElementById('threshold-rain-critical').value),
-                    windWarning: parseFloat(document.getElementById('threshold-wind-warning').value),
-                    windCritical: parseFloat(document.getElementById('threshold-wind-critical').value),
-                },
-                intervals: {
-                    dataUpdate: parseInt(document.getElementById('update-interval-data').value) * 1000,
-                    forecastUpdate: parseInt(document.getElementById('update-interval-forecast').value) * 1000
-                }
-            };
-
-            CONFIG.thresholds = newConfig.thresholds;
-            CONFIG.intervals = newConfig.intervals;
-
+        function saveSettings() { 
+            const newConfig = { 
+                // ... configurazione esistente ... 
+                intervals: { 
+                    dataUpdate: parseInt(document.getElementById('update-interval-data').value) * 1000, 
+                    forecastUpdate: parseInt(document.getElementById('update-interval-forecast').value) * 1000 
+                }, 
+                // NUOVO: Salva impostazioni avanzate 
+                advanced: { 
+                    fetchTimeout: parseInt(document.getElementById('fetch-timeout').value) * 1000, 
+                    maxRetries: parseInt(document.getElementById('max-retries').value), 
+                    retryDelay: 2000, 
+                    preventOverlap: document.getElementById('prevent-overlap').checked 
+                } 
+            }; 
+            CONFIG.intervals = newConfig.intervals; 
+            CONFIG.advanced = newConfig.advanced; 
             localStorage.setItem('meteoConfig', JSON.stringify(newConfig));
-            showToast('Impostazioni salvate', 'success');
+            // Chiudi il modal
             document.getElementById('settings-modal').classList.remove('active');
-            
+            // Riavvia con le nuove impostazioni
             startAutoRefresh();
-            checkAlerts();
+            // Feedback 
+            showToast('✅ Impostazioni salvate e applicate!'); 
         }
 
         function loadSettings() {
@@ -5771,8 +5903,8 @@ async function updateAllLatestData() {
 
             try {
                 const [regionHistory, weatherlinkHistory] = await Promise.all([
-                    fetchData(CONFIG.urls.regionHistory),
-                    fetchData(CONFIG.urls.weatherlinkHistory),
+                    fetchDataWithTimeout(CONFIG.urls.regionHistory),
+                    fetchDataWithTimeout(CONFIG.urls.weatherlinkHistory),
                     fetchForecastData(),
                     fetchForecastDataBettolelle3h(),
                     fetchForecastDataPonteGaribaldi6h(),
@@ -5799,34 +5931,98 @@ async function updateAllLatestData() {
         }
         
         // ==================== AUTO REFRESH ====================
-        // Ciclo di aggiornamento per i dati principali (più frequente)
+        /** * Verifica lo stato di salute del sistema di aggiornamento */ 
+        function checkUpdateHealth() { 
+            const now = Date.now(); 
+            const stats = STATE.updateStats; 
+            // Se l'ultimo aggiornamento riuscito è troppo vecchio 
+            if (stats.lastSuccess) { 
+                const timeSinceSuccess = now - stats.lastSuccess.getTime(); 
+                const maxAge = CONFIG.intervals.dataUpdate * 3; // 3 cicli 
+                if (timeSinceSuccess > maxAge) { 
+                    console.error('🚨 ATTENZIONE: Nessun aggiornamento riuscito da più di 3 cicli!'); 
+                    // Prova a riavviare i cicli 
+                    console.log('🔄 Riavvio forzato dei cicli di aggiornamento...'); 
+                    startAutoRefresh(); 
+                } 
+            } 
+            // Log statistiche 
+            console.log('📊 Health Check:', { 
+                ultimoSuccesso: stats.lastSuccess, 
+                ultimoErrore: stats.lastError, 
+                erroriConsecutivi: stats.consecutiveErrors, 
+                datiInAggiornamento: STATE.isUpdating.data, 
+                previsioniInAggiornamento: STATE.isUpdating.forecast }); 
+        }
+
         async function runDataUpdateLoop() {
-            try {
-                await updateAllLatestData();
-                await updateOfficialAlerts();
-            } catch (error) {
-                console.error("Errore nel ciclo di aggiornamento dati:", error);
-                // In caso di errore, attende un po' di più prima di riprovare
-                await utils.sleep(5000); 
-            } finally {
-                // Pianifica la prossima esecuzione in ogni caso (successo o fallimento)
+            if (CONFIG.advanced.preventOverlap && STATE.isUpdating.data) {
+                console.warn('⚠️ Aggiornamento dati già in corso, salto questo ciclo');
                 STATE.updateIntervals.data = setTimeout(runDataUpdateLoop, CONFIG.intervals.dataUpdate);
+                return;
+            }
+            STATE.isUpdating.data = true;
+            const startTime = Date.now();
+            try {
+                console.log('🔄 Inizio aggiornamento dati...');
+                await Promise.all([
+                    executeWithRetry(() => updateAllLatestData(), 'aggiornamento dati sensori'),
+                    executeWithRetry(() => updateOfficialAlerts(), 'aggiornamento allerte ufficiali')
+                ]);
+                const duration = Date.now() - startTime;
+                console.log(`✅ Aggiornamento dati completato in ${duration}ms`);
+                STATE.updateStats.lastSuccess = new Date();
+                updateLastUpdate();
+            } catch (error) {
+                console.error('❌ Errore nel ciclo di aggiornamento dati:', error);
+                showUpdateError('dati');
+            } finally {
+                STATE.isUpdating.data = false;
+                let nextInterval = CONFIG.intervals.dataUpdate;
+                if (STATE.updateStats.consecutiveErrors >= 3) {
+                    nextInterval = Math.min(nextInterval * 2, 600000);
+                    console.warn(`⚠️ Troppi errori consecutivi, intervallo aumentato a ${nextInterval/1000}s`);
+                }
+                STATE.updateIntervals.data = setTimeout(runDataUpdateLoop, nextInterval);
             }
         }
 
-        // Ciclo di aggiornamento per le previsioni (meno frequente)
         async function runForecastUpdateLoop() {
-            try {
-                // Esegue le tre chiamate in parallelo per efficienza
-                await Promise.all([
-                    fetchForecastData(),
-                    fetchForecastDataBettolelle3h(),
-                    fetchForecastDataPonteGaribaldi6h()
-                ]);
-            } catch (error) {
-                console.error("Errore nel ciclo di aggiornamento previsioni:", error);
-            } finally {
+            if (CONFIG.advanced.preventOverlap && STATE.isUpdating.forecast) {
+                console.warn('⚠️ Aggiornamento previsioni già in corso, salto questo ciclo');
                 STATE.updateIntervals.forecast = setTimeout(runForecastUpdateLoop, CONFIG.intervals.forecastUpdate);
+                return;
+            }
+            STATE.isUpdating.forecast = true;
+            const startTime = Date.now();
+            try {
+                console.log('🔄 Inizio aggiornamento previsioni...');
+                const results = await Promise.allSettled([
+                    executeWithRetry(() => fetchForecastData(), 'previsioni base'),
+                    executeWithRetry(() => fetchForecastDataBettolelle3h(), 'previsioni Bettolelle 3h'),
+                    executeWithRetry(() => fetchForecastDataPonteGaribaldi6h(), 'previsioni Ponte Garibaldi 6h')
+                ]);
+                const successful = results.filter(r => r.status === 'fulfilled').length;
+                const failed = results.filter(r => r.status === 'rejected').length;
+                const duration = Date.now() - startTime;
+                console.log(`✅ Aggiornamento previsioni completato in ${duration}ms (${successful} OK, ${failed} errori)`);
+                if (successful > 0) {
+                    STATE.updateStats.lastSuccess = new Date();
+                }
+                if (successful === 0) {
+                    throw new Error('Tutte le chiamate di previsione sono fallite');
+                }
+            } catch (error) {
+                console.error('❌ Errore nel ciclo di aggiornamento previsioni:', error);
+                showUpdateError('previsioni');
+            } finally {
+                STATE.isUpdating.forecast = false;
+                let nextInterval = CONFIG.intervals.forecastUpdate;
+                if (STATE.updateStats.consecutiveErrors >= 3) {
+                    nextInterval = Math.min(nextInterval * 2, 600000);
+                    console.warn(`⚠️ Troppi errori consecutivi, intervallo previsioni aumentato a ${nextInterval/1000}s`);
+                }
+                STATE.updateIntervals.forecast = setTimeout(runForecastUpdateLoop, nextInterval);
             }
         }
 
@@ -5927,6 +6123,9 @@ async function updateAllLatestData() {
             document.querySelectorAll('.page-section').forEach(section => {
                 sectionObserver.observe(section);
             });
+
+            // Esegui health check ogni 2 minuti 
+            setInterval(checkUpdateHealth, 120000);
         }
 
         function initTouchGestures() {
@@ -5965,6 +6164,22 @@ async function updateAllLatestData() {
 
         window.addEventListener('online', () => updateConnectionStatus(true));
         window.addEventListener('offline', () => updateConnectionStatus(false));
+
+        /** * Dashboard di debug per monitorare gli aggiornamenti * Chiamala dalla console: window.showUpdateDebug() */ 
+        window.showUpdateDebug = function() { 
+            console.group('🔍 Debug Sistema Aggiornamento'); 
+            console.log('Configurazione:', CONFIG.intervals); 
+            console.log('Configurazione Avanzata:', CONFIG.advanced); 
+            console.log('Stato Aggiornamenti:', STATE.isUpdating); 
+            console.log('Statistiche:', STATE.updateStats); 
+            console.log('Intervalli Attivi:', { 
+                data: STATE.updateIntervals.data ? 'Attivo' : 'Non attivo', 
+                forecast: STATE.updateIntervals.forecast ? 'Attivo' : 'Non attivo' 
+            }); 
+            console.groupEnd(); 
+            // Mostra anche visivamente 
+            alert(` 📊 STATO SISTEMA AGGIORNAMENTO Ultimo successo: ${STATE.updateStats.lastSuccess || 'Mai'} Errori consecutivi: ${STATE.updateStats.consecutiveErrors} Dati in aggiornamento: ${STATE.isUpdating.data ? 'SÌ' : 'NO'} Previsioni in aggiornamento: ${STATE.isUpdating.forecast ? 'SÌ' : 'NO'} Intervallo dati: ${CONFIG.intervals.dataUpdate/1000}s Intervallo previsioni: ${CONFIG.intervals.forecastUpdate/1000}s `); 
+        };
     </script>
 </div>
 </body>
