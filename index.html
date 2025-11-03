@@ -566,6 +566,43 @@
             padding: 5px 2px 0 2px;
         }
 
+        /* === RADAR TOGGLE CONTROL === */
+        .leaflet-control-radar-toggle a {
+            background-color: var(--medium-bg);
+            border-radius: 4px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .leaflet-control-radar-toggle a .feather-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--text-color);
+        }
+
+        .leaflet-control-radar-toggle a:hover {
+            background-color: var(--light-bg);
+        }
+
+        .leaflet-control-radar-toggle a.active {
+            background-color: var(--primary-color);
+        }
+        
+        .leaflet-control-radar-toggle a.active .feather-icon {
+            color: white;
+        }
+
+        .leaflet-control-radar-toggle a.active:hover {
+            background-color: var(--primary-dark);
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -5137,10 +5174,45 @@ async function updateAllLatestData() {
                 currentIndex: 0,
                 isPlaying: false,
                 isLoaded: false,
-                generatedTime: 0
+                generatedTime: 0,
+                isRadarVisible: true // NUOVO STATO
             };
 
-            let playButton, timelineSlider, timeLabel;
+            let playButton, timelineSlider, timeLabel, toggleButton; // Aggiunto toggleButton
+
+            // NUOVO CONTROLLO PER IL TOGGLE
+            const RadarToggleControl = L.Control.extend({
+                onAdd: function(map) {
+                    const container = L.DomUtil.create('div', 'leaflet-control-radar-toggle leaflet-bar');
+                    toggleButton = L.DomUtil.create('a', 'active', container);
+                    toggleButton.href = '#';
+                    toggleButton.title = 'Mostra/Nascondi Radar';
+                    toggleButton.innerHTML = `<i data-feather="layers" class="feather-icon"></i>`;
+                    
+                    L.DomEvent.on(toggleButton, 'click', L.DomEvent.stop).on(toggleButton, 'click', () => {
+                        radarState.isRadarVisible = !radarState.isRadarVisible;
+                        
+                        if (radarState.isRadarVisible) {
+                            L.DomUtil.addClass(toggleButton, 'active');
+                            showFrame(radarState.currentIndex); // Mostra il frame corrente
+                        } else {
+                            L.DomUtil.removeClass(toggleButton, 'active');
+                            stopRadarAnimation(); // Metti in pausa se in esecuzione
+                            // Nascondi tutti i layer
+                            radarState.layers.forEach(layer => {
+                                if (mapInstance.hasLayer(layer)) {
+                                    mapInstance.removeLayer(layer);
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Applica feather icons dopo la creazione
+                    setTimeout(() => feather.replace(), 0);
+
+                    return container;
+                }
+            });
 
             const RadarControl = L.Control.extend({
                 onAdd: function(map) {
@@ -5186,8 +5258,10 @@ async function updateAllLatestData() {
                     return container;
                 }
             });
-
+            
+            // AGGIUNTA DEI CONTROLLI
             mapInstance.addControl(new RadarControl({ position: 'bottomright' }));
+            mapInstance.addControl(new RadarToggleControl({ position: 'topleft' })); // NUOVO
 
             async function fetchRadarData() {
                 try {
@@ -5249,12 +5323,14 @@ async function updateAllLatestData() {
                     mapInstance.removeLayer(previousLayer);
                 }
 
-                // Aggiungi il nuovo layer
-                const currentLayer = radarState.layers[index];
-                if (!mapInstance.hasLayer(currentLayer)) {
-                    currentLayer.addTo(mapInstance);
+                // Aggiungi il nuovo layer solo se il radar è visibile
+                if (radarState.isRadarVisible) {
+                    const currentLayer = radarState.layers[index];
+                    if (!mapInstance.hasLayer(currentLayer)) {
+                        currentLayer.addTo(mapInstance);
+                    }
+                    currentLayer.setOpacity(0.8);
                 }
-                currentLayer.setOpacity(0.8);
                 
                 radarState.currentIndex = index;
                 timelineSlider.value = index;
