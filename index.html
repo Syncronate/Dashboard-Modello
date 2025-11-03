@@ -463,108 +463,202 @@
             color: white !important;
         }
 
-        /* === RADAR CONTROL STYLES === */
-        .leaflet-control-radar {
-            background: rgba(30, 30, 30, 0.85);
-            backdrop-filter: blur(5px);
-            border-radius: 10px;
-            padding: 8px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 350px;
-            transition: var(--transition);
-        }
+/* === STILI DEL CONTROLLO RADAR MIGLIORATI === */
 
-        .radar-play-pause button {
-            background: var(--light-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.5em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
+.leaflet-control-radar {
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    padding: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 350px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-        .radar-play-pause button:hover {
-            background: var(--primary-color);
-            color: white;
-        }
+.radar-play-pause button {
+    background: #2c2c2c;
+    border: 1px solid #333;
+    color: #e0e0e0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0; /* Impedisce al pulsante di ridursi */
+}
 
-        .radar-play-pause button.leaflet-disabled {
-            background: var(--dark-bg);
-            color: var(--text-muted);
-            cursor: not-allowed;
-        }
+.radar-play-pause button:hover {
+    background: #6785bf;
+    color: white;
+    transform: scale(1.05); /* Leggero ingrandimento al hover */
+}
 
-        .radar-timeline-container {
-            flex-grow: 1;
-            position: relative;
-        }
+.radar-timeline-container {
+    flex-grow: 1;
+    position: relative;
+    padding-top: 30px; /* Spazio per l'etichetta dell'orario */
+}
 
-        #radar-time-label {
-            position: absolute;
-            top: -25px;
-            left: 50%; 
-            transform: translateX(-50%);
-            background: var(--primary-color);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            font-weight: bold;
-            white-space: nowrap;
-            transition: left 0.1s linear;
-        }
+#radar-time-label {
+    position: absolute;
+    top: 0;
+    left: 75%;
+    transform: translateX(-50%);
+    background: #6785bf;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    font-weight: bold;
+    white-space: nowrap;
+    transition: left 0.1s linear;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
 
-        #radar-timeline-slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            background: var(--dark-bg);
-            border-radius: 5px;
-            outline: none;
-            cursor: pointer;
-        }
+/* Freccia sotto l'etichetta */
+#radar-time-label::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #6785bf;
+}
 
-        #radar-timeline-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            border: 2px solid white;
-            cursor: pointer;
-        }
+/* WRAPPER PER LO SLIDER - RISOLVE IL PROBLEMA DELL'ALLINEAMENTO */
+.radar-slider-wrapper {
+    position: relative;
+    width: 100%;
+    height: 8px;
+    margin-bottom: 8px;
+}
 
-        #radar-timeline-slider::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            border: 2px solid white;
-            cursor: pointer;
-        }
-        
-        #radar-timeline-slider.leaflet-disabled {
-            cursor: not-allowed;
-        }
+/* Sfondo della barra (track) */
+.radar-slider-track {
+    position: absolute;
+    width: 100%;
+    height: 8px;
+    background: #121212;
+    border-radius: 5px;
+    overflow: hidden;
+}
 
-        .radar-timeline-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75em;
-            color: var(--text-muted);
-            margin: 0 9px;
-        }
+/* Barra blu (passato) */
+.radar-slider-progress {
+    position: absolute;
+    height: 100%;
+    background: #6785bf;
+    width: 50%; /* Di default, "Now" è al 50% */
+    border-radius: 5px 0 0 5px;
+    transition: width 0.1s linear;
+}
+
+/* Barra bianca (futuro) */
+.radar-slider-future {
+    position: absolute;
+    right: 0;
+    height: 100%;
+    background: #ffffff;
+    width: 50%; /* Di default, futuro = 50% */
+    border-radius: 0 5px 5px 0;
+    transition: width 0.1s linear;
+}
+
+/* SLIDER (invisibile ma interattivo) */
+#radar-timeline-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px;
+    background: transparent; /* Trasparente, usiamo gli elementi sottostanti */
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 10; /* Sopra gli elementi di sfondo */
+}
+
+/* Thumb WebKit */
+#radar-timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #6785bf;
+    border-radius: 50%;
+    border: 3px solid white;
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+
+#radar-timeline-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+#radar-timeline-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+}
+
+/* Thumb Firefox */
+#radar-timeline-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: #6785bf;
+    border-radius: 50%;
+    border: 3px solid white;
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+
+#radar-timeline-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+#radar-timeline-slider::-moz-range-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+}
+
+/* Rimuove il track di default in Firefox */
+#radar-timeline-slider::-moz-range-track {
+    background: transparent;
+}
+
+/* ETICHETTE SOTTO LO SLIDER - CORRETTO L'ALLINEAMENTO */
+.radar-timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75em;
+    color: #999;
+    margin: 0; /* ✅ RIMOSSO IL MARGIN CHE CAUSAVA IL PROBLEMA */
+    padding: 0 9px; /* Usa padding per bilanciare il thumb */
+}
+
+.radar-timeline-labels span {
+    text-align: center;
+}
+
+.radar-timeline-labels span:first-child {
+    text-align: left;
+}
+
+.radar-timeline-labels span:last-child {
+    text-align: right;
+}
 
         /* === RADAR TOGGLE CONTROL === */
         .leaflet-control-radar-toggle a {
@@ -5393,10 +5487,11 @@ async function updateAllLatestData() {
             radarState.showFrame = showFrame.bind(radarState, mapInstance);
             radarState.playRadarAnimation = playRadarAnimation.bind(radarState);
             radarState.stopRadarAnimation = stopRadarAnimation.bind(radarState);
+            radarState.updateSliderUI = updateSliderUI.bind(radarState);
             
             radarInstances.set(mapInstance, radarState);
 
-            let playButton, timelineSlider, timeLabel, toggleButton;
+            let playButton, timelineSlider, timeLabel, progressBar, futureBar, toggleButton;
 
             const RadarToggleControl = L.Control.extend({
                 onAdd: function(map) {
@@ -5432,14 +5527,18 @@ async function updateAllLatestData() {
                 onAdd: function(map) {
                     const container = L.DomUtil.create('div', 'leaflet-control-radar');
                     
-                    // Usa il prefisso per creare ID univoci
                     container.innerHTML = `
                         <div class="radar-play-pause">
-                            <button id="radar-play-btn-${prefix}" class="leaflet-disabled">▶</button>
+                            <button id="radar-play-btn-${prefix}">▶</button>
                         </div>
                         <div class="radar-timeline-container">
                             <div id="radar-time-label-${prefix}">--:--</div>
-                            <input type="range" id="radar-timeline-slider-${prefix}" min="0" max="0" value="0" class="leaflet-disabled">
+                            <div class="radar-slider-wrapper">
+                                <div class="radar-slider-track"></div>
+                                <div class="radar-slider-progress" id="radar-slider-progress-${prefix}"></div>
+                                <div class="radar-slider-future" id="radar-slider-future-${prefix}"></div>
+                                <input type="range" id="radar-timeline-slider-${prefix}" min="0" max="100" value="50" disabled>
+                            </div>
                             <div class="radar-timeline-labels">
                                 <span>1h ago</span>
                                 <span>Now</span>
@@ -5451,12 +5550,12 @@ async function updateAllLatestData() {
                     playButton = container.querySelector(`#radar-play-btn-${prefix}`);
                     timelineSlider = container.querySelector(`#radar-timeline-slider-${prefix}`);
                     timeLabel = container.querySelector(`#radar-time-label-${prefix}`);
+                    progressBar = container.querySelector(`#radar-slider-progress-${prefix}`);
+                    futureBar = container.querySelector(`#radar-slider-future-${prefix}`);
 
                     L.DomEvent.disableClickPropagation(container);
-                    L.DomEvent.disableScrollPropagation(container);
                     
-                    L.DomEvent.on(playButton, 'click', () => {
-                        if (!radarState.isLoaded) return;
+                    playButton.addEventListener('click', () => {
                         if (radarState.isPlaying) {
                             radarState.stopRadarAnimation();
                         } else {
@@ -5464,11 +5563,14 @@ async function updateAllLatestData() {
                         }
                     });
 
-                    L.DomEvent.on(timelineSlider, 'input', () => {
-                        if (!radarState.isLoaded) return;
+                    timelineSlider.addEventListener('input', (e) => {
                         radarState.stopRadarAnimation();
-                        radarState.showFrame(parseInt(timelineSlider.value, 10));
+                        // Calcola l'indice in base al valore percentuale dello slider
+                        const percentage = parseFloat(e.target.value);
+                        const index = Math.round(percentage / 100 * (radarState.frames.length - 1));
+                        radarState.showFrame(index);
                     });
+
 
                     return container;
                 }
@@ -5477,7 +5579,6 @@ async function updateAllLatestData() {
             mapInstance.addControl(new RadarControl({ position: 'bottomright' }));
             mapInstance.addControl(new RadarToggleControl({ position: 'topleft' }));
             
-            // --- Funzioni interne che ora usano 'this' per riferirsi a radarState ---
             function createRadarLayers(mapInstance, frames, generatedTime) {
                 this.layers.forEach(layer => mapInstance.removeLayer(layer));
                 this.layers = [];
@@ -5492,10 +5593,14 @@ async function updateAllLatestData() {
                     });
                     this.layers.push(layer);
                 });
+                
+                // Enable slider
+                const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
+                if(timelineSlider) timelineSlider.disabled = false;
             }
             
             function showFrame(mapInstance, index) {
-                if (!this.layers[index]) return;
+                if (!this.layers[index] || !this.frames[index]) return;
 
                 const previousLayer = this.layers[this.currentIndex];
                 if (mapInstance.hasLayer(previousLayer)) {
@@ -5504,38 +5609,53 @@ async function updateAllLatestData() {
 
                 if (this.isRadarVisible) {
                     const currentLayer = this.layers[index];
-                    if (!mapInstance.hasLayer(currentLayer)) {
-                        currentLayer.addTo(mapInstance);
-                    }
-                    currentLayer.setOpacity(0.8);
+                    currentLayer.addTo(mapInstance).setOpacity(0.8);
                 }
                 
                 this.currentIndex = index;
-                const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
-                if (timelineSlider) timelineSlider.value = index;
+                
+                const percentage = this.frames.length > 1 ? (index / (this.frames.length - 1)) * 100 : 50;
+                this.updateSliderUI(percentage);
+            }
 
+            function updateSliderUI(percentage) {
+                const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
                 const timeLabel = document.getElementById(`radar-time-label-${this.prefix}`);
-                if (timeLabel) {
-                    const frameTime = new Date(this.frames[index].time * 1000);
-                    const hours = String(frameTime.getHours()).padStart(2, '0');
-                    const minutes = String(frameTime.getMinutes()).padStart(2, '0');
-                    timeLabel.textContent = `${hours}:${minutes}`;
-                    
-                    const percent = (index / (this.frames.length - 1)) * 100;
-                    timeLabel.style.left = `calc(${percent}% - ${percent / 100 * 30}px)`;
+                const progressBar = document.getElementById(`radar-slider-progress-${this.prefix}`);
+                const futureBar = document.getElementById(`radar-slider-future-${this.prefix}`);
+
+                if(timelineSlider) timelineSlider.value = percentage;
+                
+                if(timeLabel) {
+                    timeLabel.style.left = `${percentage}%`;
+                    const frame = this.frames[this.currentIndex];
+                    if (frame) {
+                        const currentTime = new Date(frame.time * 1000);
+                        const hours = String(currentTime.getHours()).padStart(2, '0');
+                        const minutes = String(currentTime.getMinutes()).padStart(2, '0');
+                        timeLabel.textContent = `${hours}:${minutes}`;
+                    }
                 }
+                if(progressBar) progressBar.style.width = `${percentage}%`;
+                if(futureBar) futureBar.style.width = `${100 - percentage}%`;
             }
 
             function playRadarAnimation() {
-                if (this.isPlaying) return;
+                if (this.isPlaying || !this.isLoaded) return;
                 this.isPlaying = true;
                 const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
-                if (playButton) playButton.innerHTML = '❚❚';
+                if (playButton) {
+                    playButton.textContent = '⏸';
+                    playButton.style.background = '#6785bf';
+                }
 
                 this.animationInterval = setInterval(() => {
-                    let nextIndex = (this.currentIndex + 1) % this.frames.length;
+                    let nextIndex = this.currentIndex + 1;
+                    if (nextIndex >= this.frames.length) {
+                        nextIndex = 0; // Loop
+                    }
                     this.showFrame(nextIndex);
-                }, 500);
+                }, 200);
             }
 
             function stopRadarAnimation() {
@@ -5543,7 +5663,10 @@ async function updateAllLatestData() {
                 clearInterval(this.animationInterval);
                 this.isPlaying = false;
                 const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
-                if (playButton) playButton.innerHTML = '▶';
+                if (playButton) {
+                    playButton.textContent = '▶';
+                    playButton.style.background = '#2c2c2c';
+                }
             }
         }
         
