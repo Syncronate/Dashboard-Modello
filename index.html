@@ -603,6 +603,42 @@
             background-color: var(--primary-dark);
         }
 
+        /* === RADAR LEGEND STYLES === */
+        .leaflet-control-radar-legend {
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(5px);
+            border-radius: 8px;
+            padding: 10px 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            width: 300px;
+        }
+
+        .leaflet-control-radar-legend .legend-title {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .leaflet-control-radar-legend .legend-gradient {
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            /* Questo è il gradiente con i colori di RainViewer */
+            background: linear-gradient(to right, #0000FF, #0096FF, #00FFFF, #00C800, #009600, #FFFF00, #FFC800, #FF9600, #FF0000, #C80000, #960000, #FF00FF);
+        }
+
+        .leaflet-control-radar-legend .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7em;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -4850,6 +4886,7 @@ async function updateAllLatestData() {
 
             updateDashboardMapMarkers();
             setupRadarControls(STATE.dashboardMap);
+            STATE.dashboardMap.addControl(new RadarLegendControl({ position: 'bottomleft' }));
         }
 
         function initMap() {
@@ -4898,6 +4935,7 @@ async function updateAllLatestData() {
 
             updateMapMarkers();
             setupRadarControls(STATE.map);
+            STATE.map.addControl(new RadarLegendControl({ position: 'bottomleft' }));
         }
         
         function updateMapMarkers() {
@@ -5353,6 +5391,32 @@ async function updateAllLatestData() {
 
             fetchRadarData();
         }
+
+        // ==================== RADAR LEGEND CONTROL ====================
+        const RadarLegendControl = L.Control.extend({
+            onAdd: function(map) {
+                const container = L.DomUtil.create('div', 'leaflet-control-radar-legend');
+                
+                container.innerHTML = `
+                    <div class="legend-title">Intensità Radar (mm/h)</div>
+                    <div class="legend-gradient"></div>
+                    <div class="legend-labels">
+                        <span>0.1</span>
+                        <span>0.5</span>
+                        <span>1</span>
+                        <span>5</span>
+                        <span>10</span>
+                        <span>>50</span>
+                    </div>
+                `;
+                
+                // Disabilita gli eventi della mappa sul controllo
+                L.DomEvent.disableClickPropagation(container);
+                L.DomEvent.disableScrollPropagation(container);
+                
+                return container;
+            }
+        });
 
         // ==================== EXPORT FUNCTIONS ====================
         function exportToCSV(data, filename) {
