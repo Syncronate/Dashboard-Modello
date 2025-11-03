@@ -3414,12 +3414,12 @@ passwordInput.focus();
             // Check hydro levels
             const hydroStations = [
                 { name: 'Misa (Bettolelle)', value: parseAndFixDecimal(region['Misa - Livello Misa (mt)']) },
-                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
+                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) }, // Corretto
                 { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
                 { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
                 { name: 'Foce Cesano', value: parseAndFixDecimal(region['Foce Cesano - Livello Cesano (mt)']) },
                 { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
-                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
+                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) }, // Corretto
                 { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
             ];
 
@@ -3777,20 +3777,20 @@ passwordInput.focus();
                     const d = regionData[0];
                     STATE.regionLatestData = d;
                     updateStatCard('hydro-misa-bettolelle', d['Misa - Livello Misa (mt)'], 'm');
-                    updateStatCard('hydro-pianello-ostra', d['Pianello di Ostra - Livello Misa (mt)'], 'm');
+                    updateStatCard('hydro-pianello-ostra', d['Pianello di Ostra - Livello Misa (mt)'], 'm'); // Corretto
                     updateStatCard('hydro-ponte-garibaldi', d['Ponte Garibaldi - Livello Misa 2 (mt)'], 'm');
                     updateStatCard('hydro-serra-dei-conti', d['Serra dei Conti - Livello Misa (mt)'], 'm');
                     updateStatCard('hydro-foce-cesano', d['Foce Cesano - Livello Cesano (mt)'], 'm');
                     updateStatCard('hydro-cesano', d['Cesano - Livello Cesano (mt)'], 'm');
                     updateStatCard('hydro-corinaldo-nevola', d['Nevola - Livello Nevola (mt)'], 'm');
-                    updateStatCard('hydro-passo-ripe', d['Passo Ripe - Livello Nevola (mt)'], 'm');
+                    updateStatCard('hydro-passo-ripe', d['Passo Ripe - Livello Nevola (mt)'], 'm'); // Corretto
                     
                     const convertToHourRate = (rawValue) => (parseAndFixDecimal(rawValue) * 60);
                     updateStatCard('rain-arcevia', convertToHourRate(d['Arcevia - Intensita di pioggia (mm/min)']), 'mm/hr');
                     updateStatCard('rain-barbara', convertToHourRate(d['Barbara - Intensita di pioggia (mm/min)']), 'mm/hr');
                     updateStatCard('rain-corinaldo', convertToHourRate(d['Corinaldo - Intensita di pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-misa', convertToHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr');
-                    updateStatCard('rain-senigallia', convertToHourRate(d['Senigallia - Intensita Pioggia (mm/min)']), 'mm/hr');
+                    updateStatCard('rain-misa', convertToHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr'); // Corretto
+                    updateStatCard('rain-senigallia', convertToHourRate(d['Senigallia - Intensita Pioggia (mm/min)']), 'mm/hr'); // Corretto
                 }
 
                 if (weatherlinkData && weatherlinkData.length > 0) {
@@ -3825,12 +3825,12 @@ passwordInput.focus();
             
             const hydroStations = [
                 { name: 'Misa (Bettolelle)', value: parseAndFixDecimal(region['Misa - Livello Misa (mt)']) },
-                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
+                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) }, // Corretto
                 { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
                 { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
                 { name: 'Foce Cesano', value: parseAndFixDecimal(region['Foce Cesano - Livello Cesano (mt)']) },
                 { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
-                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
+                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) }, // Corretto
                 { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
             ];
             const validHydro = hydroStations.filter(s => !isNaN(s.value));
