@@ -598,7 +598,7 @@
         /* === OVERVIEW GRID FOR WINDY & ALERTS === */
         .overview-grid-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 2fr 1fr;
             gap: 25px;
             margin-top: 30px;
         }
@@ -607,16 +607,11 @@
             height: 100%;
         }
 
-        #windy-map {
+        #dashboard-map-container {
             padding: 0;
             overflow: hidden;
             height: 500px; /* Default height */
-        }
-
-        #windy-map iframe {
             width: 100%;
-            height: 100%;
-            border: none;
         }
         
         .alerts-container-wrapper .card {
@@ -2170,10 +2165,9 @@ max-width: 400px;
             </div>
 
             <div class="overview-grid-container">
-                <div class="grid-item windy-map-container">
-                    <h2><i data-feather="wind" class="feather-icon"></i> Windy Radar</h2>
-                    <div class="card" id="windy-map">
-                            <iframe src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=default&metricTemp=default&metricWind=default&zoom=9&overlay=radar&product=ecmwf&level=surface&lat=43.641&lon=13.114" frameborder="0"></iframe>
+                <div class="grid-item">
+                    <h2><i data-feather="map-pin" class="feather-icon"></i> Mappa Stazioni</h2>
+                    <div class="card" id="dashboard-map-container">
                         </div>
                 </div>
                 <div class="grid-item alerts-container-wrapper">
@@ -3144,7 +3138,9 @@ passwordInput.focus();
             weatherlinkLatestData: null,
             forecastData: [],
             map: null,
-            mapMarkers: {}, 
+            dashboardMap: null,
+            mapMarkers: {},
+            dashboardMapMarkers: {},
             charts: {
                 forecast: null,
                 forecastBettolelle3h: null,
@@ -3841,6 +3837,9 @@ passwordInput.focus();
                 updateOverviewStats();
                 if (STATE.map) {
                     updateMapMarkers();
+                }
+                if (STATE.dashboardMap) {
+                    updateDashboardMapMarkers();
                 }
             } catch (error) {
                 console.error("Fallimento nell'aggiornare i dati più recenti:", error);
@@ -4678,6 +4677,33 @@ passwordInput.focus();
         }
         
         // ==================== MAP FUNCTIONS ====================
+        function initDashboardMap() {
+            if (STATE.dashboardMap) return; // Già inizializzata
+
+            const mapContainer = document.getElementById('dashboard-map-container');
+            if (!mapContainer) return;
+
+            STATE.dashboardMap = L.map('dashboard-map-container', {
+                scrollWheelZoom: false,
+                zoomControl: true
+            }).setView([MAP_CONSTANTS.CENTER_LAT, MAP_CONSTANTS.CENTER_LON], MAP_CONSTANTS.DEFAULT_ZOOM);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(STATE.dashboardMap);
+
+            getStationConfig().forEach(station => {
+                const marker = L.marker([station.lat, station.lon], { opacity: 0 }).addTo(STATE.dashboardMap);
+                STATE.dashboardMapMarkers[station.name] = { marker, station };
+                marker.bindPopup(`<h3>${station.name}</h3><p>Caricamento dati...</p>`);
+                setTimeout(() => marker.setOpacity(1), 100 * getStationConfig().indexOf(station));
+            });
+
+            updateDashboardMapMarkers();
+        }
+
         function initMap() {
             if (STATE.map) {
                 STATE.map.remove();
@@ -4694,125 +4720,7 @@ passwordInput.focus();
                 maxZoom: 19
             }).addTo(STATE.map);
 
-            const stations = [
-                // Stazioni unificate con marker a cerchio
-                { 
-                    name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'circle', section: 'idrometri', 
-                    displayValue: 'hydro_level', // Mostra il livello idrometrico nel cerchio
-                    keys: {
-                        level: 'Misa - Livello Misa (mt)',
-                        intensity_min: 'Misa - Intensita Pioggia (mm/min)',
-                        total_day: 'Misa - Pioggia TOT Oggi (mm)',
-                        source: 'region'
-                    }
-                },
-                { 
-                    name: 'Arcevia', lat: 43.49722, lon: 12.93667, type: 'circle', section: 'pluviometri', 
-                    displayValue: 'rain_intensity', // Mostra l'intensità pioggia nel cerchio
-                    keys: {
-                        intensity_min: 'Arcevia - Intensita di pioggia (mm/min)',
-                        total_day: 'Arcevia - Pioggia TOT Oggi (mm)',
-                        source: 'region'
-                    }
-                },
-                { 
-                    name: 'Barbara', lat: 43.58000, lon: 13.02889, type: 'circle', section: 'pluviometri', 
-                    displayValue: 'rain_intensity',
-                    keys: {
-                        intensity_min: 'Barbara - Intensita di pioggia (mm/min)',
-                        total_day: 'Barbara - Pioggia TOT Oggi (mm)',
-                        source: 'region'
-                    }
-                },
-                { 
-                    name: 'Corinaldo', lat: 43.66028, lon: 13.04611, type: 'circle', section: 'pluviometri', 
-                    displayValue: 'rain_intensity',
-                    keys: {
-                        intensity_min: 'Corinaldo - Intensita di pioggia (mm/min)',
-                        total_day: 'Corinaldo - Pioggia TOT Oggi (mm)',
-                        source: 'region'
-                    }
-                },
-                { 
-                    name: 'Montignano', lat: 43.666, lon: 13.284, type: 'circle', section: 'anemometri', 
-                    displayValue: 'rain_intensity',
-                    keys: {
-                        intensity_hr: 'Montignano - Intensità Pioggia (mm/hr)',
-                        total_day: 'Montignano - Pioggia Giornaliera (mm)',
-                        wind: 'Montignano - Velocità Vento (km/h)',
-                        gust: 'Montignano - Raffica Vento 10 min (km/h)',
-                        source: 'weatherlink'
-                    }
-                },
-                { 
-                    name: 'Scapezzano', lat: 43.719, lon: 13.168, type: 'circle', section: 'anemometri', 
-                    displayValue: 'rain_intensity',
-                    keys: {
-                        intensity_hr: 'Scapezzano - Intensità Pioggia (mm/hr)',
-                        total_day: 'Scapezzano - Pioggia Giornaliera (mm)',
-                        wind: 'Scapezzano - Velocità Vento (km/h)',
-                        gust: 'Scapezzano - Raffica Vento 10 min (km/h)',
-                        source: 'weatherlink'
-                    }
-                },
-                { 
-                    name: "Sant'Angelo", lat: 43.675, lon: 13.219, type: 'circle', section: 'anemometri', 
-                    displayValue: 'rain_intensity',
-                    keys: {
-                        intensity_hr: "Sant'Angelo - Intensità Pioggia (mm/hr)",
-                        total_day: "Sant'Angelo - Pioggia Giornaliera (mm)",
-                        wind: "Sant'Angelo - Velocità Vento (km/h)",
-                        gust: "Sant'Angelo - Raffica Vento 10 min (km/h)",
-                        source: 'weatherlink'
-                    }
-                },
-                { 
-                    name: 'Serra dei Conti', lat: 43.54778, lon: 13.02806, type: 'circle', section: 'idrometri', 
-                    displayValue: 'hydro_level',
-                    keys: { level: 'Serra dei Conti - Livello Misa (mt)', source: 'region' } 
-                },
-                { 
-                    name: 'Pianello di Ostra', lat: 43.62444, lon: 13.12694, type: 'circle', section: 'idrometri', 
-                    displayValue: 'hydro_level',
-                    keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } 
-                },
-                { 
-                    name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'circle', section: 'idrometri', 
-                    displayValue: 'hydro_level',
-                    keys: { level: 'Nevola - Livello Nevola (mt)', source: 'region' } 
-                },
-                { 
-                    name: 'Ponte Garibaldi', lat: 43.71500, lon: 13.21361, type: 'circle', section: 'idrometri', 
-                    displayValue: 'hydro_level',
-                    keys: { level: 'Ponte Garibaldi - Livello Misa 2 (mt)', source: 'region' } 
-                },
-                { 
-                    name: 'Passo Ripe', lat: 43.65139, lon: 13.10556, type: 'circle', section: 'idrometri', 
-                    displayValue: 'hydro_level',
-                    keys: { level: 'Passo Ripe - Livello Nevola (mt)', source: 'region' } 
-                },
-                { 
-                    name: 'Foce Cesano', lat: 43.74, lon: 13.17083, type: 'circle', section: 'idrometri', 
-                    displayValue: 'hydro_level',
-                    keys: { level: 'Foce Cesano - Livello Cesano (mt)', source: 'region' } 
-                },
-                { 
-                    name: 'Cesano', lat: 43.66472, lon: 13.01444, type: 'circle', section: 'idrometri', 
-                    displayValue: 'hydro_level',
-                    keys: { level: 'Cesano - Livello Cesano (mt)', source: 'region' } 
-                },
-                { 
-                    name: 'Senigallia', lat: 43.70083, lon: 13.20556, type: 'circle', section: 'pluviometri', 
-                    displayValue: 'rain_intensity',
-                    keys: {
-                        intensity_min: 'Senigallia - Intensita Pioggia (mm/min)',
-                        total_day: 'Senigallia - Pioggia TOT Oggi (mm)',
-                        source: 'region'
-                    }
-                }
-            ];
-
-            stations.forEach(station => {
+            getStationConfig().forEach(station => {
                 // Marker inizialmente invisibile
                 const marker = L.marker([station.lat, station.lon], {
                     opacity: 0
@@ -4825,7 +4733,7 @@ passwordInput.focus();
                 // Fade in progressivo
                 setTimeout(() => {
                     marker.setOpacity(1);
-                }, 100 * stations.indexOf(station));
+                }, 100 * getStationConfig().indexOf(station));
 
                 marker.on('popupopen', function() {
                     const link = document.querySelector('.leaflet-popup-content a.nav-link');
@@ -4845,10 +4753,18 @@ passwordInput.focus();
         
         function updateMapMarkers() {
             if (!STATE.map || (!STATE.regionLatestData && !STATE.weatherlinkLatestData)) return;
+            updateMarkerSet(STATE.mapMarkers, STATE.regionLatestData, STATE.weatherlinkLatestData);
+        }
 
-            Object.values(STATE.mapMarkers).forEach(markerData => {
+        function updateDashboardMapMarkers() {
+            if (!STATE.dashboardMap || (!STATE.regionLatestData && !STATE.weatherlinkLatestData)) return;
+            updateMarkerSet(STATE.dashboardMapMarkers, STATE.regionLatestData, STATE.weatherlinkLatestData);
+        }
+
+        function updateMarkerSet(markerSet, regionData, weatherlinkData) {
+            Object.values(markerSet).forEach(markerData => {
                 const { station, marker } = markerData;
-                const sourceData = station.keys.source === 'region' ? STATE.regionLatestData : STATE.weatherlinkLatestData;
+                const sourceData = station.keys.source === 'region' ? regionData : weatherlinkData;
                 if (!sourceData) return;
 
                 let displayValue = NaN;
@@ -4967,6 +4883,126 @@ passwordInput.focus();
             });
         }
         
+        function getStationConfig() {
+            return [
+                // Stazioni unificate con marker a cerchio
+                { 
+                    name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level', // Mostra il livello idrometrico nel cerchio
+                    keys: {
+                        level: 'Misa - Livello Misa (mt)',
+                        intensity_min: 'Misa - Intensita Pioggia (mm/min)',
+                        total_day: 'Misa - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                },
+                { 
+                    name: 'Arcevia', lat: 43.49722, lon: 12.93667, type: 'circle', section: 'pluviometri', 
+                    displayValue: 'rain_intensity', // Mostra l'intensità pioggia nel cerchio
+                    keys: {
+                        intensity_min: 'Arcevia - Intensita di pioggia (mm/min)',
+                        total_day: 'Arcevia - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                },
+                { 
+                    name: 'Barbara', lat: 43.58000, lon: 13.02889, type: 'circle', section: 'pluviometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_min: 'Barbara - Intensita di pioggia (mm/min)',
+                        total_day: 'Barbara - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                },
+                { 
+                    name: 'Corinaldo', lat: 43.66028, lon: 13.04611, type: 'circle', section: 'pluviometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_min: 'Corinaldo - Intensita di pioggia (mm/min)',
+                        total_day: 'Corinaldo - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                },
+                { 
+                    name: 'Montignano', lat: 43.666, lon: 13.284, type: 'circle', section: 'anemometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_hr: 'Montignano - Intensità Pioggia (mm/hr)',
+                        total_day: 'Montignano - Pioggia Giornaliera (mm)',
+                        wind: 'Montignano - Velocità Vento (km/h)',
+                        gust: 'Montignano - Raffica Vento 10 min (km/h)',
+                        source: 'weatherlink'
+                    }
+                },
+                { 
+                    name: 'Scapezzano', lat: 43.719, lon: 13.168, type: 'circle', section: 'anemometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_hr: 'Scapezzano - Intensità Pioggia (mm/hr)',
+                        total_day: 'Scapezzano - Pioggia Giornaliera (mm)',
+                        wind: 'Scapezzano - Velocità Vento (km/h)',
+                        gust: 'Scapezzano - Raffica Vento 10 min (km/h)',
+                        source: 'weatherlink'
+                    }
+                },
+                { 
+                    name: "Sant'Angelo", lat: 43.675, lon: 13.219, type: 'circle', section: 'anemometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_hr: "Sant'Angelo - Intensità Pioggia (mm/hr)",
+                        total_day: "Sant'Angelo - Pioggia Giornaliera (mm)",
+                        wind: "Sant'Angelo - Velocità Vento (km/h)",
+                        gust: "Sant'Angelo - Raffica Vento 10 min (km/h)",
+                        source: 'weatherlink'
+                    }
+                },
+                { 
+                    name: 'Serra dei Conti', lat: 43.54778, lon: 13.02806, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Serra dei Conti - Livello Misa (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Pianello di Ostra', lat: 43.62444, lon: 13.12694, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Nevola - Livello Nevola (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Ponte Garibaldi', lat: 43.71500, lon: 13.21361, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Ponte Garibaldi - Livello Misa 2 (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Passo Ripe', lat: 43.65139, lon: 13.10556, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Passo Ripe - Livello Nevola (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Foce Cesano', lat: 43.74, lon: 13.17083, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Foce Cesano - Livello Cesano (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Cesano', lat: 43.66472, lon: 13.01444, type: 'circle', section: 'idrometri', 
+                    displayValue: 'hydro_level',
+                    keys: { level: 'Cesano - Livello Cesano (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Senigallia', lat: 43.70083, lon: 13.20556, type: 'circle', section: 'pluviometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_min: 'Senigallia - Intensita Pioggia (mm/min)',
+                        total_day: 'Senigallia - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
+                }
+            ];
+        }
+
         // ==================== EXPORT FUNCTIONS ====================
         function exportToCSV(data, filename) {
             if (!data || data.length === 0) {
@@ -5401,6 +5437,9 @@ passwordInput.focus();
             if (STATE.map) {
                 STATE.map.invalidateSize();
             }
+            if (STATE.dashboardMap) {
+                STATE.dashboardMap.invalidateSize();
+            }
         }
 
         // Aggiungi listener debounced per resize
@@ -5435,6 +5474,7 @@ passwordInput.focus();
             initUIInteractions();
             initFullscreenButtons();
             initEventListeners();
+            initDashboardMap();
             await initDashboard();
             startAutoRefresh();
             
