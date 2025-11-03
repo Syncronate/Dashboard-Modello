@@ -479,7 +479,9 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.radar-play-pause button {
+/* === PULSANTE PLAY/PAUSA === */
+.radar-play-pause button,
+.radar-play-button {
     background: #2c2c2c;
     border: 1px solid #333;
     color: #e0e0e0;
@@ -492,25 +494,28 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-shrink: 0; /* Impedisce al pulsante di ridursi */
+    flex-shrink: 0;
 }
 
-.radar-play-pause button:hover {
+.radar-play-pause button:hover,
+.radar-play-button:hover {
     background: #6785bf;
     color: white;
-    transform: scale(1.05); /* Leggero ingrandimento al hover */
+    transform: scale(1.05);
 }
 
+/* === CONTENITORE TIMELINE === */
 .radar-timeline-container {
     flex-grow: 1;
     position: relative;
-    padding-top: 30px; /* Spazio per l'etichetta dell'orario */
+    padding-top: 30px;
 }
 
-#radar-time-label {
+/* === ETICHETTA ORARIO (usa classe invece di ID) === */
+.radar-time-label {
     position: absolute;
     top: 0;
-    left: 75%;
+    left: 50%;
     transform: translateX(-50%);
     background: #6785bf;
     color: white;
@@ -521,10 +526,11 @@
     white-space: nowrap;
     transition: left 0.1s linear;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 20;
 }
 
 /* Freccia sotto l'etichetta */
-#radar-time-label::after {
+.radar-time-label::after {
     content: '';
     position: absolute;
     bottom: -4px;
@@ -537,7 +543,7 @@
     border-top: 5px solid #6785bf;
 }
 
-/* WRAPPER PER LO SLIDER - RISOLVE IL PROBLEMA DELL'ALLINEAMENTO */
+/* === WRAPPER SLIDER === */
 .radar-slider-wrapper {
     position: relative;
     width: 100%;
@@ -553,6 +559,7 @@
     background: #121212;
     border-radius: 5px;
     overflow: hidden;
+    z-index: 1;
 }
 
 /* Barra blu (passato) */
@@ -560,9 +567,10 @@
     position: absolute;
     height: 100%;
     background: #6785bf;
-    width: 50%; /* Di default, "Now" è al 50% */
+    width: 50%;
     border-radius: 5px 0 0 5px;
     transition: width 0.1s linear;
+    z-index: 2;
 }
 
 /* Barra bianca (futuro) */
@@ -571,26 +579,44 @@
     right: 0;
     height: 100%;
     background: #ffffff;
-    width: 50%; /* Di default, futuro = 50% */
+    width: 50%;
     border-radius: 0 5px 5px 0;
     transition: width 0.1s linear;
+    z-index: 2;
 }
 
-/* SLIDER (invisibile ma interattivo) */
-#radar-timeline-slider {
+/* === SLIDER (usa classe invece di ID) === */
+.radar-timeline-slider {
     -webkit-appearance: none;
+    appearance: none;
     width: 100%;
     height: 8px;
-    background: transparent !important; /* Trasparente, usiamo gli elementi sottostanti */
+    background: transparent !important;
     border-radius: 5px;
     outline: none;
     cursor: pointer;
     position: relative;
-    z-index: 10; /* Sopra gli elementi di sfondo */
+    z-index: 10;
+    margin: 0;
+    padding: 0;
 }
 
-/* Thumb WebKit */
-#radar-timeline-slider::-webkit-slider-thumb {
+/* Traccia trasparente WebKit */
+.radar-timeline-slider::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+    height: 8px;
+}
+
+/* Traccia trasparente Firefox */
+.radar-timeline-slider::-moz-range-track {
+    background: transparent;
+    border: none;
+    height: 8px;
+}
+
+/* === THUMB (PALLINO) WEBKIT === */
+.radar-timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 18px;
@@ -601,30 +627,20 @@
     cursor: grab;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
+    margin-top: 0;
 }
 
-#radar-timeline-slider::-webkit-slider-thumb:hover {
+.radar-timeline-slider::-webkit-slider-thumb:hover {
     transform: scale(1.2);
 }
 
-#radar-timeline-slider::-webkit-slider-thumb:active {
+.radar-timeline-slider::-webkit-slider-thumb:active {
     cursor: grabbing;
     transform: scale(1.1);
 }
-        /* Rende la traccia dello slider completamente trasparente su Chrome/Safari */
-#radar-timeline-slider::-webkit-slider-runnable-track {
-    background: transparent;
-    border: none;
-}
 
-/* Rende la traccia dello slider completamente trasparente su Firefox */
-#radar-timeline-slider::-moz-range-track {
-    background: transparent;
-    border: none;
-}
-
-/* Thumb Firefox */
-#radar-timeline-slider::-moz-range-thumb {
+/* === THUMB (PALLINO) FIREFOX === */
+.radar-timeline-slider::-moz-range-thumb {
     width: 18px;
     height: 18px;
     background: #6785bf;
@@ -633,30 +649,26 @@
     cursor: grab;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
+    border: none;
 }
 
-#radar-timeline-slider::-moz-range-thumb:hover {
+.radar-timeline-slider::-moz-range-thumb:hover {
     transform: scale(1.2);
 }
 
-#radar-timeline-slider::-moz-range-thumb:active {
+.radar-timeline-slider::-moz-range-thumb:active {
     cursor: grabbing;
     transform: scale(1.1);
 }
 
-/* Rimuove il track di default in Firefox */
-#radar-timeline-slider::-moz-range-track {
-    background: transparent;
-}
-
-/* ETICHETTE SOTTO LO SLIDER - CORRETTO L'ALLINEAMENTO */
+/* === ETICHETTE SOTTO LO SLIDER === */
 .radar-timeline-labels {
     display: flex;
     justify-content: space-between;
     font-size: 0.75em;
     color: #999;
-    margin: 0; /* ✅ RIMOSSO IL MARGIN CHE CAUSAVA IL PROBLEMA */
-    padding: 0 9px; /* Usa padding per bilanciare il thumb */
+    margin: 0;
+    padding: 0 9px;
 }
 
 .radar-timeline-labels span {
@@ -5540,15 +5552,15 @@ async function updateAllLatestData() {
                     
                     container.innerHTML = `
                         <div class="radar-play-pause">
-                            <button id="radar-play-btn-${prefix}">▶</button>
+                            <button id="radar-play-btn-${prefix}" class="radar-play-button">▶</button>
                         </div>
                         <div class="radar-timeline-container">
-                            <div id="radar-time-label-${prefix}">--:--</div>
+                            <div id="radar-time-label-${prefix}" class="radar-time-label">--:--</div>
                             <div class="radar-slider-wrapper">
                                 <div class="radar-slider-track"></div>
                                 <div class="radar-slider-progress" id="radar-slider-progress-${prefix}"></div>
                                 <div class="radar-slider-future" id="radar-slider-future-${prefix}"></div>
-                                <input type="range" id="radar-timeline-slider-${prefix}" min="0" max="100" value="50" disabled>
+                                <input type="range" id="radar-timeline-slider-${prefix}" class="radar-timeline-slider" min="0" max="100" value="50" disabled>
                             </div>
                             <div class="radar-timeline-labels">
                                 <span>1h ago</span>
