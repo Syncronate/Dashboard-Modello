@@ -3727,16 +3727,22 @@ passwordInput.focus();
 
                 // 4. Aggiorna il TREND (testo informativo)
                 if (activeAlerts.length === 0) {
-                    trendEl.textContent = 'Nessuna allerta attiva';
-                } else if (activeAlerts.length === 1) {
-                    trendEl.textContent = `${activeAlerts[0].risk}`;
+                    trendEl.textContent = 'Nessuna allerta attiva.';
+                    trendEl.parentElement.className = 'quick-stat-trend trend-neutral';
                 } else {
-                    // Mostra i primi 2 rischi principali
-                    const risksText = activeAlerts
-                        .slice(0, 2)
-                        .map(a => a.risk)
-                        .join(', ');
-                    trendEl.textContent = `${risksText}${activeAlerts.length > 2 ? '...' : ''}`;
+                    if (activeAlerts.length === 1) {
+                        trendEl.textContent = '1 allerta attiva.';
+                    } else {
+                        trendEl.textContent = `${activeAlerts.length} allerte attive. Livello massimo: ${maxLevel.toUpperCase()}.`;
+                    }
+                    // Aggiorna la classe del trend per abbinarla al livello massimo di allerta
+                    if (maxLevel === 'Rossa') {
+                        trendEl.parentElement.className = 'quick-stat-trend trend-up'; // Usa trend-up per il rosso
+                    } else if (maxLevel === 'Arancione' || maxLevel === 'Gialla') {
+                        trendEl.parentElement.className = 'quick-stat-trend trend-up'; // O un'altra classe per warning
+                    } else {
+                        trendEl.parentElement.className = 'quick-stat-trend trend-neutral';
+                    }
                 }
 
                 console.log(`Card ${cardId} updated:`, {
