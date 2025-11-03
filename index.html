@@ -5291,59 +5291,6 @@ async function updateAllLatestData() {
             fetchRadarData();
         }
 
-            mapInstance.addControl(new RadarControl({ position: 'topright' }));
-
-            async function fetchRadarData() {
-                try {
-                    const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-                    const data = await response.json();
-                    const frames = data.radar.past.concat(data.radar.nowcast || []);
-                    createRadarLayers(frames);
-                } catch (error) {
-                    console.error("Errore nel caricamento dei dati radar:", error);
-                }
-            }
-
-            function createRadarLayers(frames) {
-                frames.forEach((frame, index) => {
-                    const layer = L.tileLayer(`https://tilecache.rainviewer.com${frame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
-                        tileSize: 256,
-                        opacity: index === 0 ? 0.7 : 0,
-                        zIndex: 10
-                    });
-                    radarState.layers.push(layer);
-                    layer.addTo(mapInstance);
-                });
-            }
-
-            function playRadarAnimation() {
-                if (radarState.isPlaying || radarState.layers.length === 0) return;
-                radarState.isPlaying = true;
-                
-                radarState.animationInterval = setInterval(() => {
-                    const previousIndex = radarState.currentIndex;
-                    radarState.currentIndex = (radarState.currentIndex + 1) % radarState.layers.length;
-                    
-                    const previousLayer = radarState.layers[previousIndex];
-                    const currentLayer = radarState.layers[radarState.currentIndex];
-
-                    if (previousLayer) previousLayer.setOpacity(0);
-                    if (currentLayer) {
-                        currentLayer.setOpacity(0.7);
-                        currentLayer.bringToFront();
-                    }
-                }, 500); // Cambia frame ogni 500ms
-            }
-
-            function stopRadarAnimation() {
-                if (!radarState.isPlaying) return;
-                clearInterval(radarState.animationInterval);
-                radarState.isPlaying = false;
-            }
-
-            fetchRadarData();
-        }
-
         // ==================== EXPORT FUNCTIONS ====================
         function exportToCSV(data, filename) {
             if (!data || data.length === 0) {
