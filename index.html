@@ -560,7 +560,7 @@
     transform: translateY(-50%);
     left: 0;
     width: 100%;
-    height: 8px;
+    height: 4px;
     margin: 0 !important;
     padding: 0 !important;
 }
@@ -569,7 +569,7 @@
 .radar-slider-track {
     position: absolute;
     width: 100%;
-    height: 8px;
+    height: 4px;
     background: #121212;
     border-radius: 5px;
     overflow: hidden;
@@ -604,7 +604,7 @@
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 8px;
+    height: 4px;
     background: transparent !important;
     border-radius: 5px;
     outline: none;
@@ -619,14 +619,14 @@
 .radar-timeline-slider::-webkit-slider-runnable-track {
     background: transparent;
     border: none;
-    height: 8px;
+    height: 4px;
 }
 
 /* Traccia trasparente Firefox */
 .radar-timeline-slider::-moz-range-track {
     background: transparent;
     border: none;
-    height: 8px;
+    height: 4px;
 }
 
 /* === THUMB WEBKIT - CORRETTO === */
@@ -635,14 +635,14 @@
     appearance: none;
     width: 20px;  /* Aumentato per migliore visibilità */
     height: 20px;
-    background: #6785bf;
+    background: transparent;
     border-radius: 50%;
-    border: 3px solid white;
+    border: 3px solid transparent;
     cursor: grab;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
     /* FIX: Calcolo corretto del margine per centrare */
-    margin-top: -6px; /* (20px - 8px) / 2 = 6px */
+    margin-top: -8px;
     position: relative;
     z-index: 15;
 }
@@ -660,9 +660,9 @@
 .radar-timeline-slider::-moz-range-thumb {
     width: 20px;
     height: 20px;
-    background: #6785bf;
+    background: transparent;
     border-radius: 50%;
-    border: 3px solid white;
+    border: 3px solid transparent;
     cursor: grab;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
