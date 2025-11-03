@@ -3685,13 +3685,36 @@ passwordInput.focus();
                 const trendEl = card.querySelector('.quick-stat-trend span');
                 const iconContainer = card.querySelector('.quick-stat-icon');
 
-                // 1. Aggiorna il VALORE (numero di allerte attive)
+                // 1. Aggiorna il VALORE (elenco dei rischi o checkmark)
                 if (activeAlerts.length === 0) {
-                    valueEl.innerHTML = '✓'; // Checkmark se tutto ok
+                    valueEl.innerHTML = '✓';
                     valueEl.style.fontSize = '2.5em';
+                    // Ripristina gli stili per la visualizzazione standard
+                    valueEl.style.display = '';
+                    valueEl.style.flexDirection = '';
+                    valueEl.style.alignItems = '';
+                    valueEl.style.gap = '';
                 } else {
-                    valueEl.innerHTML = activeAlerts.length;
-                    valueEl.style.fontSize = '1.8em';
+                    valueEl.innerHTML = ''; // Pulisci il contenuto precedente
+                    valueEl.style.fontSize = '0.9em'; // Adatta la dimensione per il testo
+                    valueEl.style.display = 'flex';
+                    valueEl.style.flexDirection = 'column';
+                    valueEl.style.alignItems = 'flex-start'; // Allinea i rischi a sinistra
+                    valueEl.style.gap = '4px'; // Spazio tra i nomi dei rischi
+
+                    const colorMap = {
+                        'Gialla': '#ffc107',
+                        'Arancione': '#ff9800',
+                        'Rossa': '#f44336'
+                    };
+
+                    activeAlerts.forEach(alert => {
+                        const riskEl = document.createElement('div');
+                        riskEl.textContent = alert.risk;
+                        riskEl.style.color = colorMap[alert.level] || 'var(--text-color)';
+                        riskEl.style.fontWeight = '700';
+                        valueEl.appendChild(riskEl);
+                    });
                 }
 
                 // 2. Aggiorna il BADGE con il livello massimo
