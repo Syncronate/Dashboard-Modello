@@ -551,6 +551,17 @@
     margin-bottom: 8px;
 }
 
+/* Assicura che lo slider sia perfettamente allineato alla traccia */
+.radar-timeline-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 /* Sfondo della barra (track) */
 .radar-slider-track {
     position: absolute;
@@ -627,7 +638,7 @@
     cursor: grab;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
-    margin-top: -5px; /* Centra il pallino sulla traccia (8px track - 18px thumb) / 2 */
+    margin-top: -5px; /* (18px thumb - 8px track) / 2 = 5px */
 }
 
 .radar-timeline-slider::-webkit-slider-thumb:hover {
@@ -649,6 +660,7 @@
     cursor: grab;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s;
+    margin-top: 0; /* Firefox calcola automaticamente, ma forziamo 0 per sicurezza */
     border: none;
 }
 
@@ -5471,8 +5483,13 @@ async function updateAllLatestData() {
                     const playButton = document.getElementById(`radar-play-btn-${radarState.prefix}`);
 
                     if (timelineSlider) timelineSlider.max = allFrames.length - 1;
+                    
+                    // FIX: Trova correttamente l'indice del frame più vicino a "Now"
                     const nowIndex = allFrames.findIndex(f => f.time >= now);
-                    radarState.currentIndex = (nowIndex !== -1) ? nowIndex : 0;
+                    const correctIndex = nowIndex !== -1 ? nowIndex : Math.floor(allFrames.length / 2);
+                    
+                    radarState.currentIndex = correctIndex;
+                    radarState.frames = allFrames; // Assicurati che frames sia impostato prima di chiamare showFrame
                     
                     if (playButton) playButton.classList.remove('leaflet-disabled');
                     if (timelineSlider) timelineSlider.classList.remove('leaflet-disabled');
@@ -5638,61 +5655,96 @@ async function updateAllLatestData() {
             }
 
             function updateSliderUI(index) {
-                const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
-                const timeLabel = document.getElementById(`radar-time-label-${this.prefix}`);
-                const progressBar = document.getElementById(`radar-slider-progress-${this.prefix}`);
-                const futureBar = document.getElementById(`radar-slider-future-${this.prefix}`);
+    const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
+    const timeLabel = document.getElementById(`radar-time-label-${this.prefix}`);
+    const progressBar = document.getElementById(`radar-slider-progress-${this.prefix}`);
+    const futureBar = document.getElementById(`radar-slider-future-${this.prefix}`);
 
-                if (!timelineSlider) return;
+    if (!timelineSlider || !this.frames.length) return;
 
-                // Aggiorna il valore dello slider con l'indice
-                timelineSlider.value = index;
+    // Assicurati che l'indice sia valido
+    const validIndex = Math.max(0, Math.min(index, this.frames.length - 1));
+    
+    // Aggiorna il valore dello slider con l'indice
+    timelineSlider.value = validIndex;
 
-                // Calcola la percentuale per gli elementi stilizzati
-                const percentage = this.frames.length > 1 ? (index / (this.frames.length - 1)) * 100 : 0;
-                
-                if(timeLabel) {
-                    timeLabel.style.left = `${percentage}%`;
-                    const frame = this.frames[index];
-                    if (frame) {
-                        const currentTime = new Date(frame.time * 1000);
-                        const hours = String(currentTime.getHours()).padStart(2, '0');
-                        const minutes = String(currentTime.getMinutes()).padStart(2, '0');
-                        timeLabel.textContent = `${hours}:${minutes}`;
-                    }
-                }
-                if(progressBar) progressBar.style.width = `${percentage}%`;
-                if(futureBar) futureBar.style.width = `${100 - percentage}%`;
-            }
+    // Calcola la percentuale ESATTA considerando gli estremi
+    const maxIndex = this.frames.length - 1;
+    const percentage = maxIndex > 0 ? (validIndex / maxIndex) * 100 : 0;
+    
+    // Aggiorna gli elementi visivi
+    if(progressBar) {
+        progressBar.style.width = `${percentage}%`;
+        progressBar.style.transition = 'width 0.2s linear'; // Transizione fluida
+    }
+    
+    if(futureBar) {
+        futureBar.style.width = `${100 - percentage}%`;
+        futureBar.style.transition = 'width 0.2s linear';
+    }
+    
+    if(timeLabel) {
+        timeLabel.style.left = `${percentage}%`;
+        timeLabel.style.transition = 'left 0.2s linear'; // Sincronizza con le barre
+        
+        const frame = this.frames[validIndex];
+        if (frame) {
+            const currentTime = new Date(frame.time * 1000);
+            const hours = String(currentTime.getHours()).padStart(2, '0');
+            const minutes = String(currentTime.getMinutes()).padStart(2, '0');
+            timeLabel.textContent = `${hours}:${minutes}`;
+        }
+    }
+}
 
             function playRadarAnimation() {
-                if (this.isPlaying || !this.isLoaded) return;
-                this.isPlaying = true;
-                const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
-                if (playButton) {
-                    playButton.textContent = '⏸';
-                    playButton.style.background = '#6785bf';
-                }
+    if (this.isPlaying || !this.isLoaded) return;
+    this.isPlaying = true;
+    const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
+    if (playButton) {
+        playButton.textContent = '⏸';
+        playButton.style.background = '#6785bf';
+    }
 
-                this.animationInterval = setInterval(() => {
-                    let nextIndex = this.currentIndex + 1;
-                    if (nextIndex >= this.frames.length) {
-                        nextIndex = 0; // Loop
-                    }
-                    this.showFrame(nextIndex);
-                }, 200);
+    // FIX: Usa requestAnimationFrame per animazione più fluida
+    let lastUpdate = Date.now();
+    const frameDelay = 200; // millisecondi tra frame
+    
+    const animate = () => {
+        if (!this.isPlaying) return;
+        
+        const now = Date.now();
+        if (now - lastUpdate >= frameDelay) {
+            let nextIndex = this.currentIndex + 1;
+            if (nextIndex >= this.frames.length) {
+                nextIndex = 0; // Loop
             }
+            this.showFrame(nextIndex);
+            lastUpdate = now;
+        }
+        
+        this.animationInterval = requestAnimationFrame(animate);
+    };
+    
+    this.animationInterval = requestAnimationFrame(animate);
+}
 
             function stopRadarAnimation() {
-                if (!this.isPlaying) return;
-                clearInterval(this.animationInterval);
-                this.isPlaying = false;
-                const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
-                if (playButton) {
-                    playButton.textContent = '▶';
-                    playButton.style.background = '#2c2c2c';
-                }
-            }
+    if (!this.isPlaying) return;
+    
+    // FIX: Annulla requestAnimationFrame invece di clearInterval
+    if (this.animationInterval) {
+        cancelAnimationFrame(this.animationInterval);
+        this.animationInterval = null;
+    }
+    
+    this.isPlaying = false;
+    const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
+    if (playButton) {
+        playButton.textContent = '▶';
+        playButton.style.background = '#2c2c2c';
+    }
+}
         }
         
         // ==================== RADAR LEGEND CONTROL ====================
