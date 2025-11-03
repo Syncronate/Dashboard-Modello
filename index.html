@@ -149,6 +149,57 @@
             50% { opacity: 0.5; }
         }
 
+        /* === MAPPING COLORI ALLERTE REGIONALI === */
+        .alert-badge.verde {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .alert-badge.gialla {
+            background: #ffc107; /* Giallo più visibile */
+            color: var(--dark-bg);
+            font-weight: 700;
+        }
+
+        .alert-badge.arancione {
+            background: #ff9800;
+            color: white;
+            font-weight: 700;
+        }
+
+        .alert-badge.rossa {
+            background: var(--danger-color);
+            color: white;
+            font-weight: 700;
+            animation: blink 1s infinite; /* Lampeggia come le allerte critiche */
+        }
+
+        /* Icone specifiche per le allerte con colori dinamici */
+        #overview-alerts-today .quick-stat-icon,
+        #overview-alerts-tomorrow .quick-stat-icon {
+            transition: background 0.3s ease;
+        }
+
+        #overview-alerts-today.alert-verde .quick-stat-icon,
+        #overview-alerts-tomorrow.alert-verde .quick-stat-icon {
+            background: var(--success-color);
+        }
+
+        #overview-alerts-today.alert-gialla .quick-stat-icon,
+        #overview-alerts-tomorrow.alert-gialla .quick-stat-icon {
+            background: #ffc107;
+        }
+
+        #overview-alerts-today.alert-arancione .quick-stat-icon,
+        #overview-alerts-tomorrow.alert-arancione .quick-stat-icon {
+            background: #ff9800;
+        }
+
+        #overview-alerts-today.alert-rossa .quick-stat-icon,
+        #overview-alerts-tomorrow.alert-rossa .quick-stat-icon {
+            background: var(--danger-color);
+        }
+
         .last-update {
             font-size: 0.85em;
             color: var(--text-muted);
@@ -1257,51 +1308,6 @@
             box-shadow: var(--shadow);
         }
 
-        /* === STILI ALLERTE REGIONALI === */
-        #official-alerts-container {
-            padding: 10px 10px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            grid-column: span 1;
-            align-content: start;
-        }
-
-        .official-alerts-day {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .official-alerts-day h3 {
-            color: var(--text-color);
-            font-size: 1.1em;
-            font-weight: 500;
-            margin: 0 0 5px 0;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .official-alert-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.8em;
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .official-alert-item:hover {
-            transform: scale(1.03);
-        }
-
-        .official-alert-item .feather-icon {
-            width: 20px;
-            height: 20px;
-            stroke-width: 2.5;
-        }
 
         /* === RESPONSIVE === */
         @media (max-width: 1200px) {
@@ -2131,8 +2137,34 @@ max-width: 400px;
                     </div>
                 </div>
 
-                <div class="card" id="official-alerts-container">
-                    <p style="color: var(--text-muted); text-align: center;">Caricamento allerte...</p>
+                <!-- Card Allerte OGGI -->
+                <div class="quick-stat-card" id="overview-alerts-today">
+                    <div class="quick-stat-icon">
+                        <i data-feather="alert-triangle" class="feather-icon"></i>
+                    </div>
+                    <div class="quick-stat-content">
+                        <div class="quick-stat-label">Allerte Oggi</div>
+                        <div class="quick-stat-value">--</div>
+                        <div class="quick-stat-trend trend-neutral">
+                            <span>Caricamento...</span>
+                        </div>
+                    </div>
+                    <span class="alert-badge normal">VERDE</span>
+                </div>
+
+                <!-- Card Allerte DOMANI -->
+                <div class="quick-stat-card" id="overview-alerts-tomorrow">
+                    <div class="quick-stat-icon">
+                        <i data-feather="calendar" class="feather-icon"></i>
+                    </div>
+                    <div class="quick-stat-content">
+                        <div class="quick-stat-label">Allerte Domani</div>
+                        <div class="quick-stat-value">--</div>
+                        <div class="quick-stat-trend trend-neutral">
+                            <span>Caricamento...</span>
+                        </div>
+                    </div>
+                    <span class="alert-badge normal">VERDE</span>
                 </div>
             </div>
 
@@ -3569,68 +3601,127 @@ passwordInput.focus();
                 
                 console.log('Processed alerts:', STATE.officialAlerts);
 
-                updateOfficialAlertsDisplay(STATE.officialAlerts);
+                updateOfficialAlertsCards(); // ← NUOVA FUNZIONE
                 console.log('updateOfficialAlerts END');
 
             } catch (error) {
                 console.error("Errore nel caricamento delle allerte regionali:", error);
-                const container = document.getElementById('official-alerts-container');
-                if(container) container.innerHTML = '<p style="color: var(--danger-color); text-align: center;">Impossibile caricare le allerte regionali.</p>';
+                // Aggiorna le card con errore
+                ['overview-alerts-today', 'overview-alerts-tomorrow'].forEach(id => {
+                    const card = document.getElementById(id);
+                    if (card) {
+                        const valueEl = card.querySelector('.quick-stat-value');
+                        const trendEl = card.querySelector('.quick-stat-trend span');
+                        if (valueEl) valueEl.innerHTML = '✗';
+                        if (trendEl) trendEl.textContent = 'Errore caricamento';
+                    }
+                });
             }
         }
 
-        function updateOfficialAlertsDisplay(alerts) {
-            const container = document.getElementById('official-alerts-container');
-            if (!container || !alerts) return;
+        /**
+         * Aggiorna le card delle allerte regionali in formato quick-stat
+         */
+        function updateOfficialAlertsCards() {
+            console.log('updateOfficialAlertsCards START', STATE.officialAlerts);
+            
+            if (!STATE.officialAlerts) {
+                console.warn('No official alerts data available');
+                return;
+            }
 
+            // Configurazione rischi con icone
             const riskConfig = {
-                idraulica:     { icon: 'droplet', label: 'Idraulico' },
-                idrogeologica:{ icon: 'bar-chart-2', label: 'Idrogeologico' },
-                temporali:     { icon: 'cloud-lightning', label: 'Temporali' },
-                vento:         { icon: 'wind', label: 'Vento' },
-                //neve:          { icon: 'cloud-snow', label: 'Neve' },
-                //mareggiate:    { icon: 'anchor', label: 'Mareggiate' }
+                idraulica: { icon: 'droplet', label: 'Idraulico' },
+                idrogeologica: { icon: 'bar-chart-2', label: 'Idrogeologico' },
+                temporali: { icon: 'cloud-lightning', label: 'Temporali' },
+                vento: { icon: 'wind', label: 'Vento' }
             };
 
-            const createAlertsHtml = (dayAlerts) => {
-                let html = '';
-                const allAlerts = Object.entries(dayAlerts)
-                    .filter(([risk]) => riskConfig[risk]);
+            // Funzione helper per processare un giorno
+            const processDayAlerts = (dayAlerts, cardId) => {
+                const card = document.getElementById(cardId);
+                if (!card) return;
 
-                const alertColors = {
-                    'Verde': 'var(--success-color)',
-                    'Gialla': 'var(--warning-color)',
-                    'Arancione': '#ff9800',
-                    'Rossa': 'var(--danger-color)'
-                };
+                // Conta le allerte per livello
+                const alertLevels = { 'Verde': 1, 'Gialla': 2, 'Arancione': 3, 'Rossa': 4 };
+                let maxLevel = 'Verde';
+                let maxLevelValue = 0;
+                const activeAlerts = []; // Allerte non verdi
 
-                allAlerts.forEach(([risk, level]) => {
-                    const config = riskConfig[risk];
-                    const color = alertColors[level] || 'var(--text-muted)';
-                    
-                    html += `
-                        <div class="official-alert-item" style="color: ${color}; border: 1px solid ${color}33; background-color: ${color}1A;">
-                            <i data-feather="${config.icon}" class="feather-icon"></i>
-                            <span>Rischio ${config.label}</span>
-                        </div>
-                    `;
+                // Analizza ogni tipo di rischio
+                Object.entries(dayAlerts).forEach(([risk, level]) => {
+                    if (riskConfig[risk]) {
+                        const levelValue = alertLevels[level] || 1;
+                        
+                        // Trova il livello massimo
+                        if (levelValue > maxLevelValue) {
+                            maxLevel = level;
+                            maxLevelValue = levelValue;
+                        }
+
+                        // Aggiungi alle allerte attive se non è verde
+                        if (level !== 'Verde') {
+                            activeAlerts.push({
+                                risk: riskConfig[risk].label,
+                                level: level,
+                                icon: riskConfig[risk].icon
+                            });
+                        }
+                    }
                 });
-                return html;
+
+                // AGGIORNA GLI ELEMENTI DELLA CARD
+                const valueEl = card.querySelector('.quick-stat-value');
+                const badgeEl = card.querySelector('.alert-badge');
+                const trendEl = card.querySelector('.quick-stat-trend span');
+                const iconContainer = card.querySelector('.quick-stat-icon');
+
+                // 1. Aggiorna il VALORE (numero di allerte attive)
+                if (activeAlerts.length === 0) {
+                    valueEl.innerHTML = '✓'; // Checkmark se tutto ok
+                    valueEl.style.fontSize = '2.5em';
+                } else {
+                    valueEl.innerHTML = activeAlerts.length;
+                    valueEl.style.fontSize = '1.8em';
+                }
+
+                // 2. Aggiorna il BADGE con il livello massimo
+                const levelClass = maxLevel.toLowerCase();
+                badgeEl.className = `alert-badge ${levelClass}`;
+                badgeEl.textContent = maxLevel.toUpperCase();
+
+                // 3. Aggiorna la CLASSE della card per il colore dell'icona
+                card.className = `quick-stat-card alert-${levelClass}`;
+
+                // 4. Aggiorna il TREND (testo informativo)
+                if (activeAlerts.length === 0) {
+                    trendEl.textContent = 'Nessuna allerta attiva';
+                } else if (activeAlerts.length === 1) {
+                    trendEl.textContent = `${activeAlerts[0].risk}`;
+                } else {
+                    // Mostra i primi 2 rischi principali
+                    const risksText = activeAlerts
+                        .slice(0, 2)
+                        .map(a => a.risk)
+                        .join(', ');
+                    trendEl.textContent = `${risksText}${activeAlerts.length > 2 ? '...' : ''}`;
+                }
+
+                console.log(`Card ${cardId} updated:`, {
+                    maxLevel,
+                    activeCount: activeAlerts.length,
+                    activeAlerts
+                });
             };
 
-            container.innerHTML = `
-                <div class="official-alerts-day">
-                    <h3>Oggi</h3>
-                    ${createAlertsHtml(alerts.today)}
-                </div>
-                <div class="official-alerts-day">
-                    <h3>Domani</h3>
-                    ${createAlertsHtml(alerts.tomorrow)}
-                </div>
-            `;
+            // Processa entrambe le card
+            processDayAlerts(STATE.officialAlerts.today, 'overview-alerts-today');
+            processDayAlerts(STATE.officialAlerts.tomorrow, 'overview-alerts-tomorrow');
 
-            feather.replace();
+            console.log('updateOfficialAlertsCards END');
         }
+
 
         // ==================== DATA FETCHING ====================
         function fetchData(url) {
