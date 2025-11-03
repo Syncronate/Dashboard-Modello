@@ -2533,6 +2533,10 @@ max-width: 400px;
                             <div class="title">Scapezzano</div>
                             <div class="value">--<span class="unit">mm/hr</span></div>
                         </div>
+                        <div class="stat-card" id="rain-senigallia">
+                            <div class="title">Senigallia</div>
+                            <div class="value">--<span class="unit">mm/hr</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2573,6 +2577,7 @@ max-width: 400px;
                         <label><input type="checkbox" name="station-rain" value="Montignano - Pioggia Giornaliera (mm)" checked> Montignano</label>
                         <label><input type="checkbox" name="station-rain" value="Sant'Angelo - Pioggia Giornaliera (mm)" checked> Sant'Angelo</label>
                         <label><input type="checkbox" name="station-rain" value="Scapezzano - Pioggia Giornaliera (mm)" checked> Scapezzano</label>
+                        <label><input type="checkbox" name="station-rain" value="Senigallia - Pioggia TOT Oggi (mm)" checked> Senigallia</label>
                     </div>
                 </div>
             </div>
@@ -3784,6 +3789,7 @@ passwordInput.focus();
                     updateStatCard('rain-barbara', convertToHourRate(d['Barbara - Intensita di pioggia (mm/min)']), 'mm/hr');
                     updateStatCard('rain-corinaldo', convertToHourRate(d['Corinaldo - Intensita di pioggia (mm/min)']), 'mm/hr');
                     updateStatCard('rain-misa', convertToHourRate(d['Misa - Intensita Pioggia (mm/min)']), 'mm/hr');
+                    updateStatCard('rain-senigallia', convertToHourRate(d['Senigallia - Intensita di pioggia (mm/min)']), 'mm/hr');
                 }
 
                 if (weatherlinkData && weatherlinkData.length > 0) {
@@ -4754,6 +4760,15 @@ passwordInput.focus();
                     name: 'Cesano', lat: 43.66472, lon: 13.01444, type: 'circle', section: 'idrometri', 
                     displayValue: 'hydro_level',
                     keys: { level: 'Cesano - Livello Cesano (mt)', source: 'region' } 
+                },
+                { 
+                    name: 'Senigallia', lat: 43.70083, lon: 13.20556, type: 'circle', section: 'pluviometri', 
+                    displayValue: 'rain_intensity',
+                    keys: {
+                        intensity_min: 'Senigallia - Intensita di pioggia (mm/min)',
+                        total_day: 'Senigallia - Pioggia TOT Oggi (mm)',
+                        source: 'region'
+                    }
                 }
             ];
 
