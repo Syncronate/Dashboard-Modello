@@ -4474,93 +4474,85 @@ async function updateAllLatestData() {
          * Viene chiamata dopo l'aggiornamento dei dati storici
          */
         function regenerateActiveCharts() {
-            // Controlla se l'auto-refresh è abilitato
-            if (!CONFIG.chartUpdates.autoRefresh) {
-                console.log('⏭️ Auto-refresh grafici disabilitato');
-                return;
-            }
-            
-            if (!STATE.needsChartUpdate) {
-                console.log('⏭️ Nessun nuovo dato storico, salto rigenerazione grafici');
-                return;
-            }
-            
-            console.log('📊 Rigenerazione grafici attivi...');
-            STATE.needsChartUpdate = false;
-            
-            // Se onlyActiveChart è false, rigenera tutti
-            if (!CONFIG.chartUpdates.onlyActiveChart) {
-                regenerateAllCharts();
-                return;
-            }
-            
-            // Altrimenti rigenera solo quello attivo
-            const activeSection = document.querySelector('.page-section.active');
-            if (!activeSection) return;
+    if (!CONFIG.chartUpdates.autoRefresh) {
+        console.log('⏭️ Auto-refresh grafici disabilitato');
+        return;
+    }
+    
+    if (!STATE.needsChartUpdate) {
+        console.log('⏭️ Nessun nuovo dato storico, salto rigenerazione grafici');
+        return;
+    }
+    
+    console.log('📊 Rigenerazione grafici attivi...');
+    STATE.needsChartUpdate = false;
+    
+    // Se onlyActiveChart è false, chiama la funzione per rigenerare tutto
+    if (!CONFIG.chartUpdates.onlyActiveChart) {
+        regenerateAllCharts(); // Questa ora contiene la logica corretta
+        return;
+    }
+    
+    // Altrimenti, rigenera solo quello attivo ricalcolando il tempo
+    const activeSection = document.querySelector('.page-section.active');
+    if (!activeSection) return;
 
-            switch(activeSection.id) {
-                case 'overview':
-                    console.log('🔄 Aggiornamento grafici overview...');
-                    drawOverviewCharts();
-                    break;
-                    
-                case 'idrometri':
-                    if (STATE.charts.hydroHistory) {
-                        console.log('🔄 Rigenerazione grafico idrometri...');
-                        drawHydroHistoryChart();
-                    }
-                    break;
-                    
-                case 'pluviometri':
-                    if (STATE.charts.rainHistory) {
-                        console.log('🔄 Rigenerazione grafico pluviometri...');
-                        drawRainHistoryChart();
-                    }
-                    break;
-                    
-                case 'anemometri':
-                    if (STATE.charts.windHistory) {
-                        console.log('🔄 Rigenerazione grafico anemometri...');
-                        drawWindHistoryChart();
-                    }
-                    break;
-                    
-                case 'analisi':
-                    console.log('🔄 Aggiornamento statistiche...');
-                    updateStatisticsTables();
-                    break;
-            }
-        }
+    switch(activeSection.id) {
+        case 'idrometri':
+            // Simula il click sul filtro attivo per ricalcolare l'intervallo di tempo
+            document.querySelector('#quick-filters-hydro .quick-filter-btn.active')?.click();
+            break;
+            
+        case 'pluviometri':
+            document.querySelector('#quick-filters-rain .quick-filter-btn.active')?.click();
+            break;
+            
+        case 'anemometri':
+            document.querySelector('#quick-filters-wind .quick-filter-btn.active')?.click();
+            break;
+        
+        // Per overview e analisi, la logica esistente va bene
+        case 'overview':
+            console.log('🔄 Aggiornamento grafici overview...');
+            drawOverviewCharts();
+            break;
+        case 'analisi':
+            console.log('🔄 Aggiornamento statistiche...');
+            updateStatisticsTables();
+            break;
+    }
+}
 
         /**
          * Rigenera TUTTI i grafici, non solo quelli visibili
          * Usata durante il refresh manuale
          */
         function regenerateAllCharts() {
-            console.log('📊 Rigenerazione completa di tutti i grafici...');
-            STATE.needsChartUpdate = false;
-            
-            // Overview
-            drawOverviewCharts();
-            
-            // Idrometri - solo se già inizializzato
-            if (STATE.charts.hydroHistory) {
-                drawHydroHistoryChart();
-            }
-            
-            // Pluviometri - solo se già inizializzato
-            if (STATE.charts.rainHistory) {
-                drawRainHistoryChart();
-            }
-            
-            // Anemometri - solo se già inizializzato
-            if (STATE.charts.windHistory) {
-                drawWindHistoryChart();
-            }
-            
-            // Statistiche
-            updateStatisticsTables();
-        }
+    console.log('📊 Rigenerazione completa di tutti i grafici...');
+    STATE.needsChartUpdate = false; // Manteniamo la correzione di prima
+
+    // Overview e Statistiche si aggiornano sempre
+    drawOverviewCharts();
+    updateStatisticsTables();
+    
+    // Per i grafici con filtri temporali, simuliamo il click sul filtro attivo
+    // Questo garantisce che l'intervallo di tempo venga ricalcolato correttamente
+    
+    // Se il grafico idrometri è stato inizializzato...
+    if (STATE.charts.hydroHistory) {
+        document.querySelector('#quick-filters-hydro .quick-filter-btn.active')?.click();
+    }
+    
+    // Se il grafico pluviometri è stato inizializzato...
+    if (STATE.charts.rainHistory) {
+        document.querySelector('#quick-filters-rain .quick-filter-btn.active')?.click();
+    }
+    
+    // Se il grafico anemometri è stato inizializzato...
+    if (STATE.charts.windHistory) {
+        document.querySelector('#quick-filters-wind .quick-filter-btn.active')?.click();
+    }
+}
 
         // ==================== OVERVIEW FUNCTIONS ====================
         function updateOverviewStats() {
