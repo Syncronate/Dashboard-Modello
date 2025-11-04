@@ -474,431 +474,244 @@
             color: white !important;
         }
 
-/* === MODERN RADAR PLAYER STYLES === */
-.modern-radar-control {
-    background: linear-gradient(135deg, rgba(20, 20, 30, 0.95) 0%, rgba(30, 30, 45, 0.95) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 15px;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    width: 380px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
+/* === STILI DEL CONTROLLO RADAR MIGLIORATI === */
 
-.modern-radar-control::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(103, 133, 191, 0.5), transparent);
-    animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-    0%, 100% {
-        opacity: 0.3;
-    }
-    50% {
-        opacity: 1;
-    }
-}
-
-/* === HEADER === */
-.radar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.radar-status {
+.leaflet-control-radar {
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(5px);
+    border-radius: 10px;
+    padding: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    border: 1px solid #333;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    width: 350px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.status-dot {
-    width: 8px;
-    height: 8px;
+/* === PULSANTE PLAY/PAUSA === */
+.radar-play-pause button,
+.radar-play-button {
+    background: #2c2c2c;
+    border: 1px solid #333;
+    color: #e0e0e0;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    background: #4ade80;
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.2);
-        opacity: 0.7;
-    }
-}
-
-.status-text {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 500;
-}
-
-.radar-current-time {
-    color: #fff;
-    font-size: 18px;
-    font-weight: 600;
-    font-family: 'SF Mono', 'Monaco', monospace;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* === MAIN CONTROLS === */
-.radar-controls {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-/* Control Buttons */
-.radar-control-btn {
-    background: linear-gradient(135deg, rgba(103, 133, 191, 0.2) 0%, rgba(103, 133, 191, 0.1) 100%);
-    border: 1px solid rgba(103, 133, 191, 0.3);
-    color: rgba(255, 255, 255, 0.9);
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
     cursor: pointer;
+    font-size: 1.5em;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.radar-play-pause button:hover,
+.radar-play-button:hover {
+    background: #6785bf;
+    color: white;
+    transform: scale(1.05);
+}
+
+/* === CONTENITORE TIMELINE === */
+.radar-timeline-container {
+    flex-grow: 1;
     position: relative;
-    overflow: hidden;
+    padding-top: 30px;
 }
 
-.radar-control-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(103, 133, 191, 0.4);
-    transform: translate(-50%, -50%);
-    transition: width 0.3s, height 0.3s;
-}
-
-.radar-control-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(103, 133, 191, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    border-color: rgba(103, 133, 191, 0.5);
-}
-
-.radar-control-btn:hover::before {
-    width: 100%;
-    height: 100%;
-}
-
-.radar-control-btn:active {
-    transform: translateY(0);
-}
-
-.radar-control-btn.active {
-    background: linear-gradient(135deg, #6785bf 0%, #8ba3d9 100%);
-    border-color: #6785bf;
-    box-shadow: 0 0 20px rgba(103, 133, 191, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.radar-control-btn svg {
-    fill: currentColor;
-    position: relative;
-    z-index: 1;
-}
-
-/* Play/Pause Button */
-.play-btn {
-    width: 50px;
-    height: 50px;
-    background: linear-gradient(135deg, #6785bf 0%, #8ba3d9 100%);
-    border-color: #6785bf;
-}
-
-.play-btn:hover {
-    box-shadow: 0 15px 30px rgba(103, 133, 191, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.play-btn.playing .play-icon {
-    display: none;
-}
-
-.play-btn.playing .pause-icon {
-    display: block;
-}
-
-/* === TIMELINE === */
-.radar-timeline {
-    flex: 1;
-    position: relative;
-}
-
-.timeline-track {
-    position: relative;
-    height: 60px;
-}
-
-/* Timeline Markers */
-.timeline-markers {
-    display: flex;
-    justify-content: space-between;
+/* === ETICHETTA ORARIO (usa classe invece di ID) === */
+.radar-time-label {
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    padding: 0 10px;
-}
-
-.timeline-markers .marker {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 500;
-}
-
-.timeline-markers .marker.now {
-    color: #6785bf;
-    font-weight: 700;
-    position: relative;
-}
-
-.timeline-markers .marker.now::after {
-    content: '';
-    position: absolute;
-    bottom: -25px;
     left: 50%;
     transform: translateX(-50%);
-    width: 2px;
-    height: 20px;
-    background: linear-gradient(180deg, #6785bf 0%, transparent 100%);
+    background: #6785bf;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    font-weight: bold;
+    white-space: nowrap;
+    transition: left 0.1s linear;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 20;
 }
 
-/* Progress Container */
-.timeline-progress-container {
-    position: absolute;
-    top: 30px;
-    left: 10px;
-    right: 10px;
-    height: 8px;
-}
-
-.timeline-progress-bg {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.timeline-progress-bg::before {
+/* Freccia sotto l'etichetta */
+.radar-time-label::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    animation: scanline 8s linear infinite;
-}
-
-@keyframes scanline {
-    to {
-        left: 100%;
-    }
-}
-
-.timeline-progress-fill {
-    position: absolute;
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6 0%, #6785bf 50%, #8ba3d9 100%);
-    border-radius: 10px;
-    width: 50%;
-    transition: width 0.2s ease;
-    box-shadow: 0 0 20px rgba(103, 133, 191, 0.4);
-}
-
-.timeline-progress-glow {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    background: radial-gradient(circle, rgba(103, 133, 191, 0.8) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-/* Timeline Slider (Invisible) */
-.timeline-slider {
-    position: absolute;
-    top: 26px;
-    left: 5px;
-    right: 5px;
-    height: 16px;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 10;
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-.timeline-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    cursor: grab;
-}
-
-.timeline-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    cursor: grab;
-    border: none;
-    background: transparent;
-}
-
-/* Time Indicator */
-.time-indicator {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    pointer-events: none;
-    transition: left 0.2s ease;
-    z-index: 5;
-}
-
-.indicator-bubble {
-    background: linear-gradient(135deg, #6785bf 0%, #8ba3d9 100%);
-    border-radius: 20px;
-    padding: 5px 12px;
-    box-shadow: 0 4px 12px rgba(103, 133, 191, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    position: relative;
-}
-
-.indicator-bubble::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
+    bottom: -4px;
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
-    border-top: 5px solid #8ba3d9;
+    border-top: 5px solid #6785bf;
 }
 
-.indicator-time {
-    color: white;
-    font-size: 12px;
-    font-weight: 600;
-    font-family: 'SF Mono', 'Monaco', monospace;
-}
-
-/* === EXTRA CONTROLS === */
-.radar-extra-controls {
+/* === WRAPPER SLIDER === */
+.radar-slider-wrapper {
+    position: relative;
+    width: 100%;
+    height: 20px; /* Aumentato per contenere il thumb */
+    margin-bottom: 8px;
     display: flex;
-    gap: 10px;
+    align-items: center;
 }
 
-.speed-btn {
-    width: 45px;
-    font-size: 12px;
-    font-weight: 600;
+/* FIX: Assicura che lo slider sia allineato */
+.radar-timeline-slider {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    width: 100%;
+    height: 4px;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-.loop-btn.active {
-    background: linear-gradient(135deg, rgba(74, 222, 128, 0.2) 0%, rgba(74, 222, 128, 0.1) 100%);
-    border-color: rgba(74, 222, 128, 0.3);
+/* Sfondo della barra (track) */
+.radar-slider-track {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background: #121212;
+    border-radius: 5px;
+    overflow: hidden;
+    z-index: 1;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 480px) {
-    .modern-radar-control {
-        width: calc(100vw - 40px);
-        padding: 15px;
-    }
-    .radar-control-btn {
-        width: 40px;
-        height: 40px;
-    }
-    .play-btn {
-        width: 45px;
-        height: 45px;
-    }
+/* Barra blu (passato) */
+.radar-slider-progress {
+    position: absolute;
+    height: 100%;
+    background: #6785bf;
+    width: 50%;
+    border-radius: 5px 0 0 5px;
+    transition: width 0.1s linear;
+    z-index: 2;
 }
 
-/* === ANIMATIONS === */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Barra bianca (futuro) */
+.radar-slider-future {
+    position: absolute;
+    right: 0;
+    height: 100%;
+    background: #ffffff;
+    width: 50%;
+    border-radius: 0 5px 5px 0;
+    transition: width 0.1s linear;
+    z-index: 2;
 }
 
-.modern-radar-control {
-    animation: fadeIn 0.5s ease;
+/* === SLIDER (usa classe invece di ID) === */
+.radar-timeline-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: transparent !important;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 10;
+    margin: 0;
+    padding: 0;
 }
 
-        /* === RADAR TOGGLE CONTROL === */
-        .leaflet-control-radar-toggle a {
-            background-color: var(--medium-bg);
-            border-radius: 4px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
+/* Traccia trasparente WebKit */
+.radar-timeline-slider::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+    height: 4px;
+}
 
-        .leaflet-control-radar-toggle a .feather-icon {
-            width: 18px;
-            height: 18px;
-            color: var(--text-color);
-        }
+/* Traccia trasparente Firefox */
+.radar-timeline-slider::-moz-range-track {
+    background: transparent;
+    border: none;
+    height: 4px;
+}
 
-        .leaflet-control-radar-toggle a:hover {
-            background-color: var(--light-bg);
-        }
+/* === THUMB WEBKIT - CORRETTO === */
+.radar-timeline-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;  /* Aumentato per migliore visibilità */
+    height: 20px;
+    background: transparent;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+    /* FIX: Calcolo corretto del margine per centrare */
+    margin-top: -8px;
+    position: relative;
+    z-index: 15;
+}
 
-        .leaflet-control-radar-toggle a.active {
-            background-color: var(--primary-color);
-        }
-        
-        .leaflet-control-radar-toggle a.active .feather-icon {
-            color: white;
-        }
+.radar-timeline-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
 
-        .leaflet-control-radar-toggle a.active:hover {
-            background-color: var(--primary-dark);
-        }
+.radar-timeline-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+}
+
+/* === THUMB FIREFOX - CORRETTO === */
+.radar-timeline-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+    /* Firefox gestisce automaticamente il centraggio, ma assicuriamoci */
+    position: relative;
+    z-index: 15;
+}
+
+.radar-timeline-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+.radar-timeline-slider::-moz-range-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.1);
+}
+
+/* === ETICHETTE SOTTO LO SLIDER === */
+.radar-timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75em;
+    color: #999;
+    margin: 0;
+    padding: 0 9px;
+}
+
+.radar-timeline-labels span {
+    text-align: center;
+}
+
+.radar-timeline-labels span:first-child {
+    text-align: left;
+}
+
+.radar-timeline-labels span:last-child {
+    text-align: right;
+}
 
         /* === RADAR TOGGLE CONTROL === */
         .leaflet-control-radar-toggle a {
@@ -5707,6 +5520,7 @@ async function updateAllLatestData() {
 
             updateDashboardMapMarkers();
             setupRadarControls(STATE.dashboardMap, 'dashboard');
+            fetchRadarData(STATE.dashboardMap); // Chiamata iniziale per caricare i dati
             STATE.dashboardMap.addControl(new RadarLegendControl({ position: 'bottomleft' }));
         }
 
@@ -5756,6 +5570,7 @@ async function updateAllLatestData() {
 
             updateMapMarkers();
             setupRadarControls(STATE.map, 'main');
+            fetchRadarData(STATE.map); // Chiamata iniziale per caricare i dati
             STATE.map.addControl(new RadarLegendControl({ position: 'bottomleft' }));
         }
         
@@ -6012,285 +5827,332 @@ async function updateAllLatestData() {
             ];
         }
 
-// ==================== MODERN RADAR CONTROLLER ====================
-class ModernRadarController {
-    constructor(mapInstance, prefix) {
-        this.map = mapInstance;
-        this.prefix = prefix;
-        this.frames = [];
-        this.layers = [];
-        this.currentIndex = 0;
-        this.isPlaying = false;
-        this.isLoaded = false;
-        this.speed = 1;
-        this.loop = true;
-        this.animationFrame = null;
-        this.isRadarVisible = true;
-        this.init();
-    }
-    init() {
-        this.createControl();
-        this.createToggleControl();
-        this.bindEvents();
-        this.fetchRadarData();
-        // Auto-refresh ogni 5 minuti
-        setInterval(() => this.fetchRadarData(), 5 * 60 * 1000);
-    }
-    createToggleControl() {
-        const RadarToggleControl = L.Control.extend({
-            onAdd: (map) => {
-                const container = L.DomUtil.create('div', 'leaflet-control-radar-toggle leaflet-bar');
-                this.toggleButton = L.DomUtil.create('a', 'active', container);
-                this.toggleButton.href = '#';
-                this.toggleButton.title = 'Mostra/Nascondi Radar';
-                this.toggleButton.innerHTML = `<i data-feather="layers" class="feather-icon"></i>`;
+        // ==================== RADAR FUNCTIONS ====================
+        const radarInstances = new Map(); // Per gestire più mappe (dashboard e mappa principale)
+
+        async function fetchRadarData(mapInstance) {
+            if (!radarInstances.has(mapInstance)) return;
+
+            const radarState = radarInstances.get(mapInstance);
+
+            try {
+                const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+                if (!response.ok) throw new Error('Risposta API non valida');
+                const data = await response.json();
                 
-                L.DomEvent.on(this.toggleButton, 'click', L.DomEvent.stop).on(this.toggleButton, 'click', () => {
-                    this.isRadarVisible = !this.isRadarVisible;
+                const now = data.generated;
+                const oneHour = 3600;
+
+                const pastFrames = (data.radar.past || []).filter(f => now - f.time <= oneHour);
+                const nowcastFrames = (data.radar.nowcast || []).filter(f => f.time - now <= oneHour && f.time >= now);
+
+                const allFrames = [...pastFrames, ...nowcastFrames].sort((a, b) => a.time - b.time);
+
+                if (allFrames.length > 0) {
+                    radarState.createRadarLayers(allFrames, now);
+                    radarState.isLoaded = true;
                     
-                    if (this.isRadarVisible) {
-                        L.DomUtil.addClass(this.toggleButton, 'active');
-                        this.showFrame(this.currentIndex);
-                    } else {
-                        L.DomUtil.removeClass(this.toggleButton, 'active');
-                        this.stopAnimation();
-                        this.layers.forEach(layer => {
-                            if (this.map.hasLayer(layer)) {
-                                this.map.removeLayer(layer);
-                            }
-                        });
+                    const timelineSlider = document.getElementById(`radar-timeline-slider-${radarState.prefix}`);
+                    const playButton = document.getElementById(`radar-play-btn-${radarState.prefix}`);
+
+                    if (timelineSlider) timelineSlider.max = allFrames.length - 1;
+                    
+                    // FIX: Calcolo migliorato dell'indice "Now"
+                    let nowIndex = -1;
+                    let minDiff = Infinity;
+                    
+                    // Trova il frame più vicino a "now"
+                    allFrames.forEach((frame, index) => {
+                        const diff = Math.abs(frame.time - now);
+                        if (diff < minDiff) {
+                            minDiff = diff;
+                            nowIndex = index;
+                        }
+                    });
+                    
+                    // Se non trovato, usa il frame che separa passato e futuro
+                    if (nowIndex === -1) {
+                        const pastCount = pastFrames.length;
+                        nowIndex = pastCount > 0 ? pastCount - 1 : 0;
                     }
+                    
+                    console.log(`🎯 Now index: ${nowIndex}/${allFrames.length - 1} (${Math.round(nowIndex/(allFrames.length-1)*100)}%)`);
+                    
+                    radarState.currentIndex = nowIndex;
+                    radarState.frames = allFrames;
+                    
+                    if (playButton) playButton.classList.remove('leaflet-disabled');
+                    if (timelineSlider) {
+                        timelineSlider.classList.remove('leaflet-disabled');
+                        timelineSlider.disabled = false;
+                    }
+                    
+                    // Mostra il frame "Now"
+                    radarState.showFrame(radarState.currentIndex);
+                    
+                    // ... resto del codice ...
+                }
+            } catch (error) {
+                console.error("❌ Errore aggiornamento dati radar:", error);
+                showToast('Errore aggiornamento radar', 'error');
+            }
+        }
+
+        function setupRadarControls(mapInstance, prefix) {
+            const radarState = {
+                layers: [],
+                frames: [],
+                animationInterval: null,
+                currentIndex: 0,
+                isPlaying: false,
+                isLoaded: false,
+                generatedTime: 0,
+                isRadarVisible: true,
+                prefix: prefix, // Prefisso per ID univoci
+                initialLoadComplete: false // Per gestire il toast
+            };
+            
+            // Collega le funzioni di manipolazione al contesto di questa istanza
+            radarState.createRadarLayers = createRadarLayers.bind(radarState, mapInstance);
+            radarState.showFrame = showFrame.bind(radarState, mapInstance);
+            radarState.playRadarAnimation = playRadarAnimation.bind(radarState);
+            radarState.stopRadarAnimation = stopRadarAnimation.bind(radarState);
+            radarState.updateSliderUI = updateSliderUI.bind(radarState);
+            
+            radarInstances.set(mapInstance, radarState);
+
+            let playButton, timelineSlider, timeLabel, progressBar, futureBar, toggleButton;
+
+            const RadarToggleControl = L.Control.extend({
+                onAdd: function(map) {
+                    const container = L.DomUtil.create('div', 'leaflet-control-radar-toggle leaflet-bar');
+                    toggleButton = L.DomUtil.create('a', 'active', container);
+                    toggleButton.href = '#';
+                    toggleButton.title = 'Mostra/Nascondi Radar';
+                    toggleButton.innerHTML = `<i data-feather="layers" class="feather-icon"></i>`;
+                    
+                    L.DomEvent.on(toggleButton, 'click', L.DomEvent.stop).on(toggleButton, 'click', () => {
+                        radarState.isRadarVisible = !radarState.isRadarVisible;
+                        
+                        if (radarState.isRadarVisible) {
+                            L.DomUtil.addClass(toggleButton, 'active');
+                            radarState.showFrame(radarState.currentIndex);
+                        } else {
+                            L.DomUtil.removeClass(toggleButton, 'active');
+                            radarState.stopRadarAnimation();
+                            radarState.layers.forEach(layer => {
+                                if (mapInstance.hasLayer(layer)) {
+                                    mapInstance.removeLayer(layer);
+                                }
+                            });
+                        }
+                    });
+                    
+                    setTimeout(() => feather.replace(), 0);
+                    return container;
+                }
+            });
+
+            const RadarControl = L.Control.extend({
+                onAdd: function(map) {
+                    const container = L.DomUtil.create('div', 'leaflet-control-radar');
+                    
+                    container.innerHTML = `
+                        <div class="radar-play-pause">
+                            <button id="radar-play-btn-${prefix}" class="radar-play-button">▶</button>
+                        </div>
+                        <div class="radar-timeline-container">
+                            <div id="radar-time-label-${prefix}" class="radar-time-label">--:--</div>
+                            <div class="radar-slider-wrapper">
+                                <div class="radar-slider-track"></div>
+                                <div class="radar-slider-progress" id="radar-slider-progress-${prefix}"></div>
+                                <div class="radar-slider-future" id="radar-slider-future-${prefix}"></div>
+                                <input type="range" id="radar-timeline-slider-${prefix}" class="radar-timeline-slider" min="0" max="100" value="50" disabled>
+                            </div>
+                            <div class="radar-timeline-labels">
+                                <span>1h ago</span>
+                                <span>Now</span>
+                                <span>Next 1h</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    playButton = container.querySelector(`#radar-play-btn-${prefix}`);
+                    timelineSlider = container.querySelector(`#radar-timeline-slider-${prefix}`);
+                    timeLabel = container.querySelector(`#radar-time-label-${prefix}`);
+                    progressBar = container.querySelector(`#radar-slider-progress-${prefix}`);
+                    futureBar = container.querySelector(`#radar-slider-future-${prefix}`);
+
+                    L.DomEvent.disableClickPropagation(container);
+                    
+                    playButton.addEventListener('click', () => {
+                        if (radarState.isPlaying) {
+                            radarState.stopRadarAnimation();
+                        } else {
+                            radarState.playRadarAnimation();
+                        }
+                    });
+
+                    timelineSlider.addEventListener('input', (e) => {
+                        radarState.stopRadarAnimation();
+                        const newIndex = parseInt(e.target.value, 10);
+                        radarState.showFrame(newIndex);
+                    });
+
+
+                    return container;
+                }
+            });
+            
+            mapInstance.addControl(new RadarControl({ position: 'bottomright' }));
+            mapInstance.addControl(new RadarToggleControl({ position: 'topleft' }));
+            
+            function createRadarLayers(mapInstance, frames, generatedTime) {
+                this.layers.forEach(layer => mapInstance.removeLayer(layer));
+                this.layers = [];
+                this.frames = frames;
+                this.generatedTime = generatedTime;
+
+                frames.forEach(frame => {
+                    const layer = L.tileLayer(`https://tilecache.rainviewer.com${frame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
+                        tileSize: 256,
+                        opacity: 0,
+                        zIndex: 10
+                    });
+                    this.layers.push(layer);
                 });
                 
-                setTimeout(() => feather.replace(), 0);
-                return container;
+                // Enable slider
+                const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
+                if(timelineSlider) timelineSlider.disabled = false;
             }
-        });
-        this.map.addControl(new RadarToggleControl({ position: 'topleft' }));
-    }
-    createControl() {
-        const RadarControl = L.Control.extend({
-            onAdd: (map) => {
-                const container = L.DomUtil.create('div', 'modern-radar-control');
-                container.innerHTML = `
- <div class="radar-header">
- <div class="radar-status">
- <span class="status-dot"></span>
- <span class="status-text">Live Radar</span>
- </div>
- <div class="radar-current-time" id="radar-current-time-${this.prefix}">--:--</div>
- </div>
- <div class="radar-controls">
- <button class="radar-control-btn play-btn" id="radar-play-btn-${this.prefix}">
- <svg class="play-icon" viewBox="0 0 24 24" width="20" height="20">
- <path d="M8 5v14l11-7z"/>
- </svg>
- <svg class="pause-icon" viewBox="0 0 24 24" width="20" height="20" style="display:none;">
- <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
- </svg>
- </button>
- <div class="radar-timeline">
- <div class="timeline-track">
- <div class="timeline-markers">
- <span class="marker past">-1h</span>
- <span class="marker now">NOW</span>
- <span class="marker future">+1h</span>
- </div>
- <div class="timeline-progress-container">
- <div class="timeline-progress-bg"></div>
- <div class="timeline-progress-fill" id="radar-progress-${this.prefix}"></div>
- <div class="timeline-progress-glow" id="radar-glow-${this.prefix}"></div>
- </div>
- <input type="range" class="timeline-slider" id="radar-slider-${this.prefix}" min="0" max="100" value="50">
- <div class="time-indicator" id="radar-indicator-${this.prefix}">
- <div class="indicator-bubble">
- <span class="indicator-time">--:--</span>
- </div>
- </div>
- </div>
- </div>
- <div class="radar-extra-controls">
- <button class="radar-control-btn speed-btn" id="radar-speed-btn-${this.prefix}" title="Velocità">
- <span class="speed-value">1x</span>
- </button>
- <button class="radar-control-btn loop-btn active" id="radar-loop-btn-${this.prefix}" title="Loop">
- <svg viewBox="0 0 24 24" width="18" height="18">
- <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
- </svg>
- </button>
- </div>
- </div>
- `;
-                L.DomEvent.disableClickPropagation(container);
-                return container;
-            }
-        });
-        this.map.addControl(new RadarControl({ position: 'bottomright' }));
-    }
-    bindEvents() {
-        // Play/Pause
-        const playBtn = document.getElementById(`radar-play-btn-${this.prefix}`);
-        playBtn?.addEventListener('click', () => this.togglePlay());
-        // Slider
-        const slider = document.getElementById(`radar-slider-${this.prefix}`);
-        slider?.addEventListener('input', (e) => {
-            this.stopAnimation();
-            const value = parseInt(e.target.value);
-            const index = Math.floor((value / 100) * (this.frames.length - 1));
-            this.showFrame(index);
-        });
-        // Speed control
-        const speedBtn = document.getElementById(`radar-speed-btn-${this.prefix}`);
-        speedBtn?.addEventListener('click', () => {
-            const speeds = [0.5, 1, 2, 4];
-            const currentIdx = speeds.indexOf(this.speed);
-            this.speed = speeds[(currentIdx + 1) % speeds.length];
-            speedBtn.querySelector('.speed-value').textContent = `${this.speed}x`;
-        });
-        // Loop control
-        const loopBtn = document.getElementById(`radar-loop-btn-${this.prefix}`);
-        loopBtn?.addEventListener('click', () => {
-            this.loop = !this.loop;
-            loopBtn.classList.toggle('active', this.loop);
-        });
-    }
-    async fetchRadarData() {
-        try {
-            const response = await fetch('https://api.rainviewer.com/public/weather-maps.json');
-            const data = await response.json();
-            const now = data.generated;
-            const oneHour = 3600;
-            const pastFrames = (data.radar.past || []).filter(f => now - f.time <= oneHour);
-            const nowcastFrames = (data.radar.nowcast || []).filter(f => f.time - now <= oneHour);
-            this.frames = [...pastFrames, ...nowcastFrames].sort((a, b) => a.time - b.time);
-            if (this.frames.length > 0) {
-                this.createLayers();
-                this.findNowIndex(now);
-                this.isLoaded = true;
-                this.showFrame(this.currentIndex);
-                this.updateUI();
-            }
-        } catch (error) {
-            console.error('Radar data fetch error:', error);
-        }
-    }
-    createLayers() {
-        // Rimuovi layer esistenti
-        this.layers.forEach(layer => this.map.removeLayer(layer));
-        this.layers = [];
-        // Crea nuovi layer
-        this.frames.forEach(frame => {
-            const layer = L.tileLayer(
-                `https://tilecache.rainviewer.com${frame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
-                    tileSize: 256,
-                    opacity: 0,
-                    zIndex: 10
+            
+            function showFrame(mapInstance, index) {
+                if (!this.layers[index] || !this.frames[index]) return;
+
+                const previousLayer = this.layers[this.currentIndex];
+                if (mapInstance.hasLayer(previousLayer)) {
+                    mapInstance.removeLayer(previousLayer);
                 }
-            );
-            this.layers.push(layer);
-        });
-    }
-    findNowIndex(nowTime) {
-        let minDiff = Infinity;
-        this.frames.forEach((frame, index) => {
-            const diff = Math.abs(frame.time - nowTime);
-            if (diff < minDiff) {
-                minDiff = diff;
+
+                if (this.isRadarVisible) {
+                    const currentLayer = this.layers[index];
+                    currentLayer.addTo(mapInstance).setOpacity(0.8);
+                }
+                
                 this.currentIndex = index;
+                this.updateSliderUI(index);
             }
-        });
+
+function updateSliderUI(index) {
+    const timelineSlider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
+    const timeLabel = document.getElementById(`radar-time-label-${this.prefix}`);
+    const progressBar = document.getElementById(`radar-slider-progress-${this.prefix}`);
+    const futureBar = document.getElementById(`radar-slider-future-${this.prefix}`);
+
+    if (!timelineSlider || !this.frames.length) return;
+    
+    const validIndex = Math.max(0, Math.min(index, this.frames.length - 1));
+    
+    // FIX: Forza l'aggiornamento del valore dello slider
+    if (timelineSlider.value != validIndex) {
+        timelineSlider.value = validIndex;
+        // Trigger manuale dell'evento per browser che non aggiornano il thumb
+        timelineSlider.dispatchEvent(new Event('change', { bubbles: true }));
     }
-    showFrame(index) {
-        if (!this.layers[index] || !this.frames[index]) return;
-        // Rimuovi frame precedente
-        if (this.layers[this.currentIndex]) {
-            this.map.removeLayer(this.layers[this.currentIndex]);
-        }
+    
+    const maxIndex = this.frames.length - 1;
+    const percentage = maxIndex > 0 ? (validIndex / maxIndex) * 100 : 0;
+    
+    // Rimuovi le transizioni durante l'animazione per evitare lag
+    const isAnimating = this.isPlaying;
+    const transitionDuration = isAnimating ? '0s' : '0.2s';
+    
+    if(progressBar) {
+        progressBar.style.transition = `width ${transitionDuration} linear`;
+        progressBar.style.width = `${percentage}%`;
+    }
+    
+    if(futureBar) {
+        futureBar.style.transition = `width ${transitionDuration} linear`;
+        futureBar.style.width = `${100 - percentage}%`;
+    }
+    
+    if(timeLabel) {
+        timeLabel.style.transition = `left ${transitionDuration} linear`;
+        timeLabel.style.left = `${percentage}%`;
         
-        this.currentIndex = index;
-        
-        if (this.isRadarVisible) {
-            // Mostra nuovo frame solo se il radar è visibile
-            this.layers[index].addTo(this.map).setOpacity(0.8);
-        }
-        
-        this.updateUI();
-    }
-    updateUI() {
-        const frame = this.frames[this.currentIndex];
-        if (!frame) return;
-        // Aggiorna tempo corrente
-        const time = new Date(frame.time * 1000);
-        const timeStr = time.toLocaleTimeString('it-IT', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        document.getElementById(`radar-current-time-${this.prefix}`).textContent = timeStr;
-        const indicator = document.getElementById(`radar-indicator-${this.prefix}`);
-        if (indicator) {
-            indicator.querySelector('.indicator-time').textContent = timeStr;
-        }
-        // Aggiorna progress bar
-        const progress = (this.currentIndex / (this.frames.length - 1)) * 100;
-        document.getElementById(`radar-progress-${this.prefix}`).style.width = `${progress}%`;
-        document.getElementById(`radar-glow-${this.prefix}`).style.left = `${progress}%`;
-        document.getElementById(`radar-indicator-${this.prefix}`).style.left = `${progress}%`;
-        // Aggiorna slider
-        document.getElementById(`radar-slider-${this.prefix}`).value = progress;
-    }
-    togglePlay() {
-        if (this.isPlaying) {
-            this.stopAnimation();
-        } else {
-            this.startAnimation();
+        const frame = this.frames[validIndex];
+        if (frame) {
+            const currentTime = new Date(frame.time * 1000);
+            const hours = String(currentTime.getHours()).padStart(2, '0');
+            const minutes = String(currentTime.getMinutes()).padStart(2, '0');
+            timeLabel.textContent = `${hours}:${minutes}`;
         }
     }
-    startAnimation() {
-        if (!this.isLoaded || this.isPlaying) return;
-        this.isPlaying = true;
-        const playBtn = document.getElementById(`radar-play-btn-${this.prefix}`);
-        playBtn?.classList.add('playing');
-        const frameDelay = 200 / this.speed;
-        let lastTime = Date.now();
-        const animate = () => {
-            if (!this.isPlaying) return;
-            const now = Date.now();
-            if (now - lastTime >= frameDelay) {
-                let nextIndex = this.currentIndex + 1;
-                if (nextIndex >= this.frames.length) {
-                    if (this.loop) {
-                        nextIndex = 0;
-                    } else {
-                        this.stopAnimation();
-                        return;
-                    }
-                }
-                this.showFrame(nextIndex);
-                lastTime = now;
-            }
-            this.animationFrame = requestAnimationFrame(animate);
-        };
-        this.animationFrame = requestAnimationFrame(animate);
+}
+
+            function playRadarAnimation() {
+    if (this.isPlaying || !this.isLoaded) return;
+    this.isPlaying = true;
+    
+    const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
+    if (playButton) {
+        playButton.textContent = '⏸';
+        playButton.style.background = '#6785bf';
     }
-    stopAnimation() {
+    
+    // FIX: Parti sempre dall'inizio quando premi play
+    // Opzionale: commenta questa linea se vuoi continuare dalla posizione corrente
+    // this.currentIndex = 0;
+    
+    let lastUpdate = Date.now();
+    const frameDelay = 200; // ms
+    
+    const animate = () => {
         if (!this.isPlaying) return;
-        this.isPlaying = false;
-        const playBtn = document.getElementById(`radar-play-btn-${this.prefix}`);
-        playBtn?.classList.remove('playing');
-        if (this.animationFrame) {
-            cancelAnimationFrame(this.animationFrame);
-            this.animationFrame = null;
+        
+        const now = Date.now();
+        if (now - lastUpdate >= frameDelay) {
+            let nextIndex = this.currentIndex + 1;
+            if (nextIndex >= this.frames.length) {
+                nextIndex = 0; // Loop
+            }
+            
+            // FIX: Assicura che showFrame aggiorni tutto
+            this.showFrame(nextIndex);
+            
+            // FIX: Forza l'aggiornamento visuale dello slider
+            const slider = document.getElementById(`radar-timeline-slider-${this.prefix}`);
+            if (slider && slider.value != nextIndex) {
+                slider.value = nextIndex;
+            }
+            
+            lastUpdate = now;
         }
+        this.animationInterval = requestAnimationFrame(animate);
+    };
+    
+    this.animationInterval = requestAnimationFrame(animate);
+}
+
+            function stopRadarAnimation() {
+    if (!this.isPlaying) return;
+    
+    // FIX: Annulla requestAnimationFrame invece di clearInterval
+    if (this.animationInterval) {
+        cancelAnimationFrame(this.animationInterval);
+        this.animationInterval = null;
+    }
+    
+    this.isPlaying = false;
+    const playButton = document.getElementById(`radar-play-btn-${this.prefix}`);
+    if (playButton) {
+        playButton.textContent = '▶';
+        playButton.style.background = '#2c2c2c';
     }
 }
-// Inizializza il nuovo controller
-function initModernRadar(mapInstance, prefix) {
-    return new ModernRadarController(mapInstance, prefix);
-}
-// Sostituisci la vecchia funzione setupRadarControls con questa:
-function setupRadarControls(mapInstance, prefix) {
-    return initModernRadar(mapInstance, prefix);
-}
+        }
         
         // ==================== RADAR LEGEND CONTROL ====================
         const RadarLegendControl = L.Control.extend({
@@ -6810,7 +6672,13 @@ function setupRadarControls(mapInstance, prefix) {
                 // FASE 1: Aggiorna dati real-time
                 await Promise.all([
                     executeWithRetry(() => updateAllLatestData(), 'aggiornamento dati sensori'),
-                    executeWithRetry(() => updateOfficialAlerts(), 'aggiornamento allerte ufficiali')
+                    executeWithRetry(() => updateOfficialAlerts(), 'aggiornamento allerte ufficiali'),
+                    executeWithRetry(() => {
+                        const radarPromises = [];
+                        if (STATE.map) radarPromises.push(fetchRadarData(STATE.map));
+                        if (STATE.dashboardMap) radarPromises.push(fetchRadarData(STATE.dashboardMap));
+                        return Promise.all(radarPromises);
+                    }, 'aggiornamento dati radar')
                 ]);
                 
                 // FASE 2: Aggiorna dati storici (NUOVO!)
