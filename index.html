@@ -6105,13 +6105,32 @@ function updateSliderUI(index) {
             document.getElementById('refresh-btn').addEventListener('click', async () => {
                 showLoading();
                 try {
+                    // Fetch all data concurrently, including historical data
                     await Promise.all([
                         updateAllLatestData(),
                         fetchForecastData(),
                         fetchForecastDataBettolelle3h(),
                         fetchForecastDataPonteGaribaldi6h(),
-                        updateOfficialAlerts()
+                        updateOfficialAlerts(),
+                        fetchAllHistoryData()
                     ]);
+
+                    // After all data is fetched, redraw the currently active chart
+                    const activeSection = document.querySelector('.page-section.active');
+                    if (activeSection) {
+                        switch(activeSection.id) {
+                            case 'idrometri':
+                                drawHydroHistoryChart();
+                                break;
+                            case 'pluviometri':
+                                drawRainHistoryChart();
+                                break;
+                            case 'anemometri':
+                                drawWindHistoryChart();
+                                break;
+                        }
+                    }
+                    
                     showToast('Dati aggiornati', 'success');
                 } catch (error) {
                     console.error('Error during manual refresh:', error);
