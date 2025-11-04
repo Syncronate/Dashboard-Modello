@@ -1899,6 +1899,43 @@ max-width: 400px;
 .login-box .error-message { color: var(--danger-color); margin-top: 15px; height: 20px; font-size: 0.9em; }
 .content-hidden { visibility: hidden; opacity: 0; transition: opacity 0.5s ease-in; }
 
+        /* Notifica aggiornamento grafici */
+        .chart-update-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(103, 133, 191, 0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: slideInRight 0.3s ease-out;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .chart-update-indicator .spinner-small {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
 
 /* Mobile: sotto 768px */
 @media (max-width: 768px) {
@@ -3238,6 +3275,23 @@ max-width: 400px;
                         <input type="number" id="update-interval-forecast" step="30" min="30">
                     </div>
                 </div>
+                <div class="settings-group">
+                    <h4>📊 Aggiornamenti Grafici</h4>
+                    <div class="settings-item">
+                        <label>
+                            <input type="checkbox" id="auto-refresh-charts" checked>
+                            Rigenera grafici automaticamente
+                        </label>
+                        <small>Aggiorna i grafici ad ogni ciclo di refresh</small>
+                    </div>
+                    <div class="settings-item">
+                        <label>
+                            <input type="checkbox" id="update-only-active-chart" checked>
+                            Aggiorna solo grafico visibile
+                        </label>
+                        <small>Migliora le performance aggiornando solo il grafico attivo</small>
+                    </div>
+                </div>
 
                 <!-- Nel modal delle impostazioni, dopo gli intervalli esistenti --> 
                 <div class="settings-section"> 
@@ -3550,6 +3604,10 @@ passwordInput.focus();
                 maxRetries: 3,
                 retryDelay: 2000,
                 preventOverlap: true
+            },
+            chartUpdates: {
+                autoRefresh: true,
+                onlyActiveChart: true
             }
         };
 
@@ -3560,6 +3618,9 @@ passwordInput.focus();
             regionLatestData: null,
             weatherlinkLatestData: null,
             forecastData: [],
+            // NUOVO: flag per controllare quando rigenerare i grafici
+            lastHistoricalUpdate: null,
+            needsChartUpdate: false,
             forecastDataBettolelle3h: [],
             forecastDataPonteGaribaldi6h: [],
             map: null,
@@ -4355,6 +4416,151 @@ async function updateAllLatestData() {
             }
         }
 
+        /**
+         * Aggiorna i dati storici da Google Sheets
+         * Questa funzione viene chiamata durante il ciclo di aggiornamento automatico
+         */
+        async function updateHistoricalData() {
+            console.log('🔄 Aggiornamento dati storici in corso...');
+            
+            try {
+                const [regionHistory, weatherlinkHistory] = await Promise.all([
+                    executeWithRetry(() => 
+                        fetchDataWithTimeout(CONFIG.urls.regionHistory),
+                        'dati storici regionali'
+                    ),
+                    executeWithRetry(() => 
+                        fetchDataWithTimeout(CONFIG.urls.weatherlinkHistory),
+                        'dati storici weatherlink'
+                    )
+                ]);
+
+                const filteredRegion = regionHistory.filter(r => r && r.Data_Ora);
+                const filteredWeatherlink = weatherlinkHistory.filter(r => r && r.Data_Ora);
+
+                // Verifica se ci sono nuovi dati
+                let hasNewData = false;
+                
+                if (filteredRegion.length > 0 && 
+                    filteredRegion.length !== STATE.regionHistoryData.length) {
+                    STATE.regionHistoryData = filteredRegion;
+                    hasNewData = true;
+                    console.log(`✅ Aggiornati ${filteredRegion.length} record storici regionali`);
+                }
+                
+                if (filteredWeatherlink.length > 0 && 
+                    filteredWeatherlink.length !== STATE.weatherlinkHistoryData.length) {
+                    STATE.weatherlinkHistoryData = filteredWeatherlink;
+                    hasNewData = true;
+                    console.log(`✅ Aggiornati ${filteredWeatherlink.length} record storici weatherlink`);
+                }
+
+                // Imposta flag solo se ci sono nuovi dati
+                if (hasNewData) {
+                    STATE.needsChartUpdate = true;
+                    STATE.lastHistoricalUpdate = new Date();
+                    console.log('📊 Rilevati nuovi dati storici, grafici verranno rigenerati');
+                }
+
+                return true;
+            } catch (error) {
+                console.error('❌ Errore aggiornamento dati storici:', error);
+                throw error;
+            }
+        }
+
+        /**
+         * Rigenera tutti i grafici che sono attualmente visibili
+         * Viene chiamata dopo l'aggiornamento dei dati storici
+         */
+        function regenerateActiveCharts() {
+            // Controlla se l'auto-refresh è abilitato
+            if (!CONFIG.chartUpdates.autoRefresh) {
+                console.log('⏭️ Auto-refresh grafici disabilitato');
+                return;
+            }
+            
+            if (!STATE.needsChartUpdate) {
+                console.log('⏭️ Nessun nuovo dato storico, salto rigenerazione grafici');
+                return;
+            }
+            
+            console.log('📊 Rigenerazione grafici attivi...');
+            STATE.needsChartUpdate = false;
+            
+            // Se onlyActiveChart è false, rigenera tutti
+            if (!CONFIG.chartUpdates.onlyActiveChart) {
+                regenerateAllCharts();
+                return;
+            }
+            
+            // Altrimenti rigenera solo quello attivo
+            const activeSection = document.querySelector('.page-section.active');
+            if (!activeSection) return;
+
+            switch(activeSection.id) {
+                case 'overview':
+                    console.log('🔄 Aggiornamento grafici overview...');
+                    drawOverviewCharts();
+                    break;
+                    
+                case 'idrometri':
+                    if (STATE.charts.hydroHistory) {
+                        console.log('🔄 Rigenerazione grafico idrometri...');
+                        drawHydroHistoryChart();
+                    }
+                    break;
+                    
+                case 'pluviometri':
+                    if (STATE.charts.rainHistory) {
+                        console.log('🔄 Rigenerazione grafico pluviometri...');
+                        drawRainHistoryChart();
+                    }
+                    break;
+                    
+                case 'anemometri':
+                    if (STATE.charts.windHistory) {
+                        console.log('🔄 Rigenerazione grafico anemometri...');
+                        drawWindHistoryChart();
+                    }
+                    break;
+                    
+                case 'analisi':
+                    console.log('🔄 Aggiornamento statistiche...');
+                    updateStatisticsTables();
+                    break;
+            }
+        }
+
+        /**
+         * Rigenera TUTTI i grafici, non solo quelli visibili
+         * Usata durante il refresh manuale
+         */
+        function regenerateAllCharts() {
+            console.log('📊 Rigenerazione completa di tutti i grafici...');
+            
+            // Overview
+            drawOverviewCharts();
+            
+            // Idrometri - solo se già inizializzato
+            if (STATE.charts.hydroHistory) {
+                drawHydroHistoryChart();
+            }
+            
+            // Pluviometri - solo se già inizializzato
+            if (STATE.charts.rainHistory) {
+                drawRainHistoryChart();
+            }
+            
+            // Anemometri - solo se già inizializzato
+            if (STATE.charts.windHistory) {
+                drawWindHistoryChart();
+            }
+            
+            // Statistiche
+            updateStatisticsTables();
+        }
+
         // ==================== OVERVIEW FUNCTIONS ====================
         function updateOverviewStats() {
             if (!STATE.regionLatestData || !STATE.weatherlinkLatestData) return;
@@ -4544,6 +4750,35 @@ async function updateAllLatestData() {
                         }
                     }
                 });
+            }
+        }
+
+        /**
+         * Mostra un indicatore visivo durante l'aggiornamento dei grafici
+         */
+        function showChartUpdateIndicator(chartContainerId, show = true) {
+            const container = document.getElementById(chartContainerId);
+            if (!container) return;
+            
+            let indicator = container.querySelector('.chart-update-indicator');
+            
+            if (show && !indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'chart-update-indicator';
+                indicator.innerHTML = `
+                    <div class="spinner-small"></div>
+                    <span>Aggiornamento...</span>
+                `;
+                container.style.position = 'relative';
+                container.appendChild(indicator);
+                
+                // Rimuovi automaticamente dopo 2 secondi
+                setTimeout(() => {
+                    showChartUpdateIndicator(chartContainerId, false);
+                }, 2000);
+            } else if (!show && indicator) {
+                indicator.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => indicator.remove(), 300);
             }
         }
 
@@ -5014,6 +5249,7 @@ async function updateAllLatestData() {
         }
 
         function drawHydroHistoryChart(startDate, endDate) {
+            showChartUpdateIndicator('hydroHistoryChart-container', true);
             const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-hydro').value;
             const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-hydro').value;
             
@@ -5052,6 +5288,7 @@ async function updateAllLatestData() {
         }
 
         function drawRainHistoryChart(startDate, endDate) {
+            showChartUpdateIndicator('rainHistoryChart-container', true);
             const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-rain').value;
             const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-rain').value;
             
@@ -5099,6 +5336,7 @@ async function updateAllLatestData() {
         }
 
         function drawWindHistoryChart(startDate, endDate) {
+            showChartUpdateIndicator('windHistoryChart-container', true);
             const station = document.getElementById('station-selection-wind').value;
             const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-wind').value;
             const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-wind').value;
@@ -6101,21 +6339,48 @@ function updateSliderUI(index) {
             setupModal('export-btn', 'export-modal', 'close-export-modal');
             setupModal('settings-btn', 'settings-modal', 'close-settings-modal');
 
-            // Refresh Button
+            // Refresh Button - VERSIONE AGGIORNATA
             document.getElementById('refresh-btn').addEventListener('click', async () => {
+                console.log('🔄 Refresh manuale avviato dall\'utente');
                 showLoading();
+                
                 try {
+                    // Mostra toast informativo
+                    showToast('Aggiornamento in corso...', 'info');
+                    
+                    // 1. Aggiorna dati real-time
                     await Promise.all([
                         updateAllLatestData(),
-                        fetchForecastData(),
-                        fetchForecastDataBettolelle3h(),
-                        fetchForecastDataPonteGaribaldi6h(),
                         updateOfficialAlerts()
                     ]);
-                    showToast('Dati aggiornati', 'success');
+                    
+                    // 2. Aggiorna previsioni
+                    await Promise.all([
+                        fetchForecastData(),
+                        fetchForecastDataBettolelle3h(),
+                        fetchForecastDataPonteGaribaldi6h()
+                    ]);
+                    
+                    // 3. Aggiorna dati storici (NUOVO!)
+                    await updateHistoricalData();
+                    
+                    // 4. Rigenera TUTTI i grafici (NUOVO!)
+                    regenerateAllCharts();
+                    
+                    // 5. Aggiorna radar
+                    const radarPromises = [];
+                    if (STATE.map) radarPromises.push(fetchRadarData(STATE.map));
+                    if (STATE.dashboardMap) radarPromises.push(fetchRadarData(STATE.dashboardMap));
+                    if (radarPromises.length > 0) {
+                        await Promise.all(radarPromises);
+                    }
+                    
+                    showToast('✅ Aggiornamento completato con successo!', 'success');
+                    console.log('✅ Refresh manuale completato');
+                    
                 } catch (error) {
-                    console.error('Error during manual refresh:', error);
-                    showToast('Errore durante l\'aggiornamento', 'error');
+                    console.error('❌ Errore durante il refresh manuale:', error);
+                    showToast('❌ Errore durante l\'aggiornamento', 'error');
                 } finally {
                     hideLoading();
                 }
@@ -6291,37 +6556,49 @@ function updateSliderUI(index) {
                 STATE.updateIntervals.data = setTimeout(runDataUpdateLoop, CONFIG.intervals.dataUpdate);
                 return;
             }
+            
             STATE.isUpdating.data = true;
             const startTime = Date.now();
+            
             try {
-                console.log('🔄 Inizio aggiornamento dati...');
+                console.log('🔄 Inizio ciclo aggiornamento completo...');
+                
+                // FASE 1: Aggiorna dati real-time
                 await Promise.all([
                     executeWithRetry(() => updateAllLatestData(), 'aggiornamento dati sensori'),
                     executeWithRetry(() => updateOfficialAlerts(), 'aggiornamento allerte ufficiali'),
-
-                    // NUOVA CHIAMATA PER AGGIORNARE IL RADAR
                     executeWithRetry(() => {
-                        // Aggiorna entrambe le mappe se esistono
                         const radarPromises = [];
                         if (STATE.map) radarPromises.push(fetchRadarData(STATE.map));
                         if (STATE.dashboardMap) radarPromises.push(fetchRadarData(STATE.dashboardMap));
                         return Promise.all(radarPromises);
                     }, 'aggiornamento dati radar')
                 ]);
+                
+                // FASE 2: Aggiorna dati storici (NUOVO!)
+                await updateHistoricalData();
+                
+                // FASE 3: Rigenera grafici attivi (NUOVO!)
+                regenerateActiveCharts();
+                
                 const duration = Date.now() - startTime;
-                console.log(`✅ Aggiornamento dati completato in ${duration}ms`);
+                console.log(`✅ Ciclo aggiornamento completo terminato in ${duration}ms`);
+                
                 STATE.updateStats.lastSuccess = new Date();
                 updateLastUpdate();
+                
             } catch (error) {
                 console.error('❌ Errore nel ciclo di aggiornamento dati:', error);
                 showUpdateError('dati');
             } finally {
                 STATE.isUpdating.data = false;
+                
                 let nextInterval = CONFIG.intervals.dataUpdate;
                 if (STATE.updateStats.consecutiveErrors >= 3) {
                     nextInterval = Math.min(nextInterval * 2, 600000);
                     console.warn(`⚠️ Troppi errori consecutivi, intervallo aumentato a ${nextInterval/1000}s`);
                 }
+                
                 STATE.updateIntervals.data = setTimeout(runDataUpdateLoop, nextInterval);
             }
         }
@@ -6518,6 +6795,26 @@ function updateSliderUI(index) {
             console.groupEnd(); 
             // Mostra anche visivamente 
             alert(` 📊 STATO SISTEMA AGGIORNAMENTO Ultimo successo: ${STATE.updateStats.lastSuccess || 'Mai'} Errori consecutivi: ${STATE.updateStats.consecutiveErrors} Dati in aggiornamento: ${STATE.isUpdating.data ? 'SÌ' : 'NO'} Previsioni in aggiornamento: ${STATE.isUpdating.forecast ? 'SÌ' : 'NO'} Intervallo dati: ${CONFIG.intervals.dataUpdate/1000}s Intervallo previsioni: ${CONFIG.intervals.forecastUpdate/1000}s `); 
+        };
+
+        /**
+         * Funzione di debug per monitorare lo stato degli aggiornamenti
+         * Usa nella console: window.debugChartUpdates()
+         */
+        window.debugChartUpdates = function() {
+            console.group('📊 Debug Aggiornamenti Grafici');
+            console.log('Ultimo aggiornamento dati storici:', STATE.lastHistoricalUpdate);
+            console.log('Grafici necessitano aggiornamento:', STATE.needsChartUpdate);
+            console.log('Record storici regionali:', STATE.regionHistoryData.length);
+            console.log('Record storici weatherlink:', STATE.weatherlinkHistoryData.length);
+            console.log('Grafici attivi:', {
+                hydroHistory: !!STATE.charts.hydroHistory,
+                rainHistory: !!STATE.charts.rainHistory,
+                windHistory: !!STATE.charts.windHistory,
+                overviewHydro: !!STATE.charts.overviewHydro,
+                overviewRain: !!STATE.charts.overviewRain
+            });
+            console.groupEnd();
         };
     </script>
 </div>
