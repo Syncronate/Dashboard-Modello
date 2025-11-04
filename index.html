@@ -640,54 +640,41 @@
     height: 2px; /* Ridotto */
 }
 
-/* === THUMB WEBKIT - CORRETTO === */
+/* === THUMB WEBKIT - RESO TRASPARENTE === */
 .radar-timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;  /* Ridotto */
-    height: 16px; /* Ridotto */
-    background: white; /* Reso visibile */
-    border-radius: 50%;
-    border: 2px solid #6785bf; /* Aggiunto bordo colorato */
+    width: 16px;
+    height: 16px;
+    background: transparent; /* MODIFICATO */
+    border: none;            /* MODIFICATO */
     cursor: grab;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    box-shadow: none;        /* MODIFICATO */
     transition: transform 0.2s;
-    /* FIX: Calcolo corretto del margine per centrare */
-    margin-top: -7px; /* (2px track - 16px thumb) / 2 */
+    margin-top: -7px; 
     position: relative;
     z-index: 15;
-}
-
-.radar-timeline-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
 }
 
 .radar-timeline-slider::-webkit-slider-thumb:active {
     cursor: grabbing;
-    transform: scale(1.1);
 }
 
-/* === THUMB FIREFOX - CORRETTO === */
+/* === THUMB FIREFOX - RESO TRASPARENTE === */
 .radar-timeline-slider::-moz-range-thumb {
-    width: 16px;  /* Ridotto */
-    height: 16px; /* Ridotto */
-    background: white; /* Reso visibile */
-    border-radius: 50%;
-    border: 2px solid #6785bf; /* Aggiunto bordo colorato */
+    width: 16px;
+    height: 16px;
+    background: transparent; /* MODIFICATO */
+    border: none;            /* MODIFICATO */
     cursor: grab;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    box-shadow: none;        /* MODIFICATO */
     transition: transform 0.2s;
     position: relative;
     z-index: 15;
 }
 
-.radar-timeline-slider::-moz-range-thumb:hover {
-    transform: scale(1.2);
-}
-
 .radar-timeline-slider::-moz-range-thumb:active {
     cursor: grabbing;
-    transform: scale(1.1);
 }
 
 /* === ETICHETTE SOTTO LO SLIDER === */
