@@ -6227,22 +6227,34 @@ function updateSliderUI(index) {
             document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
         }
 
+        async function fetchAllHistoryData() {
+            try {
+                const [regionHistory, weatherlinkHistory] = await Promise.all([
+                    fetchDataWithTimeout(CONFIG.urls.regionHistory),
+                    fetchDataWithTimeout(CONFIG.urls.weatherlinkHistory)
+                ]);
+
+                STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora);
+                STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora);
+
+            } catch (error) {
+                 console.error("Errore nel caricamento dei dati storici:", error);
+                 showToast('Errore nel caricamento dei dati storici', 'error');
+            }
+        }
+
         async function initDashboard() {
             showLoading();
             loadSettings();
 
             try {
-                const [regionHistory, weatherlinkHistory] = await Promise.all([
-                    fetchDataWithTimeout(CONFIG.urls.regionHistory),
-                    fetchDataWithTimeout(CONFIG.urls.weatherlinkHistory),
+                await Promise.all([
+                    fetchAllHistoryData(),
                     fetchForecastData(),
                     fetchForecastDataBettolelle3h(),
                     fetchForecastDataPonteGaribaldi6h(),
                     updateOfficialAlerts()
                 ]);
-
-                STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora);
-                STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora);
 
                 // Now update latest data
                 await updateAllLatestData();
@@ -6254,7 +6266,6 @@ function updateSliderUI(index) {
                 
             } catch (error) {
                 console.error("Errore durante l'inizializzazione:", error);
-                showToast('Errore nel caricamento dei dati storici', 'error');
             } finally {
                 hideLoading();
             }
@@ -6335,11 +6346,12 @@ function updateSliderUI(index) {
             STATE.isUpdating.forecast = true;
             const startTime = Date.now();
             try {
-                console.log('🔄 Inizio aggiornamento previsioni...');
+                console.log('🔄 Inizio aggiornamento previsioni e dati storici...');
                 const results = await Promise.allSettled([
                     executeWithRetry(() => fetchForecastData(), 'previsioni base'),
                     executeWithRetry(() => fetchForecastDataBettolelle3h(), 'previsioni Bettolelle 3h'),
-                    executeWithRetry(() => fetchForecastDataPonteGaribaldi6h(), 'previsioni Ponte Garibaldi 6h')
+                    executeWithRetry(() => fetchForecastDataPonteGaribaldi6h(), 'previsioni Ponte Garibaldi 6h'),
+                    executeWithRetry(() => fetchAllHistoryData(), 'dati storici')
                 ]);
                 const successful = results.filter(r => r.status === 'fulfilled').length;
                 const failed = results.filter(r => r.status === 'rejected').length;
@@ -6350,6 +6362,22 @@ function updateSliderUI(index) {
                 }
                 if (successful === 0) {
                     throw new Error('Tutte le chiamate di previsione sono fallite');
+                }
+
+                // Ridisegna il grafico della sezione attiva, se necessario
+                const activeSection = document.querySelector('.page-section.active');
+                if (activeSection) {
+                    switch(activeSection.id) {
+                        case 'idrometri':
+                            drawHydroHistoryChart();
+                            break;
+                        case 'pluviometri':
+                            drawRainHistoryChart();
+                            break;
+                        case 'anemometri':
+                            drawWindHistoryChart();
+                            break;
+                    }
                 }
             } catch (error) {
                 console.error('❌ Errore nel ciclo di aggiornamento previsioni:', error);
