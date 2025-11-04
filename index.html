@@ -480,10 +480,10 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    width: 420px;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    width: 380px;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
@@ -862,6 +862,43 @@
 .modern-radar-control {
     animation: fadeIn 0.5s ease;
 }
+
+        /* === RADAR TOGGLE CONTROL === */
+        .leaflet-control-radar-toggle a {
+            background-color: var(--medium-bg);
+            border-radius: 4px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .leaflet-control-radar-toggle a .feather-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--text-color);
+        }
+
+        .leaflet-control-radar-toggle a:hover {
+            background-color: var(--light-bg);
+        }
+
+        .leaflet-control-radar-toggle a.active {
+            background-color: var(--primary-color);
+        }
+        
+        .leaflet-control-radar-toggle a.active .feather-icon {
+            color: white;
+        }
+
+        .leaflet-control-radar-toggle a.active:hover {
+            background-color: var(--primary-dark);
+        }
 
         /* === RADAR TOGGLE CONTROL === */
         .leaflet-control-radar-toggle a {
@@ -5670,7 +5707,6 @@ async function updateAllLatestData() {
 
             updateDashboardMapMarkers();
             setupRadarControls(STATE.dashboardMap, 'dashboard');
-            fetchRadarData(STATE.dashboardMap); // Chiamata iniziale per caricare i dati
             STATE.dashboardMap.addControl(new RadarLegendControl({ position: 'bottomleft' }));
         }
 
@@ -5720,7 +5756,6 @@ async function updateAllLatestData() {
 
             updateMapMarkers();
             setupRadarControls(STATE.map, 'main');
-            fetchRadarData(STATE.map); // Chiamata iniziale per caricare i dati
             STATE.map.addControl(new RadarLegendControl({ position: 'bottomleft' }));
         }
         
@@ -5990,14 +6025,48 @@ class ModernRadarController {
         this.speed = 1;
         this.loop = true;
         this.animationFrame = null;
+        this.isRadarVisible = true;
         this.init();
     }
     init() {
         this.createControl();
+        this.createToggleControl();
         this.bindEvents();
         this.fetchRadarData();
         // Auto-refresh ogni 5 minuti
         setInterval(() => this.fetchRadarData(), 5 * 60 * 1000);
+    }
+    createToggleControl() {
+        const RadarToggleControl = L.Control.extend({
+            onAdd: (map) => {
+                const container = L.DomUtil.create('div', 'leaflet-control-radar-toggle leaflet-bar');
+                this.toggleButton = L.DomUtil.create('a', 'active', container);
+                this.toggleButton.href = '#';
+                this.toggleButton.title = 'Mostra/Nascondi Radar';
+                this.toggleButton.innerHTML = `<i data-feather="layers" class="feather-icon"></i>`;
+                
+                L.DomEvent.on(this.toggleButton, 'click', L.DomEvent.stop).on(this.toggleButton, 'click', () => {
+                    this.isRadarVisible = !this.isRadarVisible;
+                    
+                    if (this.isRadarVisible) {
+                        L.DomUtil.addClass(this.toggleButton, 'active');
+                        this.showFrame(this.currentIndex);
+                    } else {
+                        L.DomUtil.removeClass(this.toggleButton, 'active');
+                        this.stopAnimation();
+                        this.layers.forEach(layer => {
+                            if (this.map.hasLayer(layer)) {
+                                this.map.removeLayer(layer);
+                            }
+                        });
+                    }
+                });
+                
+                setTimeout(() => feather.replace(), 0);
+                return container;
+            }
+        });
+        this.map.addControl(new RadarToggleControl({ position: 'topleft' }));
     }
     createControl() {
         const RadarControl = L.Control.extend({
@@ -6137,9 +6206,14 @@ class ModernRadarController {
         if (this.layers[this.currentIndex]) {
             this.map.removeLayer(this.layers[this.currentIndex]);
         }
-        // Mostra nuovo frame
+        
         this.currentIndex = index;
-        this.layers[index].addTo(this.map).setOpacity(0.8);
+        
+        if (this.isRadarVisible) {
+            // Mostra nuovo frame solo se il radar è visibile
+            this.layers[index].addTo(this.map).setOpacity(0.8);
+        }
+        
         this.updateUI();
     }
     updateUI() {
@@ -6736,13 +6810,7 @@ function setupRadarControls(mapInstance, prefix) {
                 // FASE 1: Aggiorna dati real-time
                 await Promise.all([
                     executeWithRetry(() => updateAllLatestData(), 'aggiornamento dati sensori'),
-                    executeWithRetry(() => updateOfficialAlerts(), 'aggiornamento allerte ufficiali'),
-                    executeWithRetry(() => {
-                        const radarPromises = [];
-                        if (STATE.map) radarPromises.push(fetchRadarData(STATE.map));
-                        if (STATE.dashboardMap) radarPromises.push(fetchRadarData(STATE.dashboardMap));
-                        return Promise.all(radarPromises);
-                    }, 'aggiornamento dati radar')
+                    executeWithRetry(() => updateOfficialAlerts(), 'aggiornamento allerte ufficiali')
                 ]);
                 
                 // FASE 2: Aggiorna dati storici (NUOVO!)
