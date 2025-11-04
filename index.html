@@ -474,19 +474,19 @@
             color: white !important;
         }
 
-/* === STILI DEL CONTROLLO RADAR MIGLIORATI === */
+/* === STILI DEL CONTROLLO RADAR MIGLIORATI (VERSIONE COMPATTA) === */
 
 .leaflet-control-radar {
     background: rgba(30, 30, 30, 0.85);
     backdrop-filter: blur(5px);
-    border-radius: 10px;
-    padding: 8px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    border-radius: 8px; /* Leggermente più piccolo */
+    padding: 6px;      /* Ridotto */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Sottile */
     border: 1px solid #333;
     display: flex;
     align-items: center;
-    gap: 10px;
-    width: 350px;
+    gap: 8px;          /* Ridotto */
+    width: 280px;      /* Ridotta la larghezza totale */
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -496,11 +496,11 @@
     background: #2c2c2c;
     border: 1px solid #333;
     color: #e0e0e0;
-    width: 40px;
-    height: 40px;
+    width: 32px;       /* Ridotto */
+    height: 32px;      /* Ridotto */
     border-radius: 50%;
     cursor: pointer;
-    font-size: 1.5em;
+    font-size: 1.2em;  /* Ridotto */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -519,7 +519,7 @@
 .radar-timeline-container {
     flex-grow: 1;
     position: relative;
-    padding-top: 30px;
+    padding-top: 25px; /* Ridotto */
 }
 
 /* === ETICHETTA ORARIO (usa classe invece di ID) === */
@@ -530,13 +530,13 @@
     transform: translateX(-50%);
     background: #6785bf;
     color: white;
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 0.8em;
+    padding: 3px 8px; /* Ridotto */
+    border-radius: 4px;
+    font-size: 0.75em; /* Ridotto */
     font-weight: bold;
     white-space: nowrap;
     transition: left 0.1s linear;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     z-index: 20;
 }
 
@@ -549,17 +549,17 @@
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-    border-top: 5px solid #6785bf;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #6785bf;
 }
 
 /* === WRAPPER SLIDER === */
 .radar-slider-wrapper {
     position: relative;
     width: 100%;
-    height: 20px; /* Aumentato per contenere il thumb */
-    margin-bottom: 8px;
+    height: 16px; /* Ridotto per contenere il thumb più piccolo */
+    margin-bottom: 6px; /* Ridotto */
     display: flex;
     align-items: center;
 }
@@ -571,7 +571,7 @@
     transform: translateY(-50%);
     left: 0;
     width: 100%;
-    height: 4px;
+    height: 2px; /* Ridotto spessore della barra cliccabile */
     margin: 0 !important;
     padding: 0 !important;
 }
@@ -580,9 +580,9 @@
 .radar-slider-track {
     position: absolute;
     width: 100%;
-    height: 4px;
+    height: 2px; /* Ridotto lo spessore della barra visibile */
     background: #121212;
-    border-radius: 5px;
+    border-radius: 3px;
     overflow: hidden;
     z-index: 1;
 }
@@ -593,7 +593,7 @@
     height: 100%;
     background: #6785bf;
     width: 50%;
-    border-radius: 5px 0 0 5px;
+    border-radius: 3px 0 0 3px;
     transition: width 0.1s linear;
     z-index: 2;
 }
@@ -605,7 +605,7 @@
     height: 100%;
     background: #ffffff;
     width: 50%;
-    border-radius: 0 5px 5px 0;
+    border-radius: 0 3px 3px 0;
     transition: width 0.1s linear;
     z-index: 2;
 }
@@ -615,9 +615,9 @@
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    height: 4px;
+    height: 2px; /* Ridotto */
     background: transparent !important;
-    border-radius: 5px;
+    border-radius: 3px;
     outline: none;
     cursor: pointer;
     position: relative;
@@ -630,30 +630,30 @@
 .radar-timeline-slider::-webkit-slider-runnable-track {
     background: transparent;
     border: none;
-    height: 4px;
+    height: 2px; /* Ridotto */
 }
 
 /* Traccia trasparente Firefox */
 .radar-timeline-slider::-moz-range-track {
     background: transparent;
     border: none;
-    height: 4px;
+    height: 2px; /* Ridotto */
 }
 
 /* === THUMB WEBKIT - CORRETTO === */
 .radar-timeline-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;  /* Aumentato per migliore visibilità */
-    height: 20px;
-    background: transparent;
+    width: 16px;  /* Ridotto */
+    height: 16px; /* Ridotto */
+    background: white; /* Reso visibile */
     border-radius: 50%;
-    border: 3px solid transparent;
+    border: 2px solid #6785bf; /* Aggiunto bordo colorato */
     cursor: grab;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     transition: transform 0.2s;
     /* FIX: Calcolo corretto del margine per centrare */
-    margin-top: -8px;
+    margin-top: -7px; /* (2px track - 16px thumb) / 2 */
     position: relative;
     z-index: 15;
 }
@@ -669,15 +669,14 @@
 
 /* === THUMB FIREFOX - CORRETTO === */
 .radar-timeline-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: transparent;
+    width: 16px;  /* Ridotto */
+    height: 16px; /* Ridotto */
+    background: white; /* Reso visibile */
     border-radius: 50%;
-    border: 3px solid transparent;
+    border: 2px solid #6785bf; /* Aggiunto bordo colorato */
     cursor: grab;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     transition: transform 0.2s;
-    /* Firefox gestisce automaticamente il centraggio, ma assicuriamoci */
     position: relative;
     z-index: 15;
 }
@@ -695,10 +694,10 @@
 .radar-timeline-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 0.75em;
+    font-size: 0.7em; /* Ridotto */
     color: #999;
     margin: 0;
-    padding: 0 9px;
+    padding: 0 5px; /* Ridotto */
 }
 
 .radar-timeline-labels span {
