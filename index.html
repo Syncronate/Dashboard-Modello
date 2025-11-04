@@ -3562,6 +3562,8 @@ passwordInput.focus();
             regionLatestData: null,
             weatherlinkLatestData: null,
             forecastData: [],
+            forecastDataBettolelle3h: [],
+            forecastDataPonteGaribaldi6h: [],
             map: null,
             dashboardMap: null,
             mapMarkers: {},
@@ -3987,7 +3989,61 @@ passwordInput.focus();
                     }
                 }
             }
+   // Analisi Previsione Bettolelle 3h
+    if (STATE.forecastDataBettolelle3h && STATE.forecastDataBettolelle3h.length > 0) {
+        let maxPredictedLevel3h = -Infinity;
+        let peakTimestamp3h = null;
+        const forecastColumn3h = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)';
 
+        STATE.forecastDataBettolelle3h.forEach(record => {
+            const level = parseAndFixDecimal(record[forecastColumn3h]);
+            if (!isNaN(level) && level > maxPredictedLevel3h) {
+                maxPredictedLevel3h = level;
+                peakTimestamp3h = record['Timestamp Previsione'];
+            }
+        });
+
+        if (maxPredictedLevel3h > -Infinity) {
+            const forecastLevel = getAlertLevel(maxPredictedLevel3h, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+            if (forecastLevel !== 'normal') {
+                STATE.alerts.push({
+                    type: 'hydro-forecast',
+                    level: forecastLevel,
+                    station: 'Misa (Bettolelle) - Previsione 3h',
+                    value: maxPredictedLevel3h,
+                    message: `PREVISIONE 3h DI ${forecastLevel === 'critical' ? 'CRITICITÀ' : 'ATTENZIONE'}: Previsto picco di ${maxPredictedLevel3h.toFixed(2)} m intorno alle ore ${peakTimestamp3h}`
+                });
+            }
+        }
+    }
+
+    // Analisi Previsione Ponte Garibaldi 6h
+    if (STATE.forecastDataPonteGaribaldi6h && STATE.forecastDataPonteGaribaldi6h.length > 0) {
+        let maxPredictedLevel6h = -Infinity;
+        let peakTimestamp6h = null;
+        const forecastColumn6h = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)';
+
+        STATE.forecastDataPonteGaribaldi6h.forEach(record => {
+            const level = parseAndFixDecimal(record[forecastColumn6h]);
+            if (!isNaN(level) && level > maxPredictedLevel6h) {
+                maxPredictedLevel6h = level;
+                peakTimestamp6h = record['Timestamp Previsione'];
+            }
+        });
+
+        if (maxPredictedLevel6h > -Infinity) {
+            const forecastLevel = getAlertLevel(maxPredictedLevel6h, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+            if (forecastLevel !== 'normal') {
+                STATE.alerts.push({
+                    type: 'hydro-forecast',
+                    level: forecastLevel,
+                    station: 'Misa (Ponte Garibaldi) - Previsione 6h',
+                    value: maxPredictedLevel6h,
+                    message: `PREVISIONE 6h DI ${forecastLevel === 'critical' ? 'CRITICITÀ' : 'ATTENZIONE'}: Previsto picco di ${maxPredictedLevel6h.toFixed(2)} m intorno alle ore ${peakTimestamp6h}`
+                });
+            }
+        }
+    }
             updateAlertsDisplay();
         }
 
@@ -4821,6 +4877,7 @@ async function updateAllLatestData() {
             try {
                 const data = await fetchDataWithTimeout(CONFIG.urls.forecastBettolelle3h);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
+                STATE.forecastDataBettolelle3h = filteredData;
                 const labels = filteredData.map(row => row['Timestamp Previsione']);
                 const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
                 const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
@@ -4939,6 +4996,7 @@ async function updateAllLatestData() {
             try {
                 const data = await fetchDataWithTimeout(CONFIG.urls.forecastPonteGaribaldi6h);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
+                STATE.forecastDataPonteGaribaldi6h = filteredData;
                 const labels = filteredData.map(row => row['Timestamp Previsione']);
                 const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q10)']));
                 const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)']));
