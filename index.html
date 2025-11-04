@@ -3135,7 +3135,7 @@ max-width: 400px;
                         <li>Serra dei Conti - Livello Misa</li>
                         <li>Pianello di Ostra - Livello Misa</li>
                         <li>Corinaldo/Nevola - Livello Nevola</li>
-                        <li>Bettolelle - Livello Misa</li>
+                        <li>Misa (Bettolelle) - Livello Misa</li>
                         <li>Ponte Garibaldi - Livello Misa 2</li>
                         <li>Passo Ripe - Livello Nevola</li>
                         <li>Foce Cesano - Livello Cesano</li>
@@ -3203,18 +3203,6 @@ max-width: 400px;
                 <button class="modal-close" id="close-settings-modal">×</button>
             </div>
             <div class="modal-body">
-                <div class="settings-group">
-                    <h4>🌊 Soglie Idrometriche</h4>
-                    <div class="settings-item">
-                        <span>Allerta (m):</span>
-                        <input type="number" id="threshold-hydro-warning" step="0.1" min="0">
-                    </div>
-                    <div class="settings-item">
-                        <span>Critica (m):</span>
-                        <input type="number" id="threshold-hydro-critical" step="0.1" min="0">
-                    </div>
-                </div>
-
                 <div class="settings-group">
                     <h4>🌧️ Soglie Pluviometriche</h4>
                     <div class="settings-item">
@@ -3540,8 +3528,18 @@ passwordInput.focus();
                 chartColors: ['#00bcd4', '#ffc107', '#9c27b0', '#f44336', '#4caf50', '#ff9800', '#3f51b5', '#e91e63']
             },
             thresholds: {
-                hydroWarning: 2.0,      // metri
-                hydroCritical: 3.0,     // metri
+                hydroWarning: 2.0,      // metri - DEPRECATED
+                hydroCritical: 3.0,     // metri - DEPRECATED
+                hydroThresholds: {
+                    'Serra dei Conti': { warning: 1.2, critical: 1.7 },
+                    'Pianello di Ostra': { warning: 1.5, critical: 2.0 },
+                    'Nevola': { warning: 2.0, critical: 2.5 },
+                    'Passo Ripe': { warning: 1.0, critical: 1.2 },
+                    'Misa (Bettolelle)': { warning: 1.7, critical: 2.0 },
+                    'Ponte Garibaldi': { warning: 1.5, critical: 2.2 },
+                    'Cesano': { warning: 0.5, critical: 1.0 },
+                    'Foce Cesano': { warning: 1.0, critical: 1.5 }
+                },
                 rainWarning: 20,        // mm/h
                 rainCritical: 40,       // mm/h
                 windWarning: 40,        // km/h
@@ -3892,18 +3890,19 @@ passwordInput.focus();
             // Check hydro levels
             const hydroStations = [
                 { name: 'Misa (Bettolelle)', value: parseAndFixDecimal(region['Misa - Livello Misa (mt)']) },
-                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) }, // Corretto
+                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
                 { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
                 { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
                 { name: 'Foce Cesano', value: parseAndFixDecimal(region['Foce Cesano - Livello Cesano (mt)']) },
                 { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
-                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) }, // Corretto
-                { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
+                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
+                { name: 'Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
             ];
 
             hydroStations.forEach(station => {
                 if (isNaN(station.value)) return;
-                const level = getAlertLevel(station.value, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+                const thresholds = CONFIG.thresholds.hydroThresholds[station.name] || { warning: 99, critical: 999 };
+                const level = getAlertLevel(station.value, thresholds.warning, thresholds.critical);
                 if (level !== 'normal') {
                     STATE.alerts.push({
                         type: 'hydro',
@@ -3977,7 +3976,8 @@ passwordInput.focus();
                 });
 
                 if (maxPredictedLevel > -Infinity) {
-                    const forecastLevel = getAlertLevel(maxPredictedLevel, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+                    const thresholds = CONFIG.thresholds.hydroThresholds['Misa (Bettolelle)'];
+                    const forecastLevel = getAlertLevel(maxPredictedLevel, thresholds.warning, thresholds.critical);
                     if (forecastLevel !== 'normal') {
                         STATE.alerts.push({
                             type: 'hydro-forecast',
@@ -4004,7 +4004,8 @@ passwordInput.focus();
         });
 
         if (maxPredictedLevel3h > -Infinity) {
-            const forecastLevel = getAlertLevel(maxPredictedLevel3h, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+            const thresholds = CONFIG.thresholds.hydroThresholds['Misa (Bettolelle)'];
+            const forecastLevel = getAlertLevel(maxPredictedLevel3h, thresholds.warning, thresholds.critical);
             if (forecastLevel !== 'normal') {
                 STATE.alerts.push({
                     type: 'hydro-forecast',
@@ -4032,7 +4033,8 @@ passwordInput.focus();
         });
 
         if (maxPredictedLevel6h > -Infinity) {
-            const forecastLevel = getAlertLevel(maxPredictedLevel6h, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+            const thresholds = CONFIG.thresholds.hydroThresholds['Ponte Garibaldi'];
+            const forecastLevel = getAlertLevel(maxPredictedLevel6h, thresholds.warning, thresholds.critical);
             if (forecastLevel !== 'normal') {
                 STATE.alerts.push({
                     type: 'hydro-forecast',
@@ -4362,13 +4364,13 @@ async function updateAllLatestData() {
             
             const hydroStations = [
                 { name: 'Misa (Bettolelle)', value: parseAndFixDecimal(region['Misa - Livello Misa (mt)']) },
-                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) }, // Corretto
+                { name: 'Pianello di Ostra', value: parseAndFixDecimal(region['Pianello di Ostra - Livello Misa (mt)']) },
                 { name: 'Ponte Garibaldi', value: parseAndFixDecimal(region['Ponte Garibaldi - Livello Misa 2 (mt)']) },
                 { name: 'Serra dei Conti', value: parseAndFixDecimal(region['Serra dei Conti - Livello Misa (mt)']) },
                 { name: 'Foce Cesano', value: parseAndFixDecimal(region['Foce Cesano - Livello Cesano (mt)']) },
                 { name: 'Cesano', value: parseAndFixDecimal(region['Cesano - Livello Cesano (mt)']) },
-                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) }, // Corretto
-                { name: 'Corinaldo/Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
+                { name: 'Passo Ripe', value: parseAndFixDecimal(region['Passo Ripe - Livello Nevola (mt)']) },
+                { name: 'Nevola', value: parseAndFixDecimal(region['Nevola - Livello Nevola (mt)']) }
             ];
             const validHydro = hydroStations.filter(s => !isNaN(s.value));
             const maxHydroStation = validHydro.length > 0 ? validHydro.reduce((max, s) => s.value > max.value ? s : max) : { value: NaN, name: '--'};
@@ -4381,7 +4383,8 @@ async function updateAllLatestData() {
                 
                 if (!isNaN(maxHydroStation.value)) {
                     valueEl.innerHTML = `${maxHydroStation.value.toFixed(2)}<span class="quick-stat-unit">m</span>`;
-                    const level = getAlertLevel(maxHydroStation.value, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+                    const thresholds = CONFIG.thresholds.hydroThresholds[maxHydroStation.name] || { warning: 99, critical: 999 };
+                    const level = getAlertLevel(maxHydroStation.value, thresholds.warning, thresholds.critical);
                     badgeEl.className = `alert-badge ${level}`;
                     badgeEl.textContent = level.toUpperCase();
                     trendEl.textContent = `Stazione: ${maxHydroStation.name}`;
@@ -5291,7 +5294,8 @@ async function updateAllLatestData() {
                 // Determina il valore da visualizzare e il livello di allerta
                 if (station.displayValue === 'hydro_level' && station.keys.level) {
                     displayValue = parseAndFixDecimal(sourceData[station.keys.level]);
-                    alertLevel = getAlertLevel(displayValue, CONFIG.thresholds.hydroWarning, CONFIG.thresholds.hydroCritical);
+                    const thresholds = CONFIG.thresholds.hydroThresholds[station.name] || { warning: 99, critical: 999 };
+                    alertLevel = getAlertLevel(displayValue, thresholds.warning, thresholds.critical);
                     valueStr = isNaN(displayValue) ? 'N/D' : displayValue.toFixed(2);
                 } else if (station.displayValue === 'rain_intensity') {
                     if (station.keys.intensity_min) {
@@ -5403,7 +5407,7 @@ async function updateAllLatestData() {
             return [
                 // Stazioni unificate con marker a cerchio
                 { 
-                    name: 'Bettolelle', lat: 43.66250, lon: 13.16472, type: 'circle', section: 'idrometri', 
+                    name: 'Misa (Bettolelle)', lat: 43.66250, lon: 13.16472, type: 'circle', section: 'idrometri', 
                     displayValue: 'hydro_level', // Mostra il livello idrometrico nel cerchio
                     keys: {
                         level: 'Misa - Livello Misa (mt)',
@@ -5483,7 +5487,7 @@ async function updateAllLatestData() {
                     keys: { level: 'Pianello di Ostra - Livello Misa (mt)', source: 'region' } 
                 },
                 { 
-                    name: 'Corinaldo/Nevola', lat: 43.63833, lon: 13.07667, type: 'circle', section: 'idrometri', 
+                    name: 'Nevola', lat: 43.63833, lon: 13.07667, type: 'circle', section: 'idrometri', 
                     displayValue: 'hydro_level',
                     keys: { level: 'Nevola - Livello Nevola (mt)', source: 'region' } 
                 },
@@ -6160,42 +6164,47 @@ function updateSliderUI(index) {
         }
 
         // ==================== SETTINGS ====================
-        function saveSettings() { 
-            const newConfig = { 
-                // ... configurazione esistente ... 
-                intervals: { 
-                    dataUpdate: parseInt(document.getElementById('update-interval-data').value) * 1000, 
-                    forecastUpdate: parseInt(document.getElementById('update-interval-forecast').value) * 1000 
-                }, 
-                // NUOVO: Salva impostazioni avanzate 
-                advanced: { 
-                    fetchTimeout: parseInt(document.getElementById('fetch-timeout').value) * 1000, 
-                    maxRetries: parseInt(document.getElementById('max-retries').value), 
-                    retryDelay: 2000, 
-                    preventOverlap: document.getElementById('prevent-overlap').checked 
-                } 
-            }; 
-            CONFIG.intervals = newConfig.intervals; 
-            CONFIG.advanced = newConfig.advanced; 
+        function saveSettings() {
+            const thresholdsToSave = {
+                rainWarning: parseFloat(document.getElementById('threshold-rain-warning').value),
+                rainCritical: parseFloat(document.getElementById('threshold-rain-critical').value),
+                windWarning: parseFloat(document.getElementById('threshold-wind-warning').value),
+                windCritical: parseFloat(document.getElementById('threshold-wind-critical').value)
+            };
+
+            const newConfig = {
+                thresholds: { ...CONFIG.thresholds, ...thresholdsToSave },
+                intervals: {
+                    dataUpdate: parseInt(document.getElementById('update-interval-data').value) * 1000,
+                    forecastUpdate: parseInt(document.getElementById('update-interval-forecast').value) * 1000
+                },
+                advanced: {
+                    fetchTimeout: parseInt(document.getElementById('fetch-timeout').value) * 1000,
+                    maxRetries: parseInt(document.getElementById('max-retries').value),
+                    retryDelay: 2000,
+                    preventOverlap: document.getElementById('prevent-overlap').checked
+                }
+            };
+            
+            CONFIG = { ...CONFIG, ...newConfig };
+            
             localStorage.setItem('meteoConfig', JSON.stringify(newConfig));
-            // Chiudi il modal
             document.getElementById('settings-modal').classList.remove('active');
-            // Riavvia con le nuove impostazioni
             startAutoRefresh();
-            // Feedback 
-            showToast('✅ Impostazioni salvate e applicate!'); 
+            showToast('✅ Impostazioni salvate e applicate!');
         }
 
         function loadSettings() {
             const savedConfig = localStorage.getItem('meteoConfig');
             if (savedConfig) {
                 const parsedConfig = JSON.parse(savedConfig);
-                CONFIG.thresholds = parsedConfig.thresholds;
-                CONFIG.intervals = parsedConfig.intervals;
+                // Unisci le configurazioni salvate a quelle di default
+                CONFIG.thresholds = { ...CONFIG.thresholds, ...parsedConfig.thresholds };
+                CONFIG.intervals = { ...CONFIG.intervals, ...parsedConfig.intervals };
+                CONFIG.advanced = { ...CONFIG.advanced, ...parsedConfig.advanced };
             }
             
-            document.getElementById('threshold-hydro-warning').value = CONFIG.thresholds.hydroWarning;
-            document.getElementById('threshold-hydro-critical').value = CONFIG.thresholds.hydroCritical;
+            // Rimuovi le righe per le soglie idro, che non esistono più
             document.getElementById('threshold-rain-warning').value = CONFIG.thresholds.rainWarning;
             document.getElementById('threshold-rain-critical').value = CONFIG.thresholds.rainCritical;
             document.getElementById('threshold-wind-warning').value = CONFIG.thresholds.windWarning;
