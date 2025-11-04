@@ -3111,6 +3111,24 @@ max-width: 400px;
                         </tbody>
                     </table>
                 </div>
+
+                <div class="card">
+                    <h3 style="color: var(--primary-color); margin-top: 0;">🌧️ Statistiche Pluviometri (Ultime 24h)</h3>
+                    <table class="stats-table" id="rain-stats-table">
+                        <thead>
+                            <tr>
+                                <th>Stazione</th>
+                                <th>Minimo (mm)</th>
+                                <th>Massimo (mm)</th>
+                                <th>Media (mm)</th>
+                                <th>Totale (mm)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Caricamento dati...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
         
@@ -5135,6 +5153,7 @@ async function updateAllLatestData() {
             
             updateHydroStatsTable(recentRegion);
             updateWindStatsTable(recentWeather);
+            updateRainStatsTable(recentRegion, recentWeather);
         }
 
         function updateHydroStatsTable(data) {
@@ -5182,6 +5201,39 @@ async function updateAllLatestData() {
                 
                 const row = tbody.insertRow();
                 row.innerHTML = `<td>${station}</td><td>${avgSpeed} km/h</td><td>${maxGust} km/h</td><td>N/D</td>`;
+            });
+        }
+
+        function updateRainStatsTable(regionData, weatherlinkData) {
+            const tbody = document.querySelector('#rain-stats-table tbody');
+            if (!tbody) return;
+
+            const stations = [
+                { name: 'Arcevia', col: 'Arcevia - Pioggia TOT Oggi (mm)', source: regionData },
+                { name: 'Barbara', col: 'Barbara - Pioggia TOT Oggi (mm)', source: regionData },
+                { name: 'Corinaldo', col: 'Corinaldo - Pioggia TOT Oggi (mm)', source: regionData },
+                { name: 'Misa', col: 'Misa - Pioggia TOT Oggi (mm)', source: regionData },
+                { name: 'Senigallia', col: 'Senigallia - Pioggia TOT Oggi (mm)', source: regionData },
+                { name: 'Montignano', col: 'Montignano - Pioggia Giornaliera (mm)', source: weatherlinkData },
+                { name: 'Sant\'Angelo', col: 'Sant\'Angelo - Pioggia Giornaliera (mm)', source: weatherlinkData },
+                { name: 'Scapezzano', col: 'Scapezzano - Pioggia Giornaliera (mm)', source: weatherlinkData }
+            ];
+
+            tbody.innerHTML = '';
+            stations.forEach(station => {
+                const values = station.source.map(r => parseAndFixDecimal(r[station.col])).filter(v => !isNaN(v));
+                if (values.length === 0) return;
+
+                const stats = calculateStats(values);
+                
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${station.name}</td>
+                    <td>${stats.min.toFixed(2)}</td>
+                    <td>${stats.max.toFixed(2)}</td>
+                    <td>${stats.avg.toFixed(2)}</td>
+                    <td>${stats.sum.toFixed(2)}</td>
+                `;
             });
         }
         
