@@ -4538,6 +4538,7 @@ async function updateAllLatestData() {
          */
         function regenerateAllCharts() {
             console.log('📊 Rigenerazione completa di tutti i grafici...');
+            STATE.needsChartUpdate = false;
             
             // Overview
             drawOverviewCharts();
