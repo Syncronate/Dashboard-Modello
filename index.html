@@ -24,6 +24,17 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .light-mode {
+            --dark-bg: #f5f5f5;
+            --medium-bg: #ffffff;
+            --light-bg: #e0e0e0;
+            --text-color: #212121;
+            --text-muted: #616161;
+            --border-color: #bdbdbd;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
         * { box-sizing: border-box; }
         
         body {
@@ -1867,6 +1878,53 @@
             padding: 5px 10px;
             border-radius: 6px;
         }
+        /* Switch styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        .slider.round {
+            border-radius: 34px;
+        }
+        .slider.round:before {
+            border-radius: 50%;
+        }
 /* === LOGIN STYLES === */
 #login-overlay {
 position: fixed;
@@ -3261,6 +3319,21 @@ max-width: 400px;
                     <div class="settings-item">
                         <span>Critica (km/h):</span>
                         <input type="number" id="threshold-wind-critical" step="5" min="0">
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h4>🎨 Personalizzazione Tema</h4>
+                    <div class="settings-item">
+                        <label for="theme-toggle">Modalità Scura</label>
+                        <label class="switch">
+                            <input type="checkbox" id="theme-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item">
+                        <label for="primary-color-picker">Colore Primario</label>
+                        <input type="color" id="primary-color-picker">
                     </div>
                 </div>
 
@@ -6447,9 +6520,38 @@ function updateSliderUI(index) {
             CONFIG = { ...CONFIG, ...newConfig };
             
             localStorage.setItem('meteoConfig', JSON.stringify(newConfig));
+            
+            // Save theme settings
+            const isDarkMode = document.getElementById('theme-toggle').checked;
+            const primaryColor = document.getElementById('primary-color-picker').value;
+            
+            localStorage.setItem('theme', JSON.stringify({
+                darkMode: isDarkMode,
+                primaryColor: primaryColor
+            }));
+            
+            applyTheme();
+            
             document.getElementById('settings-modal').classList.remove('active');
             startAutoRefresh();
             showToast('✅ Impostazioni salvate e applicate!');
+        }
+
+        function applyTheme() {
+            const savedTheme = JSON.parse(localStorage.getItem('theme'));
+            
+            if (savedTheme) {
+                document.body.classList.toggle('light-mode', !savedTheme.darkMode);
+                document.documentElement.style.setProperty('--primary-color', savedTheme.primaryColor);
+                
+                // Update controls
+                document.getElementById('theme-toggle').checked = savedTheme.darkMode;
+                document.getElementById('primary-color-picker').value = savedTheme.primaryColor;
+            } else {
+                // Default theme
+                document.getElementById('theme-toggle').checked = true;
+                document.getElementById('primary-color-picker').value = '#6785bf';
+            }
         }
 
         function loadSettings() {
@@ -6469,6 +6571,8 @@ function updateSliderUI(index) {
             document.getElementById('threshold-wind-critical').value = CONFIG.thresholds.windCritical;
             document.getElementById('update-interval-data').value = CONFIG.intervals.dataUpdate / 1000;
             document.getElementById('update-interval-forecast').value = CONFIG.intervals.forecastUpdate / 1000;
+            
+            applyTheme();
         }
 
         // ==================== INITIALIZATION ====================
@@ -6483,6 +6587,15 @@ function updateSliderUI(index) {
             });
 
             document.getElementById('save-settings-btn').addEventListener('click', saveSettings);
+            
+            // Theme event listeners
+            document.getElementById('theme-toggle').addEventListener('change', (e) => {
+                document.body.classList.toggle('light-mode', !e.target.checked);
+            });
+            
+            document.getElementById('primary-color-picker').addEventListener('input', (e) => {
+                document.documentElement.style.setProperty('--primary-color', e.target.value);
+            });
         }
 
         async function initDashboard() {
