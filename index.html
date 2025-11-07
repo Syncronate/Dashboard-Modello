@@ -3309,6 +3309,13 @@ max-width: 400px;
                 </div>
 
                 <div class="settings-group">
+                    <h4>💧 Soglie Idrometriche</h4>
+                    <div id="hydro-thresholds-settings">
+                        <!-- Le soglie verranno popolate dinamicamente qui -->
+                    </div>
+                </div>
+
+                <div class="settings-group">
                     <h4>🎨 Personalizzazione Tema</h4>
                     <div class="settings-item">
                         <label for="theme-toggle">Modalità Scura</label>
@@ -6489,8 +6496,18 @@ function updateSliderUI(index) {
                 windCritical: parseFloat(document.getElementById('threshold-wind-critical').value)
             };
 
+            const hydroThresholds = {};
+            document.querySelectorAll('#hydro-thresholds-settings input[data-station]').forEach(input => {
+                const station = input.dataset.station;
+                const level = input.dataset.level;
+                if (!hydroThresholds[station]) {
+                    hydroThresholds[station] = { ...CONFIG.thresholds.hydroThresholds[station] };
+                }
+                hydroThresholds[station][level] = parseFloat(input.value);
+            });
+
             const newConfig = {
-                thresholds: { ...CONFIG.thresholds, ...thresholdsToSave },
+                thresholds: { ...CONFIG.thresholds, ...thresholdsToSave, hydroThresholds },
                 intervals: {
                     dataUpdate: parseInt(document.getElementById('update-interval-data').value) * 1000,
                     forecastUpdate: parseInt(document.getElementById('update-interval-forecast').value) * 1000
@@ -6557,6 +6574,22 @@ function updateSliderUI(index) {
             document.getElementById('threshold-wind-critical').value = CONFIG.thresholds.windCritical;
             document.getElementById('update-interval-data').value = CONFIG.intervals.dataUpdate / 1000;
             document.getElementById('update-interval-forecast').value = CONFIG.intervals.forecastUpdate / 1000;
+
+            const hydroContainer = document.getElementById('hydro-thresholds-settings');
+            hydroContainer.innerHTML = '';
+            for (const station in CONFIG.thresholds.hydroThresholds) {
+                const thresholds = CONFIG.thresholds.hydroThresholds[station];
+                const stationDiv = document.createElement('div');
+                stationDiv.className = 'settings-item';
+                stationDiv.innerHTML = `
+                    <span>${station} (m):</span>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" data-station="${station}" data-level="warning" value="${thresholds.warning}" step="0.1" placeholder="Allerta">
+                        <input type="number" data-station="${station}" data-level="critical" value="${thresholds.critical}" step="0.1" placeholder="Critica">
+                    </div>
+                `;
+                hydroContainer.appendChild(stationDiv);
+            }
             
             applyTheme();
         }
