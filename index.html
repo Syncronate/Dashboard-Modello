@@ -3563,36 +3563,6 @@ passwordInput.focus();
         };
 
         // Cattura errori globali
-        // Aggiungi un semplice sistema di cache
-        const API_CACHE = {
-            data: new Map(),
-            TTL: 60000 // 1 minuto
-        };
-
-        async function fetchDataWithCache(url, timeout = CONFIG.advanced.fetchTimeout) {
-            const cacheKey = url;
-            const cached = API_CACHE.data.get(cacheKey);
-            
-            if (cached && Date.now() - cached.timestamp < API_CACHE.TTL) {
-                console.log('📦 Dati recuperati dalla cache:', url);
-                return cached.data;
-            }
-            
-            const data = await fetchDataWithTimeout(url, timeout);
-            
-            API_CACHE.data.set(cacheKey, {
-                data: data,
-                timestamp: Date.now()
-            });
-            
-            // Limita dimensione cache
-            if (API_CACHE.data.size > 50) {
-                const firstKey = API_CACHE.data.keys().next().value;
-                API_CACHE.data.delete(firstKey);
-            }
-            
-            return data;
-        }
         window.addEventListener('error', (e) => {
             LOG.error('Uncaught error', {
                 message: e.message,
@@ -3708,11 +3678,6 @@ passwordInput.focus();
         };
 
         // ==================== GLOBAL STATE ====================
-        const UPDATE_LOCKS = {
-            historical: false,
-            forecast: false
-        };
-
         const STATE = {
             regionHistoryData: [],
             weatherlinkHistoryData: [],
@@ -4270,8 +4235,8 @@ passwordInput.focus();
             try {
                 console.log('Fetching official alerts data...');
                 const [todayData, tomorrowData] = await Promise.all([
-                    fetchDataWithCache(CONFIG.urls.alertsToday),
-                    fetchDataWithCache(CONFIG.urls.alertsTomorrow)
+                    fetchDataWithTimeout(CONFIG.urls.alertsToday),
+                    fetchDataWithTimeout(CONFIG.urls.alertsTomorrow)
                 ]);
 
                 console.log('Official alerts data fetched:', { today: todayData?.length, tomorrow: tomorrowData?.length });
@@ -4460,8 +4425,8 @@ async function updateAllLatestData() {
             showLoadingIndicator(true);
             try {
                 const [regionData, weatherlinkData] = await Promise.all([
-                    fetchDataWithCache(CONFIG.urls.regionLatest),
-                    fetchDataWithCache(CONFIG.urls.weatherlinkLatest)
+                    fetchDataWithTimeout(CONFIG.urls.regionLatest),
+                    fetchDataWithTimeout(CONFIG.urls.weatherlinkLatest)
                 ]);
 
                 if (regionData && regionData.length > 0) {
@@ -4522,22 +4487,16 @@ async function updateAllLatestData() {
          * Questa funzione viene chiamata durante il ciclo di aggiornamento automatico
          */
         async function updateHistoricalData() {
-            if (UPDATE_LOCKS.historical) {
-                console.log('⏸️ Aggiornamento storico già in corso, skip');
-                return;
-            }
+            console.log('🔄 Aggiornamento dati storici in corso...');
             
-            UPDATE_LOCKS.historical = true;
             try {
-                console.log('🔄 Aggiornamento dati storici in corso...');
-                
                 const [regionHistory, weatherlinkHistory] = await Promise.all([
                     executeWithRetry(() => 
-                        fetchDataWithCache(CONFIG.urls.regionHistory),
+                        fetchDataWithTimeout(CONFIG.urls.regionHistory),
                         'dati storici regionali'
                     ),
                     executeWithRetry(() => 
-                        fetchDataWithCache(CONFIG.urls.weatherlinkHistory),
+                        fetchDataWithTimeout(CONFIG.urls.weatherlinkHistory),
                         'dati storici weatherlink'
                     )
                 ]);
@@ -4545,6 +4504,7 @@ async function updateAllLatestData() {
                 const filteredRegion = regionHistory.filter(r => r && r.Data_Ora);
                 const filteredWeatherlink = weatherlinkHistory.filter(r => r && r.Data_Ora);
 
+                // Verifica se ci sono nuovi dati
                 let hasNewData = false;
                 
                 if (filteredRegion.length > 0 && 
@@ -4561,6 +4521,7 @@ async function updateAllLatestData() {
                     console.log(`✅ Aggiornati ${filteredWeatherlink.length} record storici weatherlink`);
                 }
 
+                // Imposta flag solo se ci sono nuovi dati
                 if (hasNewData) {
                     STATE.needsChartUpdate = true;
                     STATE.lastHistoricalUpdate = new Date();
@@ -4571,8 +4532,6 @@ async function updateAllLatestData() {
             } catch (error) {
                 console.error('❌ Errore aggiornamento dati storici:', error);
                 throw error;
-            } finally {
-                UPDATE_LOCKS.historical = false;
             }
         }
 
@@ -4907,47 +4866,26 @@ async function updateAllLatestData() {
         
         function createChart(canvasId, config, chartKey) {
             const canvas = document.getElementById(canvasId);
-            if (!canvas) {
-                console.error(`Canvas ${canvasId} non trovato`);
-                return null;
-            }
             
-            // Cleanup completo - controlla TUTTE le istanze
+            // Cleanup completo
             if (canvas.chart) {
-                try {
-                    canvas.chart.destroy();
-                } catch (e) {
-                    console.warn('Errore distruzione chart:', e);
-                }
+                canvas.chart.destroy();
                 canvas.chart = null;
             }
             
             if (chartKey && STATE.charts[chartKey]) {
-                try {
-                    STATE.charts[chartKey].destroy();
-                } catch (e) {
-                    console.warn('Errore distruzione chart da STATE:', e);
-                }
+                STATE.charts[chartKey].destroy();
                 STATE.charts[chartKey] = null;
             }
             
-            // Pulisci il canvas manualmente
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const ctx = canvas.getContext('2d', { willReadFrequently: false });
+            const newChart = new Chart(ctx, config);
+            canvas.chart = newChart;
             
-            // Ricrea il grafico
-            try {
-                const newChart = new Chart(ctx, config);
-                canvas.chart = newChart;
-                if (chartKey) {
-                    STATE.charts[chartKey] = newChart;
-                }
-                return newChart;
-            } catch (error) {
-                console.error('Errore creazione grafico:', error);
-                showToast(`Errore nel grafico ${chartKey}`, 'error');
-                return null;
+            if (chartKey) {
+                STATE.charts[chartKey] = newChart;
             }
+            return newChart;
         }
 
         const highlightPlugin = {
@@ -5054,71 +4992,99 @@ async function updateAllLatestData() {
         }
 
         function updateForecastTable(data) {
-            const isMobile = utils.isMobile();
+    const isMobile = utils.isMobile();
+    
+    if (isMobile) {
+        updateMobileForecastList(data);
+    } else {
+        updateDesktopForecastTable(data);
+    }
+}
+
+function updateDesktopForecastTable(data) {
+    const desktopTableContainer = document.getElementById('desktop-forecast-table');
+    desktopTableContainer.style.display = 'block';
+    
+    const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+    
+    // OTTIMIZZAZIONE: Usa DocumentFragment per batch insert
+    const fragment = document.createDocumentFragment();
+    
+    data.forEach((row, index) => {
+        let tr = document.createElement('tr');
+        tr.dataset.index = index;
+        tr.innerHTML = `
+            <td>${row['Timestamp Previsione']}</td>
+            <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
+            <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
+            <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
+        `;
+        
+        // Event delegation invece di listener su ogni riga
+        fragment.appendChild(tr);
+    });
+    
+    tableBody.innerHTML = '';
+    tableBody.appendChild(fragment);
+    
+    // Event delegation
+    tableBody.addEventListener('mouseenter', (e) => {
+        if (e.target.tagName === 'TD') {
+            const tr = e.target.closest('tr');
+            if (!tr || !tr.dataset.index) return;
+
+            const index = parseInt(tr.dataset.index, 10);
             
-            if (isMobile) {
-                updateMobileForecastList(data);
-            } else {
-                updateDesktopForecastTable(data);
+            document.querySelectorAll('#dataTable tbody tr.highlighted').forEach(r => r.classList.remove('highlighted'));
+            
+            tr.classList.add('highlighted');
+            
+            STATE.currentHighlightedIndex = index;
+            if (STATE.charts.forecast) {
+                STATE.charts.forecast.update('none');
             }
         }
-
-        function updateDesktopForecastTable(data) {
-            const desktopTableContainer = document.getElementById('desktop-forecast-table');
-            desktopTableContainer.style.display = 'block';
-            
-            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-            
-            // OTTIMIZZAZIONE: Usa DocumentFragment per batch insert
-            const fragment = document.createDocumentFragment();
-            
-            data.forEach((row, index) => {
-                let tr = document.createElement('tr');
-                tr.dataset.index = index;
-                tr.innerHTML = `
-                    <td>${row['Timestamp Previsione']}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
-                    <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
-                `;
-                
-                // Event delegation invece di listener su ogni riga
-                fragment.appendChild(tr);
-            });
-            
-            tableBody.innerHTML = '';
-            tableBody.appendChild(fragment);
+    }, true);
+    
+    tableBody.addEventListener('mouseleave', () => {
+        document.querySelectorAll('#dataTable tbody tr.highlighted').forEach(r => r.classList.remove('highlighted'));
+        
+        STATE.currentHighlightedIndex = -1;
+        if (STATE.charts.forecast) {
+            STATE.charts.forecast.update('none');
         }
+    }, true);
+}
 
-        function updateMobileForecastList(data) {
-            const desktopTableContainer = document.getElementById('desktop-forecast-table');
-            const mobileListContainer = document.getElementById('mobile-forecast-list');
+function updateMobileForecastList(data) {
+    const desktopTableContainer = document.getElementById('desktop-forecast-table');
+    const mobileListContainer = document.getElementById('mobile-forecast-list');
 
-            desktopTableContainer.style.display = 'none';
-            mobileListContainer.style.display = 'block';
-            mobileListContainer.innerHTML = '';
-            
-            data.forEach((row, index) => {
-                const card = document.createElement('div');
-                card.className = 'table-mobile-item';
-                card.innerHTML = `
-                    <div class="timestamp">${row['Timestamp Previsione']}</div>
-                    <div class="data-row">
-                        <span>Q50 (Mediana):</span>
-                        <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)} m</strong>
-                    </div>
-                    <div class="data-row">
-                        <span>Q90 (Massimo):</span>
-                        <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)} m</strong>
-                    </div>
-                `;
-                mobileListContainer.appendChild(card);
-            });
-        }
+    desktopTableContainer.style.display = 'none';
+    mobileListContainer.style.display = 'block';
+    mobileListContainer.innerHTML = '';
+    
+    data.forEach((row, index) => {
+        const card = document.createElement('div');
+        card.className = 'table-mobile-item';
+        card.innerHTML = `
+            <div class="timestamp">${row['Timestamp Previsione']}</div>
+            <div class="data-row">
+                <span>Q50 (Mediana):</span>
+                <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)} m</strong>
+            </div>
+            <div class="data-row">
+                <span>Q90 (Massimo):</span>
+                <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)} m</strong>
+            </div>
+        `;
+        mobileListContainer.appendChild(card);
+    });
+}
 
         async function fetchForecastData() {
             try {
-                const data = await fetchDataWithCache(CONFIG.urls.forecast);
+                const data = await fetchDataWithTimeout(CONFIG.urls.forecast);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 STATE.forecastData = filteredData;
                 
@@ -5238,7 +5204,7 @@ async function updateAllLatestData() {
 
         async function fetchForecastDataBettolelle3h() {
             try {
-                const data = await fetchDataWithCache(CONFIG.urls.forecastBettolelle3h);
+                const data = await fetchDataWithTimeout(CONFIG.urls.forecastBettolelle3h);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 STATE.forecastDataBettolelle3h = filteredData;
                 const labels = filteredData.map(row => row['Timestamp Previsione']);
@@ -5357,7 +5323,7 @@ async function updateAllLatestData() {
 
         async function fetchForecastDataPonteGaribaldi6h() {
             try {
-                const data = await fetchDataWithCache(CONFIG.urls.forecastPonteGaribaldi6h);
+                const data = await fetchDataWithTimeout(CONFIG.urls.forecastPonteGaribaldi6h);
                 const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                 STATE.forecastDataPonteGaribaldi6h = filteredData;
                 const labels = filteredData.map(row => row['Timestamp Previsione']);
@@ -6683,21 +6649,6 @@ function updateSliderUI(index) {
             });
         }
 
-        function lazyLoadImages() {
-            const images = document.querySelectorAll('img[data-src]');
-            const imageObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        imageObserver.unobserve(img);
-                    }
-                });
-            });
-            
-            images.forEach(img => imageObserver.observe(img));
-        }
         async function initDashboard() {
             showLoading();
             loadSettings();
@@ -6859,34 +6810,20 @@ function updateSliderUI(index) {
         }
 
         function handleResize() {
-            console.log('🔄 Resize in corso...');
-            
-            // Ridimensiona solo i grafici visibili
-            const activeSection = document.querySelector('.page-section.active');
-            
-            Object.entries(STATE.charts).forEach(([key, chart]) => {
+            // Ridimensiona tutti i grafici
+            Object.values(STATE.charts).forEach(chart => {
                 if (chart && typeof chart.resize === 'function') {
-                    // Controlla se il grafico è nella sezione attiva
-                    const chartCanvas = chart.canvas;
-                    const isVisible = chartCanvas && 
-                                    activeSection && 
-                                    activeSection.contains(chartCanvas);
-                    
-                    if (isVisible) {
-                        chart.resize();
-                    }
+                    chart.resize();
                 }
             });
             
-            // Ridimensiona le mappe solo se visibili
-            if (STATE.map && activeSection?.id === 'mappa') {
+            // Ridimensiona la mappa
+            if (STATE.map) {
                 STATE.map.invalidateSize();
             }
-            if (STATE.dashboardMap && activeSection?.id === 'overview') {
+            if (STATE.dashboardMap) {
                 STATE.dashboardMap.invalidateSize();
             }
-            
-            console.log('✅ Resize completato');
         }
 
         // Aggiungi listener debounced per resize
@@ -6924,7 +6861,6 @@ function updateSliderUI(index) {
             initDashboardMap();
             await initDashboard();
             startAutoRefresh();
-            lazyLoadImages();
             
             initTouchGestures();
             
