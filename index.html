@@ -3678,6 +3678,11 @@ passwordInput.focus();
         };
 
         // ==================== GLOBAL STATE ====================
+        const UPDATE_LOCKS = {
+            historical: false,
+            forecast: false
+        };
+
         const STATE = {
             regionHistoryData: [],
             weatherlinkHistoryData: [],
@@ -4487,9 +4492,15 @@ async function updateAllLatestData() {
          * Questa funzione viene chiamata durante il ciclo di aggiornamento automatico
          */
         async function updateHistoricalData() {
-            console.log('🔄 Aggiornamento dati storici in corso...');
+            if (UPDATE_LOCKS.historical) {
+                console.log('⏸️ Aggiornamento storico già in corso, skip');
+                return;
+            }
             
+            UPDATE_LOCKS.historical = true;
             try {
+                console.log('🔄 Aggiornamento dati storici in corso...');
+                
                 const [regionHistory, weatherlinkHistory] = await Promise.all([
                     executeWithRetry(() => 
                         fetchDataWithTimeout(CONFIG.urls.regionHistory),
@@ -4504,7 +4515,6 @@ async function updateAllLatestData() {
                 const filteredRegion = regionHistory.filter(r => r && r.Data_Ora);
                 const filteredWeatherlink = weatherlinkHistory.filter(r => r && r.Data_Ora);
 
-                // Verifica se ci sono nuovi dati
                 let hasNewData = false;
                 
                 if (filteredRegion.length > 0 && 
@@ -4521,7 +4531,6 @@ async function updateAllLatestData() {
                     console.log(`✅ Aggiornati ${filteredWeatherlink.length} record storici weatherlink`);
                 }
 
-                // Imposta flag solo se ci sono nuovi dati
                 if (hasNewData) {
                     STATE.needsChartUpdate = true;
                     STATE.lastHistoricalUpdate = new Date();
@@ -4532,6 +4541,8 @@ async function updateAllLatestData() {
             } catch (error) {
                 console.error('❌ Errore aggiornamento dati storici:', error);
                 throw error;
+            } finally {
+                UPDATE_LOCKS.historical = false;
             }
         }
 
@@ -4866,26 +4877,47 @@ async function updateAllLatestData() {
         
         function createChart(canvasId, config, chartKey) {
             const canvas = document.getElementById(canvasId);
+            if (!canvas) {
+                console.error(`Canvas ${canvasId} non trovato`);
+                return null;
+            }
             
-            // Cleanup completo
+            // Cleanup completo - controlla TUTTE le istanze
             if (canvas.chart) {
-                canvas.chart.destroy();
+                try {
+                    canvas.chart.destroy();
+                } catch (e) {
+                    console.warn('Errore distruzione chart:', e);
+                }
                 canvas.chart = null;
             }
             
             if (chartKey && STATE.charts[chartKey]) {
-                STATE.charts[chartKey].destroy();
+                try {
+                    STATE.charts[chartKey].destroy();
+                } catch (e) {
+                    console.warn('Errore distruzione chart da STATE:', e);
+                }
                 STATE.charts[chartKey] = null;
             }
             
-            const ctx = canvas.getContext('2d', { willReadFrequently: false });
-            const newChart = new Chart(ctx, config);
-            canvas.chart = newChart;
+            // Pulisci il canvas manualmente
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            if (chartKey) {
-                STATE.charts[chartKey] = newChart;
+            // Ricrea il grafico
+            try {
+                const newChart = new Chart(ctx, config);
+                canvas.chart = newChart;
+                if (chartKey) {
+                    STATE.charts[chartKey] = newChart;
+                }
+                return newChart;
+            } catch (error) {
+                console.error('Errore creazione grafico:', error);
+                showToast(`Errore nel grafico ${chartKey}`, 'error');
+                return null;
             }
-            return newChart;
         }
 
         const highlightPlugin = {
@@ -6778,20 +6810,34 @@ function updateSliderUI(index) {
         }
 
         function handleResize() {
-            // Ridimensiona tutti i grafici
-            Object.values(STATE.charts).forEach(chart => {
+            console.log('🔄 Resize in corso...');
+            
+            // Ridimensiona solo i grafici visibili
+            const activeSection = document.querySelector('.page-section.active');
+            
+            Object.entries(STATE.charts).forEach(([key, chart]) => {
                 if (chart && typeof chart.resize === 'function') {
-                    chart.resize();
+                    // Controlla se il grafico è nella sezione attiva
+                    const chartCanvas = chart.canvas;
+                    const isVisible = chartCanvas && 
+                                    activeSection && 
+                                    activeSection.contains(chartCanvas);
+                    
+                    if (isVisible) {
+                        chart.resize();
+                    }
                 }
             });
             
-            // Ridimensiona la mappa
-            if (STATE.map) {
+            // Ridimensiona le mappe solo se visibili
+            if (STATE.map && activeSection?.id === 'mappa') {
                 STATE.map.invalidateSize();
             }
-            if (STATE.dashboardMap) {
+            if (STATE.dashboardMap && activeSection?.id === 'overview') {
                 STATE.dashboardMap.invalidateSize();
             }
+            
+            console.log('✅ Resize completato');
         }
 
         // Aggiungi listener debounced per resize
