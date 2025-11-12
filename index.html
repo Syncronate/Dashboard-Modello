@@ -2470,8 +2470,8 @@ max-width: 400px;
             <div class="last-update" id="next-update">
                 Prossimo aggiornamento: --
             </div>
-            <div class="last-update" id="data-range-indicator">
-                Dati: ultimi 7 giorni
+            <div class="last-update" id="data-range-indicator" style="font-size: 0.8em; color: var(--text-muted);">
+                📊 Dati: ultimi 7 giorni
             </div>
             <div class="header-actions">
                 <button class="icon-btn" id="refresh-btn" title="Aggiorna dati">
@@ -4489,10 +4489,6 @@ async function updateAllLatestData() {
          * Aggiorna i dati storici da Google Sheets
          * Questa funzione viene chiamata durante il ciclo di aggiornamento automatico
          */
-/**
- * VERSIONE OTTIMIZZATA: Carica solo gli ultimi 7 giorni di dati
- * Se necessario, carica dati più vecchi on-demand
- */
 async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
     console.log(`🔄 Caricamento dati storici (${forceFullLoad ? 'COMPLETO' : `ultimi ${daysToLoad} giorni`})...`);
     
@@ -4547,13 +4543,12 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
             STATE.needsChartUpdate = true;
             STATE.lastHistoricalUpdate = new Date();
             
-            // Salva info sul caricamento parziale
-            STATE.isPartialDataLoad = !forceFullLoad;
-            STATE.oldestDataTimestamp = timeLimit;
-            
             console.log('📊 Nuovi dati storici rilevati, grafici verranno rigenerati');
         }
 
+        // Aggiorna sempre lo stato del caricamento e l'indicatore visivo
+        STATE.isPartialDataLoad = !forceFullLoad;
+        STATE.oldestDataTimestamp = timeLimit;
         updateDataRangeIndicator();
 
         return {
@@ -6769,13 +6764,6 @@ async function initDashboard() {
         
         // Mostra toast informativo
         showToast('✅ Dashboard caricata! (dati ultimi 7 giorni)', 'success');
-        
-        // OPZIONALE: Suggerisci caricamento dati completi in background
-        if (navigator.connection && navigator.connection.effectiveType === '4g') {
-            setTimeout(() => {
-                showToast('💡 Vuoi caricare lo storico completo? Usa i filtri "7 giorni" o superiori', 'info');
-            }, 3000);
-        }
         
     } catch (error) {
         console.error("Errore durante l'inizializzazione:", error);
