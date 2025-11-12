@@ -2470,6 +2470,9 @@ max-width: 400px;
             <div class="last-update" id="next-update">
                 Prossimo aggiornamento: --
             </div>
+            <div class="last-update" id="data-range-indicator" style="font-size: 0.8em; color: var(--text-muted);">
+                📊 Dati: ultimi 7 giorni
+            </div>
             <div class="header-actions">
                 <button class="icon-btn" id="refresh-btn" title="Aggiorna dati">
                     <i data-feather="refresh-cw" class="feather-icon"></i>
@@ -4486,54 +4489,83 @@ async function updateAllLatestData() {
          * Aggiorna i dati storici da Google Sheets
          * Questa funzione viene chiamata durante il ciclo di aggiornamento automatico
          */
-        async function updateHistoricalData() {
-            console.log('🔄 Aggiornamento dati storici in corso...');
+/**
+ * VERSIONE OTTIMIZZATA: Carica solo gli ultimi 7 giorni di dati
+ * Se necessario, carica dati più vecchi on-demand
+ */
+async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
+    console.log(`🔄 Caricamento dati storici (${forceFullLoad ? 'COMPLETO' : `ultimi ${daysToLoad} giorni`})...`);
+    
+    try {
+        // Calcola timestamp limite per il filtro
+        const now = Date.now();
+        const timeLimit = forceFullLoad ? 0 : now - (daysToLoad * 24 * 60 * 60 * 1000);
+        
+        const [regionHistory, weatherlinkHistory] = await Promise.all([
+            executeWithRetry(() => 
+                fetchDataWithTimeout(CONFIG.urls.regionHistory),
+                'dati storici regionali'
+            ),
+            executeWithRetry(() => 
+                fetchDataWithTimeout(CONFIG.urls.weatherlinkHistory),
+                'dati storici weatherlink'
+            )
+        ]);
+
+        // FILTRO: mantieni solo i dati recenti (se non è un caricamento completo)
+        const filterByDate = (data) => {
+            if (forceFullLoad) return data.filter(r => r && r.Data_Ora);
             
-            try {
-                const [regionHistory, weatherlinkHistory] = await Promise.all([
-                    executeWithRetry(() => 
-                        fetchDataWithTimeout(CONFIG.urls.regionHistory),
-                        'dati storici regionali'
-                    ),
-                    executeWithRetry(() => 
-                        fetchDataWithTimeout(CONFIG.urls.weatherlinkHistory),
-                        'dati storici weatherlink'
-                    )
-                ]);
+            return data.filter(r => {
+                if (!r || !r.Data_Ora) return false;
+                const date = parseCustomDate(r.Data_Ora);
+                return date && date.getTime() >= timeLimit;
+            });
+        };
 
-                const filteredRegion = regionHistory.filter(r => r && r.Data_Ora);
-                const filteredWeatherlink = weatherlinkHistory.filter(r => r && r.Data_Ora);
+        const filteredRegion = filterByDate(regionHistory);
+        const filteredWeatherlink = filterByDate(weatherlinkHistory);
 
-                // Verifica se ci sono nuovi dati
-                let hasNewData = false;
-                
-                if (filteredRegion.length > 0 && 
-                    filteredRegion.length !== STATE.regionHistoryData.length) {
-                    STATE.regionHistoryData = filteredRegion;
-                    hasNewData = true;
-                    console.log(`✅ Aggiornati ${filteredRegion.length} record storici regionali`);
-                }
-                
-                if (filteredWeatherlink.length > 0 && 
-                    filteredWeatherlink.length !== STATE.weatherlinkHistoryData.length) {
-                    STATE.weatherlinkHistoryData = filteredWeatherlink;
-                    hasNewData = true;
-                    console.log(`✅ Aggiornati ${filteredWeatherlink.length} record storici weatherlink`);
-                }
-
-                // Imposta flag solo se ci sono nuovi dati
-                if (hasNewData) {
-                    STATE.needsChartUpdate = true;
-                    STATE.lastHistoricalUpdate = new Date();
-                    console.log('📊 Rilevati nuovi dati storici, grafici verranno rigenerati');
-                }
-
-                return true;
-            } catch (error) {
-                console.error('❌ Errore aggiornamento dati storici:', error);
-                throw error;
-            }
+        // Verifica se ci sono nuovi dati
+        let hasNewData = false;
+        
+        if (filteredRegion.length > 0 && 
+            filteredRegion.length !== STATE.regionHistoryData.length) {
+            STATE.regionHistoryData = filteredRegion;
+            hasNewData = true;
+            console.log(`✅ Caricati ${filteredRegion.length} record regionali (era ${regionHistory.length} prima del filtro)`);
         }
+        
+        if (filteredWeatherlink.length > 0 && 
+            filteredWeatherlink.length !== STATE.weatherlinkHistoryData.length) {
+            STATE.weatherlinkHistoryData = filteredWeatherlink;
+            hasNewData = true;
+            console.log(`✅ Caricati ${filteredWeatherlink.length} record weatherlink (era ${weatherlinkHistory.length} prima del filtro)`);
+        }
+
+        if (hasNewData) {
+            STATE.needsChartUpdate = true;
+            STATE.lastHistoricalUpdate = new Date();
+            
+            // Salva info sul caricamento parziale
+            STATE.isPartialDataLoad = !forceFullLoad;
+            STATE.oldestDataTimestamp = timeLimit;
+            
+            console.log('📊 Nuovi dati storici rilevati, grafici verranno rigenerati');
+        }
+
+        updateDataRangeIndicator();
+
+        return {
+            success: true,
+            recordsLoaded: filteredRegion.length + filteredWeatherlink.length,
+            isPartial: !forceFullLoad
+        };
+    } catch (error) {
+        console.error('❌ Errore caricamento dati storici:', error);
+        throw error;
+    }
+}
 
         /**
          * Rigenera tutti i grafici che sono attualmente visibili
@@ -5321,6 +5353,19 @@ function updateMobileForecastList(data) {
             }
         }
 
+        function updateDataRangeIndicator() {
+            const indicator = document.getElementById('data-range-indicator');
+            if (!indicator) return;
+            
+            if (STATE.isPartialDataLoad) {
+                const days = Math.floor((Date.now() - STATE.oldestDataTimestamp) / (24*60*60*1000));
+                indicator.innerHTML = `📊 Dati: ultimi ${days} giorni`;
+                indicator.style.color = 'var(--warning-color)';
+            } else {
+                indicator.innerHTML = '📊 Dati: storico completo';
+                indicator.style.color = 'var(--success-color)';
+            }
+        }
         async function fetchForecastDataPonteGaribaldi6h() {
             try {
                 const data = await fetchDataWithTimeout(CONFIG.urls.forecastPonteGaribaldi6h);
@@ -6626,11 +6671,59 @@ function updateSliderUI(index) {
             applyTheme();
         }
 
-        // ==================== INITIALIZATION ====================
+// ==================== INITIALIZATION ====================
+
+/**
+ * NUOVO: Gestisce richieste di dati oltre il limite caricato
+ */
+async function handleTimeFilterWithDataCheck(startDate, endDate, chartType) {
+    const requestedStart = startDate ? new Date(startDate).getTime() : 0;
+    
+    // Se i dati richiesti sono più vecchi di quelli caricati, carica tutto
+    if (STATE.isPartialDataLoad && requestedStart < STATE.oldestDataTimestamp) {
+        showToast('⏳ Caricamento dati completi in corso...', 'info');
+        
+        try {
+            await updateHistoricalData(365, true); // Carica tutto (max 1 anno)
+            showToast('✅ Dati storici completi caricati!', 'success');
+        } catch (error) {
+            showToast('❌ Errore caricamento dati storici', 'error');
+            return;
+        }
+    }
+    
+    // Ora disegna il grafico richiesto
+    switch(chartType) {
+        case 'hydro':
+            drawHydroHistoryChart(startDate, endDate);
+            break;
+        case 'rain':
+            drawRainHistoryChart(startDate, endDate);
+            break;
+        case 'wind':
+            drawWindHistoryChart(startDate, endDate);
+            break;
+    }
+}
+
         function initEventListeners() {
-            document.getElementById('filter-hydro').addEventListener('click', () => drawHydroHistoryChart());
-            document.getElementById('filter-rain').addEventListener('click', () => drawRainHistoryChart());
-            document.getElementById('filter-wind').addEventListener('click', () => drawWindHistoryChart());
+            document.getElementById('filter-hydro').addEventListener('click', () => {
+                const start = document.getElementById('start-time-hydro').value;
+                const end = document.getElementById('end-time-hydro').value;
+                handleTimeFilterWithDataCheck(start, end, 'hydro');
+            });
+
+            document.getElementById('filter-rain').addEventListener('click', () => {
+                const start = document.getElementById('start-time-rain').value;
+                const end = document.getElementById('end-time-rain').value;
+                handleTimeFilterWithDataCheck(start, end, 'rain');
+            });
+
+            document.getElementById('filter-wind').addEventListener('click', () => {
+                const start = document.getElementById('start-time-wind').value;
+                const end = document.getElementById('end-time-wind').value;
+                handleTimeFilterWithDataCheck(start, end, 'wind');
+            });
             
             document.getElementById('station-selection-wind').addEventListener('change', () => drawWindHistoryChart());
             document.querySelectorAll('#station-selection-rain input').forEach(el => {
@@ -6649,38 +6742,48 @@ function updateSliderUI(index) {
             });
         }
 
-        async function initDashboard() {
-            showLoading();
-            loadSettings();
+async function initDashboard() {
+    showLoading();
+    loadSettings();
 
-            try {
-                const [regionHistory, weatherlinkHistory] = await Promise.all([
-                    fetchDataWithTimeout(CONFIG.urls.regionHistory),
-                    fetchDataWithTimeout(CONFIG.urls.weatherlinkHistory),
-                    fetchForecastData(),
-                    fetchForecastDataBettolelle3h(),
-                    fetchForecastDataPonteGaribaldi6h(),
-                    updateOfficialAlerts()
-                ]);
+    try {
+        // NUOVO: Carica solo 7 giorni inizialmente (molto più veloce!)
+        const dataLoadPromise = updateHistoricalData(7, false);
+        
+        // Carica previsioni e allerte in parallelo
+        await Promise.all([
+            dataLoadPromise,
+            fetchForecastData(),
+            fetchForecastDataBettolelle3h(),
+            fetchForecastDataPonteGaribaldi6h(),
+            updateOfficialAlerts()
+        ]);
 
-                STATE.regionHistoryData = regionHistory.filter(r => r && r.Data_Ora);
-                STATE.weatherlinkHistoryData = weatherlinkHistory.filter(r => r && r.Data_Ora);
+        // Aggiorna dati real-time
+        await updateAllLatestData();
 
-                // Now update latest data
-                await updateAllLatestData();
-
-                document.querySelectorAll('.quick-filter-btn.active').forEach(btn => btn.click());
-                
-                drawOverviewCharts();
-                showToast('Dashboard caricata con successo', 'success');
-                
-            } catch (error) {
-                console.error("Errore durante l'inizializzazione:", error);
-                showToast('Errore nel caricamento dei dati storici', 'error');
-            } finally {
-                hideLoading();
-            }
+        // Setup grafici con dati disponibili
+        document.querySelectorAll('.quick-filter-btn.active').forEach(btn => btn.click());
+        
+        drawOverviewCharts();
+        
+        // Mostra toast informativo
+        showToast('✅ Dashboard caricata! (dati ultimi 7 giorni)', 'success');
+        
+        // OPZIONALE: Suggerisci caricamento dati completi in background
+        if (navigator.connection && navigator.connection.effectiveType === '4g') {
+            setTimeout(() => {
+                showToast('💡 Vuoi caricare lo storico completo? Usa i filtri "7 giorni" o superiori', 'info');
+            }, 3000);
         }
+        
+    } catch (error) {
+        console.error("Errore durante l'inizializzazione:", error);
+        showToast('❌ Errore caricamento iniziale', 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         // ==================== AUTO REFRESH ====================
         /** * Verifica lo stato di salute del sistema di aggiornamento */ 
