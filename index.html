@@ -2470,8 +2470,8 @@ max-width: 400px;
             <div class="last-update" id="next-update">
                 Prossimo aggiornamento: --
             </div>
-            <div class="last-update" id="data-range-indicator" style="font-size: 0.8em; color: var(--text-muted);">
-                📊 Dati: ultimi 7 giorni
+            <div class="last-update" id="data-range-indicator">
+                Dati: ultimi 7 giorni
             </div>
             <div class="header-actions">
                 <button class="icon-btn" id="refresh-btn" title="Aggiorna dati">
@@ -5359,11 +5359,11 @@ function updateMobileForecastList(data) {
             
             if (STATE.isPartialDataLoad) {
                 const days = Math.floor((Date.now() - STATE.oldestDataTimestamp) / (24*60*60*1000));
-                indicator.innerHTML = `📊 Dati: ultimi ${days} giorni`;
-                indicator.style.color = 'var(--warning-color)';
+                indicator.innerHTML = `Dati: ultimi ${days} giorni`;
+                indicator.style.color = 'var(--text-muted)';
             } else {
-                indicator.innerHTML = '📊 Dati: storico completo';
-                indicator.style.color = 'var(--success-color)';
+                indicator.innerHTML = 'Dati: storico completo';
+                indicator.style.color = 'var(--text-color)';
             }
         }
         async function fetchForecastDataPonteGaribaldi6h() {
