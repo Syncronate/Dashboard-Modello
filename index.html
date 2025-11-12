@@ -5386,8 +5386,8 @@ function updateMobileForecastList(data) {
 
         function drawHydroHistoryChart(startDate, endDate) {
             showChartUpdateIndicator('hydroHistoryChart-container', true);
-            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-hydro').value;
-            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-hydro').value;
+            const start = startDate || document.getElementById('start-time-hydro').value;
+            const end = endDate || document.getElementById('end-time-hydro').value;
             
             const filteredData = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end);
             
@@ -5425,8 +5425,8 @@ function updateMobileForecastList(data) {
 
         function drawRainHistoryChart(startDate, endDate) {
             showChartUpdateIndicator('rainHistoryChart-container', true);
-            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-rain').value;
-            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-rain').value;
+            const start = startDate || document.getElementById('start-time-rain').value;
+            const end = endDate || document.getElementById('end-time-rain').value;
             
             const filteredRegion = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end);
             const filteredWeather = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end);
@@ -5474,8 +5474,8 @@ function updateMobileForecastList(data) {
         function drawWindHistoryChart(startDate, endDate) {
             showChartUpdateIndicator('windHistoryChart-container', true);
             const station = document.getElementById('station-selection-wind').value;
-            const start = startDate ? toISOLocal(startDate) : document.getElementById('start-time-wind').value;
-            const end = endDate ? toISOLocal(endDate) : document.getElementById('end-time-wind').value;
+            const start = startDate || document.getElementById('start-time-wind').value;
+            const end = endDate || document.getElementById('end-time-wind').value;
             
             const filteredData = filterDataByTime(STATE.weatherlinkHistoryData, 'Data_Ora', start, end);
             
