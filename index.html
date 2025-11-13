@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -374,13 +373,15 @@
         .leaflet-popup-content a {
             display: inline-block;
             margin-top: 10px;
-            padding: 6px 12px;
+            padding: 8px 16px;
             background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
+            color: #ffffff;
+            font-weight: bold;
             text-decoration: none;
             border-radius: 6px;
-            font-size: 0.85em;
+            font-size: 0.9em;
             transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .leaflet-popup-content a:hover {
@@ -5620,17 +5621,6 @@ function updateMobileForecastList(data) {
                     marker.setOpacity(1);
                 }, 100 * getStationConfig().indexOf(station));
 
-                marker.on('popupopen', function() {
-                    const link = document.querySelector('.leaflet-popup-content a.nav-link');
-                    if (link) {
-                        link.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            const targetSection = this.getAttribute('href');
-                            document.querySelector(`.nav-link[href="${targetSection}"]`)?.click();
-                            STATE.map.closePopup();
-                        });
-                    }
-                });
             });
 
             updateMapMarkers();
@@ -6557,6 +6547,22 @@ function updateSliderUI(index) {
                 const btn = document.getElementById(id);
                 if (btn) btn.addEventListener('click', action);
             }
+
+            // Event delegation for map popups
+            document.addEventListener('click', function(e) {
+                const target = e.target;
+                if (target && target.matches('.leaflet-popup-content a.nav-link')) {
+                    e.preventDefault();
+                    const targetSection = target.getAttribute('href');
+                    const navLink = document.querySelector(`.nav-link[href="${targetSection}"]`);
+                    if (navLink) {
+                        navLink.click();
+                    }
+                    // Close popups on both maps if they exist
+                    if (STATE.map) STATE.map.closePopup();
+                    if (STATE.dashboardMap) STATE.dashboardMap.closePopup();
+                }
+            });
         }
 
         // ==================== SETTINGS ====================
