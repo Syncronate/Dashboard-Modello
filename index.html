@@ -6672,6 +6672,30 @@ function updateSliderUI(index) {
             applyTheme();
         }
 
+        function initKeyboardShortcuts() {
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+
+            document.addEventListener('keydown', (event) => {
+                // Ignora le scorciatoie se si sta scrivendo in un campo di input, textarea o select
+                const activeElement = document.activeElement;
+                if (activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeElement.tagName)) {
+                    return;
+                }
+
+                // Mappa i tasti numerici da '1' a '7' agli indici dei link
+                const key = parseInt(event.key, 10);
+                if (key >= 1 && key <= 7) {
+                    const linkIndex = key - 1;
+                    if (navLinks[linkIndex]) {
+                        // Previene il comportamento di default (es. cercare nel browser)
+                        event.preventDefault();
+                        // Simula il click sul link di navigazione
+                        navLinks[linkIndex].click();
+                    }
+                }
+            });
+        }
+
 // ==================== INITIALIZATION ====================
 
 /**
@@ -6955,6 +6979,7 @@ async function initDashboard() {
             initUIInteractions();
             initFullscreenButtons();
             initEventListeners();
+            initKeyboardShortcuts();
             initDashboardMap();
             await initDashboard();
             startAutoRefresh();
