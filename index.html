@@ -2495,6 +2495,7 @@ max-width: 400px;
             <li><a href="#overview" class="nav-link active">Dashboard</a></li>
             <li><a href="#previsioni" class="nav-link">Previsioni Idro</a></li>
             <li><a href="#idrometri" class="nav-link">Idrometri</a></li>
+            <li><a href="#portate-idrometri" class="nav-link">Portate Idrometri</a></li>
             <li><a href="#pluviometri" class="nav-link">Pluviometri</a></li>
             <li><a href="#anemometri" class="nav-link">Anemometri</a></li>
             <li><a href="#mappa" class="nav-link">Mappa Stazioni</a></li>
@@ -2925,6 +2926,87 @@ max-width: 400px;
                 </div>
                 <div class="chart-container card" id="hydroHistoryChart-container">
                     <canvas id="hydroHistoryChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- PORTATE IDROMETRI PAGE -->
+        <section id="portate-idrometri" class="page-section">
+            <h1><i data-feather="trending-up" class="feather-icon"></i> Portate Idrometri - Monitoraggio Flussi</h1>
+            
+            <div class="data-groups-container">
+                <div class="data-group">
+                    <h3 class="group-title">Portate Idrometriche Attuali</h3>
+                    <div class="stats-container">
+                        <div class="stat-card" id="portata-bettolelle">
+                            <div class="title">Portata Bettolelle</div>
+                            <div class="value">--<span class="unit">m³/s</span></div>
+                        </div>
+                        <div class="stat-card" id="portata-nevola">
+                            <div class="title">Portata Nevola</div>
+                            <div class="value">--<span class="unit">m³/s</span></div>
+                        </div>
+                        <div class="stat-card" id="portata-passo-ripe">
+                            <div class="title">Portata Passo Ripe</div>
+                            <div class="value">--<span class="unit">m³/s</span></div>
+                        </div>
+                        <div class="stat-card" id="portata-pianello-ostra">
+                            <div class="title">Portata Pianello di Ostra</div>
+                            <div class="value">--<span class="unit">m³/s</span></div>
+                        </div>
+                        <div class="stat-card" id="portata-ponte-garibaldi">
+                            <div class="title">Portata Ponte Garibaldi</div>
+                            <div class="value">--<span class="unit">m³/s</span></div>
+                        </div>
+                        <div class="stat-card" id="portata-serra-conti">
+                            <div class="title">Portata Serra dei Conti</div>
+                            <div class="value">--<span class="unit">m³/s</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label>Filtri Rapidi</label>
+                    <div class="quick-filters" id="quick-filters-portata">
+                        <button class="quick-filter-btn" data-hours="6">6 ore</button>
+                        <button class="quick-filter-btn active" data-hours="12">12 ore</button>
+                        <button class="quick-filter-btn" data-hours="24">24 ore</button>
+                        <button class="quick-filter-btn" data-hours="72">3 giorni</button>
+                        <button class="quick-filter-btn" data-hours="168">7 giorni</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label for="start-time-portata">Da:</label>
+                    <input type="datetime-local" id="start-time-portata">
+                </div>
+                <div class="filter-group">
+                    <label for="end-time-portata">A:</label>
+                    <input type="datetime-local" id="end-time-portata">
+                </div>
+                <button id="filter-portata">
+                    <i data-feather="search" class="feather-icon"></i> Filtra
+                </button>
+                <button id="export-portata-data">
+                    <i data-feather="download" class="feather-icon"></i> Esporta CSV
+                </button>
+            </div>
+
+            <div class="chart-wrapper">
+                <div class="chart-header">
+                    <span class="chart-title">Andamento Storico Portate</span>
+                    <div class="chart-actions">
+                        <button class="chart-btn" id="download-portata-chart">
+                            <i data-feather="camera" class="feather-icon"></i> Scarica
+                        </button>
+                        <button class="chart-btn" id="fullscreen-portata">
+                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container card" id="portataHistoryChart-container">
+                    <canvas id="portataHistoryChart"></canvas>
                 </div>
             </div>
         </section>
@@ -3702,6 +3784,7 @@ passwordInput.focus();
                 forecastBettolelle3h: null,
                 forecastPonteGaribaldi6h: null,
                 hydroHistory: null,
+                portataHistory: null,
                 rainHistory: null,
                 windHistory: null,
                 overviewHydro: null,
@@ -4477,6 +4560,7 @@ async function updateAllLatestData() {
                     updateDashboardMapMarkers();
                 }
                 // -----------------------------
+                 updatePortateCards();
 
             } catch (error) {
                 console.error("Fallimento nell'aggiornare i dati più recenti:", error);
@@ -5419,6 +5503,56 @@ function updateMobileForecastList(data) {
             }, 'hydroHistory');
         }
 
+        function updatePortateCards() {
+            if (!STATE.regionHistoryData || STATE.regionHistoryData.length === 0) return;
+            
+            const lastRecord = STATE.regionHistoryData[STATE.regionHistoryData.length - 1];
+            
+            updateStatCard('portata-bettolelle', lastRecord['Portata Bettolelle (m³/s)'], 'm³/s');
+            updateStatCard('portata-nevola', lastRecord['Portata Nevola (m³/s)'], 'm³/s');
+            updateStatCard('portata-passo-ripe', lastRecord['Portata Passo Ripe (m³/s)'], 'm³/s');
+            updateStatCard('portata-pianello-ostra', lastRecord['Portata Pianello di Ostra (m³/s)'], 'm³/s');
+            updateStatCard('portata-ponte-garibaldi', lastRecord['Portata Ponte Garibaldi (m³/s)'], 'm³/s');
+            updateStatCard('portata-serra-conti', lastRecord['Portata Serra dei Conti (m³/s)'], 'm³/s');
+        }
+
+        function drawPortataHistoryChart(startDate, endDate) {
+            showChartUpdateIndicator('portataHistoryChart-container', true);
+            const start = startDate || document.getElementById('start-time-portata').value;
+            const end = endDate || document.getElementById('end-time-portata').value;
+            
+            const filteredData = filterDataByTime(STATE.regionHistoryData, 'Data_Ora', start, end);
+            
+            const labels = filteredData.map(r => r['Data_Ora']);
+            const datasets = [
+                { col: 'Portata Bettolelle (m³/s)', lbl: 'Portata Bettolelle' },
+                { col: 'Portata Nevola (m³/s)', lbl: 'Portata Nevola' },
+                { col: 'Portata Passo Ripe (m³/s)', lbl: 'Portata Passo Ripe' },
+                { col: 'Portata Pianello di Ostra (m³/s)', lbl: 'Portata Pianello di Ostra' },
+                { col: 'Portata Ponte Garibaldi (m³/s)', lbl: 'Portata Ponte Garibaldi' },
+                { col: 'Portata Serra dei Conti (m³/s)', lbl: 'Portata Serra dei Conti' }
+            ].map((s, i) => ({
+                label: s.lbl, data: filteredData.map(r => parseAndFixDecimal(r[s.col])),
+                borderColor: CONFIG.defaults.chartColors[i], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2
+            }));
+
+            safeCreateChart('portataHistoryChart', {
+                type: 'line', data: { labels, datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        title: { display: true, text: 'Andamento Storico Portate Idrometriche', color: '#FFFFFF', font: { size: 16 } },
+                        legend: { labels: { color: '#E0E0E0' } },
+                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
+                        y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#FFFFFF' } }
+                    }
+                }
+            }, 'portataHistory');
+        }
+
         function drawRainHistoryChart(startDate, endDate) {
             showChartUpdateIndicator('rainHistoryChart-container', true);
             const start = startDate || document.getElementById('start-time-rain').value;
@@ -6284,6 +6418,7 @@ function updateSliderUI(index) {
                             case 'mappa': if (!STATE.map) initMap(); else STATE.map.invalidateSize(); break;
                             case 'previsioni': if (!STATE.charts.forecast) fetchForecastData(); break;
                             case 'idrometri': if (!STATE.charts.hydroHistory) drawHydroHistoryChart(); break;
+                            case 'portate-idrometri': if (!STATE.charts.portataHistory) drawPortataHistoryChart(); break;
                             case 'pluviometri': if (!STATE.charts.rainHistory) drawRainHistoryChart(); break;
                             case 'anemometri': if (!STATE.charts.windHistory) drawWindHistoryChart(); break;
                             case 'analisi': updateStatisticsTables(); break;
@@ -6315,6 +6450,9 @@ function updateSliderUI(index) {
                     switch(section.id) {
                         case 'idrometri':
                             drawHydroHistoryChart(start, now);
+                            break;
+                        case 'portate-idrometri':
+                            drawPortataHistoryChart(start, now);
                             break;
                         case 'pluviometri':
                             drawRainHistoryChart(start, now);
@@ -6383,6 +6521,7 @@ function updateSliderUI(index) {
         function initFullscreenButtons() {
             setupFullscreen('fullscreen-forecast', 'forecastChart');
             setupFullscreen('fullscreen-hydro', 'hydroHistoryChart');
+            setupFullscreen('fullscreen-portata', 'portataHistoryChart');
             setupFullscreen('fullscreen-rain', 'rainHistoryChart');
             setupFullscreen('fullscreen-wind', 'windHistoryChart');
             setupFullscreen('fullscreen-forecast-bettolelle-3h', 'forecastChartBettolelle3h');
@@ -6538,6 +6677,7 @@ function updateSliderUI(index) {
             const chartActions = {
                 'download-forecast-chart': () => downloadChartImage('forecastChart', 'previsioni.png'),
                 'download-hydro-chart': () => downloadChartImage('hydroHistoryChart', 'idrometri.png'),
+                'download-portata-chart': () => downloadChartImage('portataHistoryChart', 'portate.png'),
                 'download-rain-chart': () => downloadChartImage('rainHistoryChart', 'pluviometri.png'),
                 'download-wind-chart': () => downloadChartImage('windHistoryChart', 'anemometri.png'),
                 'download-forecast-chart-bettolelle-3h': () => downloadChartImage('forecastChartBettolelle3h', 'previsioni_bettolelle_3h.png'),
@@ -6722,6 +6862,9 @@ async function handleTimeFilterWithDataCheck(startDate, endDate, chartType) {
         case 'hydro':
             drawHydroHistoryChart(startDate, endDate);
             break;
+        case 'portata':
+            drawPortataHistoryChart(startDate, endDate);
+            break;
         case 'rain':
             drawRainHistoryChart(startDate, endDate);
             break;
@@ -6736,6 +6879,12 @@ async function handleTimeFilterWithDataCheck(startDate, endDate, chartType) {
                 const start = document.getElementById('start-time-hydro').value;
                 const end = document.getElementById('end-time-hydro').value;
                 handleTimeFilterWithDataCheck(start, end, 'hydro');
+            });
+
+            document.getElementById('filter-portata').addEventListener('click', () => {
+                const start = document.getElementById('start-time-portata').value;
+                const end = document.getElementById('end-time-portata').value;
+                handleTimeFilterWithDataCheck(start, end, 'portata');
             });
 
             document.getElementById('filter-rain').addEventListener('click', () => {
