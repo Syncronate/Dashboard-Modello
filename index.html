@@ -6410,7 +6410,8 @@ function updateMobileForecastList(data) {
                     const layer = L.tileLayer(`https://tilecache.rainviewer.com${frame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
                         tileSize: 256,
                         opacity: 0,
-                        zIndex: 10
+                        zIndex: 10,
+                        maxNativeZoom: 11
                     });
                     this.layers.push(layer);
                 });
