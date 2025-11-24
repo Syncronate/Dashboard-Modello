@@ -2786,6 +2786,22 @@ max-width: 400px;
                         </table>
                     </div>
                 </div>
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <span class="chart-title">Portata Prevista (m³/s)</span>
+                        <div class="chart-actions">
+                            <button class="chart-btn" id="download-forecast-flow-chart">
+                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                            </button>
+                            <button class="chart-btn" id="fullscreen-forecast-flow">
+                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-container card" id="forecastFlowChart-container">
+                        <canvas id="forecastFlowChart"></canvas>
+                    </div>
+                </div>
                 <div class="table-container card" id="desktop-forecast-table">
                     <table id="dataTable">
                         <thead>
@@ -2855,6 +2871,22 @@ max-width: 400px;
                         </table>
                     </div>
                 </div>
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <span class="chart-title">Portata Prevista (m³/s)</span>
+                        <div class="chart-actions">
+                            <button class="chart-btn" id="download-forecast-flow-chart-bettolelle-3h">
+                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                            </button>
+                            <button class="chart-btn" id="fullscreen-forecast-flow-bettolelle-3h">
+                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-container card" id="forecastFlowChartBettolelle3h-container">
+                        <canvas id="forecastFlowChartBettolelle3h"></canvas>
+                    </div>
+                </div>
                 <div class="table-container card" id="desktop-forecast-table-bettolelle-3h">
                     <table id="dataTableBettolelle3h">
                         <thead>
@@ -2922,6 +2954,22 @@ max-width: 400px;
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <span class="chart-title">Portata Prevista (m³/s)</span>
+                        <div class="chart-actions">
+                            <button class="chart-btn" id="download-forecast-flow-chart-ponte-garibaldi-6h">
+                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                            </button>
+                            <button class="chart-btn" id="fullscreen-forecast-flow-ponte-garibaldi-6h">
+                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chart-container card" id="forecastFlowChartPonteGaribaldi6h-container">
+                        <canvas id="forecastFlowChartPonteGaribaldi6h"></canvas>
                     </div>
                 </div>
                 <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h">
@@ -3985,8 +4033,11 @@ passwordInput.focus();
             dashboardMapMarkers: {},
             charts: {
                 forecast: null,
+                forecastFlowChart: null,
                 forecastBettolelle3h: null,
+                forecastFlowChartBettolelle3h: null,
                 forecastPonteGaribaldi6h: null,
+                forecastFlowChartPonteGaribaldi6h: null,
                 hydroHistory: null,
                 portataHistory: null,
                 rainHistory: null,
@@ -4017,6 +4068,57 @@ passwordInput.focus();
         };
 
         // ==================== UTILITY FUNCTIONS ====================
+        function getFlowFromLevel(sensorId, level) {
+            if (level === null || level === undefined || isNaN(level)) return null;
+            const station = DEFLUSSO_DATA.find(s => s.sensorId === sensorId);
+            if (!station) return null;
+            const scale = station.flowScales.find(s => level >= s.validity.min && level <= s.validity.max);
+            if (!scale) return null;
+            const p = scale.params;
+            const flow = p.multiplier * Math.pow(level - p.offset, p.exponent) + p.addend;
+            return flow > 0 ? flow : 0;
+        }
+
+        const nowLinePlugin = {
+            id: 'nowLinePlugin',
+            afterDraw: (chart) => {
+                const ctx = chart.ctx;
+                const xScale = chart.scales.x;
+                const yScale = chart.scales.y;
+                
+                // Find the index of "Adesso" or the boundary between history and forecast
+                // We look for the dataset that represents "Historical" data (usually the last point of it)
+                // In our logic, we will likely merge datasets, so we need to know the "Now" timestamp.
+                // A simpler approach is to pass the "nowIndex" in the chart options or search for it.
+                // For now, let's rely on a custom option 'nowIndex' passed in the config plugin options.
+                
+                const nowIndex = chart.config.options.plugins.nowLinePlugin?.nowIndex;
+                
+                if (nowIndex === undefined || nowIndex === null || nowIndex < 0) return;
+
+                const x = xScale.getPixelForValue(nowIndex);
+                
+                if (x < xScale.left || x > xScale.right) return; // Don't draw if out of view
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.strokeStyle = '#6785bf'; // Or use a variable
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.moveTo(x, yScale.top);
+                ctx.lineTo(x, yScale.bottom);
+                ctx.stroke();
+                
+                // Draw Label "Adesso"
+                ctx.fillStyle = '#e0e0e0';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(' Adesso', x + 5, yScale.top + 20);
+                
+                ctx.restore();
+            }
+        };
+
         function parseAndFixDecimal(value) {
             if (value === null || value === undefined || value === 'N/A' || String(value).trim() === '') return NaN;
             return parseFloat(String(value).replace(',', '.'));
@@ -5245,6 +5347,53 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
         };
 
         function drawForecastChart(labels, q10, q50, q90) {
+            // --- 1. PREPARE DATA ---
+            // Filter historical data (last 3 hours relative to the first forecast timestamp)
+            // If no forecast timestamp, use now
+            let referenceTime = Date.now();
+            if (labels && labels.length > 0) {
+                const firstForecast = parseCustomDate(labels[0]);
+                if (firstForecast) referenceTime = firstForecast.getTime();
+            }
+
+            const threeHoursAgo = referenceTime - (3 * 60 * 60 * 1000);
+            
+            // Get historical data
+            const historicalData = STATE.regionHistoryData
+                .filter(r => {
+                    const d = parseCustomDate(r.Data_Ora);
+                    return d && d.getTime() >= threeHoursAgo && d.getTime() <= referenceTime;
+                })
+                .sort((a, b) => (parseCustomDate(a.Data_Ora) || 0) - (parseCustomDate(b.Data_Ora) || 0));
+
+            const historicalLabels = historicalData.map(r => r.Data_Ora);
+            const historicalLevels = historicalData.map(r => parseAndFixDecimal(r['Misa - Livello Misa (mt)']));
+            
+            // Merge Labels and Data
+            const mergedLabels = [...historicalLabels, ...labels];
+            
+            // Dataset for Historical Levels
+            // It should align with mergedLabels. 
+            // Historical part has values, Forecast part is null.
+            const historicalLevelDataset = [
+                ...historicalLevels, 
+                ...new Array(labels.length).fill(null)
+            ];
+
+            // Datasets for Forecast Levels
+            // They should align with mergedLabels.
+            // Historical part is null, Forecast part has values.
+            // However, to make the line continuous, the first point of forecast should probably connect to last point of history?
+            // Or we just render them separately. The user asked for a vertical line "Adesso".
+            // Let's keep them separate but on the same chart.
+            const forecastQ10Dataset = [...new Array(historicalLabels.length).fill(null), ...q10];
+            const forecastQ50Dataset = [...new Array(historicalLabels.length).fill(null), ...q50];
+            const forecastQ90Dataset = [...new Array(historicalLabels.length).fill(null), ...q90];
+
+            // "Now" index is the index of the last historical point
+            const nowIndex = historicalLabels.length > 0 ? historicalLabels.length - 1 : 0;
+
+            // --- 2. UPDATE STATS TABLE (Forecast Only) ---
             const stats = {
                 q10: calculateStats(q10),
                 q50: calculateStats(q50),
@@ -5273,14 +5422,16 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 </tr>
             `;
 
+            // --- 3. DRAW LEVEL CHART ---
             safeCreateChart('forecastChart', {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: mergedLabels,
                     datasets: [
-                        { label: 'Q10 (Minimo)', data: q10, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                        { label: 'Q90 (Massimo)', data: q90, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                        { label: 'Q50 (Mediana)', data: q50, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                        { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
+                        { label: 'Q50 (Mediana)', data: forecastQ50Dataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                     ]
                 },
                 options: {
@@ -5288,23 +5439,62 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                     plugins: {
                         title: { display: true, text: 'Previsione Livello Idrometrico - Sensore 1112 (Bettolelle)', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
-                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(3)} m` } },
+                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
                         zoom: {
                             pan: { enabled: true, mode: 'x' },
                             zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
-                            limits: {
-                                x: { min: 'original', max: 'original' },
-                                y: { min: 'original', max: 'original' }
-                            }
-                        }
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+                        },
+                        nowLinePlugin: { nowIndex: nowIndex }
                     },
                     scales: {
                         x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
                         y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
                     }
                 },
-                plugins: [highlightPlugin]
+                plugins: [highlightPlugin, nowLinePlugin]
             }, 'forecast');
+
+            // --- 4. DRAW FLOW CHART (Parallel) ---
+            const SENSOR_ID_BETTOLELLE = 1112;
+            
+            // Convert all datasets to flow
+            const historicalFlowDataset = historicalLevelDataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+            const forecastQ10FlowDataset = forecastQ10Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+            const forecastQ50FlowDataset = forecastQ50Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+            const forecastQ90FlowDataset = forecastQ90Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+
+            safeCreateChart('forecastFlowChart', {
+                type: 'line',
+                data: {
+                    labels: mergedLabels,
+                    datasets: [
+                        { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
+                        { label: 'Q50 (Mediana)', data: forecastQ50FlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        title: { display: true, text: 'Previsione Portata - Bettolelle', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                        legend: { labels: { color: '#E0E0E0' } },
+                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+                        },
+                        nowLinePlugin: { nowIndex: nowIndex }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
+                        y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#FFFFFF' } }
+                    }
+                },
+                plugins: [highlightPlugin, nowLinePlugin]
+            }, 'forecastFlowChart'); // Need to register this key in STATE.charts if used
         }
 
         function updateForecastTable(data) {
@@ -5419,6 +5609,36 @@ function updateMobileForecastList(data) {
 
         // New functions for Bettolelle 3h
         function drawForecastChartBettolelle3h(labels, q10, q50, q90) {
+            // --- 1. PREPARE DATA ---
+            let referenceTime = Date.now();
+            if (labels && labels.length > 0) {
+                const firstForecast = parseCustomDate(labels[0]);
+                if (firstForecast) referenceTime = firstForecast.getTime();
+            }
+
+            const threeHoursAgo = referenceTime - (3 * 60 * 60 * 1000);
+            
+            // Get historical data
+            const historicalData = STATE.regionHistoryData
+                .filter(r => {
+                    const d = parseCustomDate(r.Data_Ora);
+                    return d && d.getTime() >= threeHoursAgo && d.getTime() <= referenceTime;
+                })
+                .sort((a, b) => (parseCustomDate(a.Data_Ora) || 0) - (parseCustomDate(b.Data_Ora) || 0));
+
+            const historicalLabels = historicalData.map(r => r.Data_Ora);
+            const historicalLevels = historicalData.map(r => parseAndFixDecimal(r['Misa - Livello Misa (mt)']));
+            
+            const mergedLabels = [...historicalLabels, ...labels];
+            
+            const historicalLevelDataset = [...historicalLevels, ...new Array(labels.length).fill(null)];
+            const forecastQ10Dataset = [...new Array(historicalLabels.length).fill(null), ...q10];
+            const forecastQ50Dataset = [...new Array(historicalLabels.length).fill(null), ...q50];
+            const forecastQ90Dataset = [...new Array(historicalLabels.length).fill(null), ...q90];
+
+            const nowIndex = historicalLabels.length > 0 ? historicalLabels.length - 1 : 0;
+
+            // --- 2. UPDATE STATS ---
             const stats = {
                 q10: calculateStats(q10),
                 q50: calculateStats(q50),
@@ -5447,14 +5667,16 @@ function updateMobileForecastList(data) {
                 </tr>
             `;
 
+            // --- 3. DRAW LEVEL CHART ---
             safeCreateChart('forecastChartBettolelle3h', {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: mergedLabels,
                     datasets: [
-                        { label: 'Q10 (Minimo)', data: q10, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                        { label: 'Q90 (Massimo)', data: q90, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                        { label: 'Q50 (Mediana)', data: q50, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                        { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
+                        { label: 'Q50 (Mediana)', data: forecastQ50Dataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                     ]
                 },
                 options: {
@@ -5462,15 +5684,60 @@ function updateMobileForecastList(data) {
                     plugins: {
                         title: { display: true, text: 'Previsione Idro Bettolelle 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
-                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(3)} m` } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
+                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
+                        zoom: { 
+                            pan: { enabled: true, mode: 'x' }, 
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+                        },
+                        nowLinePlugin: { nowIndex: nowIndex }
                     },
                     scales: {
                         x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
                         y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
                     }
-                }
+                },
+                plugins: [nowLinePlugin]
             }, 'forecastBettolelle3h');
+
+            // --- 4. DRAW FLOW CHART ---
+            const SENSOR_ID_BETTOLELLE = 1112;
+            const historicalFlowDataset = historicalLevelDataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+            const forecastQ10FlowDataset = forecastQ10Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+            const forecastQ50FlowDataset = forecastQ50Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+            const forecastQ90FlowDataset = forecastQ90Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+
+            safeCreateChart('forecastFlowChartBettolelle3h', {
+                type: 'line',
+                data: {
+                    labels: mergedLabels,
+                    datasets: [
+                        { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
+                        { label: 'Q50 (Mediana)', data: forecastQ50FlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        title: { display: true, text: 'Previsione Portata - Bettolelle 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                        legend: { labels: { color: '#E0E0E0' } },
+                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+                        },
+                        nowLinePlugin: { nowIndex: nowIndex }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
+                        y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#FFFFFF' } }
+                    }
+                },
+                plugins: [nowLinePlugin]
+            }, 'forecastFlowChartBettolelle3h');
         }
 
         function updateForecastTableBettolelle3h(data) {
@@ -5538,6 +5805,37 @@ function updateMobileForecastList(data) {
 
         // New functions for Ponte Garibaldi 6h
         function drawForecastChartPonteGaribaldi6h(labels, q10, q50, q90) {
+            // --- 1. PREPARE DATA ---
+            let referenceTime = Date.now();
+            if (labels && labels.length > 0) {
+                const firstForecast = parseCustomDate(labels[0]);
+                if (firstForecast) referenceTime = firstForecast.getTime();
+            }
+
+            const threeHoursAgo = referenceTime - (3 * 60 * 60 * 1000);
+            
+            // Get historical data
+            const historicalData = STATE.regionHistoryData
+                .filter(r => {
+                    const d = parseCustomDate(r.Data_Ora);
+                    return d && d.getTime() >= threeHoursAgo && d.getTime() <= referenceTime;
+                })
+                .sort((a, b) => (parseCustomDate(a.Data_Ora) || 0) - (parseCustomDate(b.Data_Ora) || 0));
+
+            const historicalLabels = historicalData.map(r => r.Data_Ora);
+            // IMPORTANT: Use correct column for Ponte Garibaldi
+            const historicalLevels = historicalData.map(r => parseAndFixDecimal(r['Ponte Garibaldi - Livello Misa 2 (mt)']));
+            
+            const mergedLabels = [...historicalLabels, ...labels];
+            
+            const historicalLevelDataset = [...historicalLevels, ...new Array(labels.length).fill(null)];
+            const forecastQ10Dataset = [...new Array(historicalLabels.length).fill(null), ...q10];
+            const forecastQ50Dataset = [...new Array(historicalLabels.length).fill(null), ...q50];
+            const forecastQ90Dataset = [...new Array(historicalLabels.length).fill(null), ...q90];
+
+            const nowIndex = historicalLabels.length > 0 ? historicalLabels.length - 1 : 0;
+
+            // --- 2. UPDATE STATS ---
             const stats = {
                 q10: calculateStats(q10),
                 q50: calculateStats(q50),
@@ -5566,14 +5864,16 @@ function updateMobileForecastList(data) {
                 </tr>
             `;
 
+            // --- 3. DRAW LEVEL CHART ---
             safeCreateChart('forecastChartPonteGaribaldi6h', {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: mergedLabels,
                     datasets: [
-                        { label: 'Q10 (Minimo)', data: q10, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                        { label: 'Q90 (Massimo)', data: q90, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                        { label: 'Q50 (Mediana)', data: q50, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                        { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
+                        { label: 'Q50 (Mediana)', data: forecastQ50Dataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                     ]
                 },
                 options: {
@@ -5581,15 +5881,60 @@ function updateMobileForecastList(data) {
                     plugins: {
                         title: { display: true, text: 'Previsione Idro Ponte Garibaldi 6h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
-                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(3)} m` } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
+                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
+                        zoom: { 
+                            pan: { enabled: true, mode: 'x' }, 
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+                        },
+                        nowLinePlugin: { nowIndex: nowIndex }
                     },
                     scales: {
                         x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
                         y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
                     }
-                }
+                },
+                plugins: [nowLinePlugin]
             }, 'forecastPonteGaribaldi6h');
+
+            // --- 4. DRAW FLOW CHART ---
+            const SENSOR_ID_GARIBALDI = 3405;
+            const historicalFlowDataset = historicalLevelDataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
+            const forecastQ10FlowDataset = forecastQ10Dataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
+            const forecastQ50FlowDataset = forecastQ50Dataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
+            const forecastQ90FlowDataset = forecastQ90Dataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
+
+            safeCreateChart('forecastFlowChartPonteGaribaldi6h', {
+                type: 'line',
+                data: {
+                    labels: mergedLabels,
+                    datasets: [
+                        { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
+                        { label: 'Q50 (Mediana)', data: forecastQ50FlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        title: { display: true, text: 'Previsione Portata - Ponte Garibaldi 6h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                        legend: { labels: { color: '#E0E0E0' } },
+                        tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+                        },
+                        nowLinePlugin: { nowIndex: nowIndex }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
+                        y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#FFFFFF' } }
+                    }
+                },
+                plugins: [nowLinePlugin]
+            }, 'forecastFlowChartPonteGaribaldi6h');
         }
 
         function updateForecastTablePonteGaribaldi6h(data) {
@@ -6732,12 +7077,15 @@ function updateSliderUI(index) {
 
         function initFullscreenButtons() {
             setupFullscreen('fullscreen-forecast', 'forecastChart');
+            setupFullscreen('fullscreen-forecast-flow', 'forecastFlowChart');
             setupFullscreen('fullscreen-hydro', 'hydroHistoryChart');
             setupFullscreen('fullscreen-portata', 'portataHistoryChart');
             setupFullscreen('fullscreen-rain', 'rainHistoryChart');
             setupFullscreen('fullscreen-wind', 'windHistoryChart');
             setupFullscreen('fullscreen-forecast-bettolelle-3h', 'forecastChartBettolelle3h');
+            setupFullscreen('fullscreen-forecast-flow-bettolelle-3h', 'forecastFlowChartBettolelle3h');
             setupFullscreen('fullscreen-forecast-ponte-garibaldi-6h', 'forecastChartPonteGaribaldi6h');
+            setupFullscreen('fullscreen-forecast-flow-ponte-garibaldi-6h', 'forecastFlowChartPonteGaribaldi6h');
             
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
@@ -6883,17 +7231,25 @@ function updateSliderUI(index) {
             });
             document.getElementById('resetZoomBtn').addEventListener('click', () => {
                 if (STATE.charts.forecast) STATE.charts.forecast.resetZoom();
+                if (STATE.charts.forecastFlowChart) STATE.charts.forecastFlowChart.resetZoom();
+                if (STATE.charts.forecastBettolelle3h) STATE.charts.forecastBettolelle3h.resetZoom();
+                if (STATE.charts.forecastFlowChartBettolelle3h) STATE.charts.forecastFlowChartBettolelle3h.resetZoom();
+                if (STATE.charts.forecastPonteGaribaldi6h) STATE.charts.forecastPonteGaribaldi6h.resetZoom();
+                if (STATE.charts.forecastFlowChartPonteGaribaldi6h) STATE.charts.forecastFlowChartPonteGaribaldi6h.resetZoom();
             });
 
             // Chart action buttons
             const chartActions = {
                 'download-forecast-chart': () => downloadChartImage('forecastChart', 'previsioni.png'),
+                'download-forecast-flow-chart': () => downloadChartImage('forecastFlowChart', 'previsioni_portata.png'),
                 'download-hydro-chart': () => downloadChartImage('hydroHistoryChart', 'idrometri.png'),
                 'download-portata-chart': () => downloadChartImage('portataHistoryChart', 'portate.png'),
                 'download-rain-chart': () => downloadChartImage('rainHistoryChart', 'pluviometri.png'),
                 'download-wind-chart': () => downloadChartImage('windHistoryChart', 'anemometri.png'),
                 'download-forecast-chart-bettolelle-3h': () => downloadChartImage('forecastChartBettolelle3h', 'previsioni_bettolelle_3h.png'),
+                'download-forecast-flow-chart-bettolelle-3h': () => downloadChartImage('forecastFlowChartBettolelle3h', 'previsioni_portata_bettolelle_3h.png'),
                 'download-forecast-chart-ponte-garibaldi-6h': () => downloadChartImage('forecastChartPonteGaribaldi6h', 'previsioni_ponte_garibaldi_6h.png'),
+                'download-forecast-flow-chart-ponte-garibaldi-6h': () => downloadChartImage('forecastFlowChartPonteGaribaldi6h', 'previsioni_portata_ponte_garibaldi_6h.png'),
             };
             for (const [id, action] of Object.entries(chartActions)) {
                 const btn = document.getElementById(id);
