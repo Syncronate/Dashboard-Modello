@@ -5305,13 +5305,13 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 if (firstForecast) referenceTime = firstForecast.getTime();
             }
 
-            const threeHoursAgo = referenceTime - (2 * 60 * 60 * 1000);
+            const historyStartTime = referenceTime - (2 * 60 * 60 * 1000);
             
             // Get historical data
             const historicalData = STATE.regionHistoryData
                 .filter(r => {
                     const d = parseCustomDate(r.Data_Ora);
-                    return d && d.getTime() >= threeHoursAgo && d.getTime() <= referenceTime;
+                    return d && d.getTime() >= historyStartTime && d.getTime() <= referenceTime;
                 })
                 .sort((a, b) => (parseCustomDate(a.Data_Ora) || 0) - (parseCustomDate(b.Data_Ora) || 0));
 
@@ -5550,13 +5550,13 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 if (firstForecast) referenceTime = firstForecast.getTime();
             }
 
-            const threeHoursAgo = referenceTime - (2 * 60 * 60 * 1000);
+            const historyStartTime = referenceTime - (2 * 60 * 60 * 1000);
             
             // Get historical data
             const historicalData = STATE.regionHistoryData
                 .filter(r => {
                     const d = parseCustomDate(r.Data_Ora);
-                    return d && d.getTime() >= threeHoursAgo && d.getTime() <= referenceTime;
+                    return d && d.getTime() >= historyStartTime && d.getTime() <= referenceTime;
                 })
                 .sort((a, b) => (parseCustomDate(a.Data_Ora) || 0) - (parseCustomDate(b.Data_Ora) || 0));
 
