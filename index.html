@@ -2802,7 +2802,7 @@ max-width: 400px;
                         <canvas id="forecastFlowChart"></canvas>
                     </div>
                 </div>
-                <div class="table-container card" id="desktop-forecast-table">
+                <div class="table-container card" id="desktop-forecast-table" style="flex-basis: 100%; min-width: 100%;">
                     <table id="dataTable">
                         <thead>
                             <tr>
@@ -2887,7 +2887,7 @@ max-width: 400px;
                         <canvas id="forecastFlowChartBettolelle3h"></canvas>
                     </div>
                 </div>
-                <div class="table-container card" id="desktop-forecast-table-bettolelle-3h">
+                <div class="table-container card" id="desktop-forecast-table-bettolelle-3h" style="flex-basis: 100%; min-width: 100%;">
                     <table id="dataTableBettolelle3h">
                         <thead>
                             <tr>
@@ -2972,7 +2972,7 @@ max-width: 400px;
                         <canvas id="forecastFlowChartPonteGaribaldi6h"></canvas>
                     </div>
                 </div>
-                <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h">
+                <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h" style="flex-basis: 100%; min-width: 100%;">
                     <table id="dataTablePonteGaribaldi6h">
                         <thead>
                             <tr>
@@ -5380,18 +5380,21 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 ...new Array(labels.length).fill(null)
             ];
 
-            // Datasets for Forecast Levels
-            // They should align with mergedLabels.
-            // Historical part is null, Forecast part has values.
-            // However, to make the line continuous, the first point of forecast should probably connect to last point of history?
-            // Or we just render them separately. The user asked for a vertical line "Adesso".
-            // Let's keep them separate but on the same chart.
-            const forecastQ10Dataset = [...new Array(historicalLabels.length).fill(null), ...q10];
-            const forecastQ50Dataset = [...new Array(historicalLabels.length).fill(null), ...q50];
-            const forecastQ90Dataset = [...new Array(historicalLabels.length).fill(null), ...q90];
-
             // "Now" index is the index of the last historical point
             const nowIndex = historicalLabels.length > 0 ? historicalLabels.length - 1 : 0;
+            const lastHistLevel = historicalLevels.length > 0 ? historicalLevels[historicalLevels.length - 1] : null;
+
+            // Forecast padding with connection point
+            const forecastPadding = new Array(historicalLabels.length).fill(null);
+            if (lastHistLevel !== null && forecastPadding.length > 0) {
+                forecastPadding[forecastPadding.length - 1] = lastHistLevel;
+            }
+
+            // Datasets for Forecast Levels
+            // They should align with mergedLabels.
+            const forecastQ10Dataset = [...forecastPadding, ...q10];
+            const forecastQ50Dataset = [...forecastPadding, ...q50];
+            const forecastQ90Dataset = [...forecastPadding, ...q90];
 
             // --- 2. UPDATE STATS TABLE (Forecast Only) ---
             const stats = {
@@ -5632,11 +5635,19 @@ function updateMobileForecastList(data) {
             const mergedLabels = [...historicalLabels, ...labels];
             
             const historicalLevelDataset = [...historicalLevels, ...new Array(labels.length).fill(null)];
-            const forecastQ10Dataset = [...new Array(historicalLabels.length).fill(null), ...q10];
-            const forecastQ50Dataset = [...new Array(historicalLabels.length).fill(null), ...q50];
-            const forecastQ90Dataset = [...new Array(historicalLabels.length).fill(null), ...q90];
-
+            
             const nowIndex = historicalLabels.length > 0 ? historicalLabels.length - 1 : 0;
+            const lastHistLevel = historicalLevels.length > 0 ? historicalLevels[historicalLevels.length - 1] : null;
+
+            // Forecast padding with connection point
+            const forecastPadding = new Array(historicalLabels.length).fill(null);
+            if (lastHistLevel !== null && forecastPadding.length > 0) {
+                forecastPadding[forecastPadding.length - 1] = lastHistLevel;
+            }
+
+            const forecastQ10Dataset = [...forecastPadding, ...q10];
+            const forecastQ50Dataset = [...forecastPadding, ...q50];
+            const forecastQ90Dataset = [...forecastPadding, ...q90];
 
             // --- 2. UPDATE STATS ---
             const stats = {
@@ -5829,11 +5840,19 @@ function updateMobileForecastList(data) {
             const mergedLabels = [...historicalLabels, ...labels];
             
             const historicalLevelDataset = [...historicalLevels, ...new Array(labels.length).fill(null)];
-            const forecastQ10Dataset = [...new Array(historicalLabels.length).fill(null), ...q10];
-            const forecastQ50Dataset = [...new Array(historicalLabels.length).fill(null), ...q50];
-            const forecastQ90Dataset = [...new Array(historicalLabels.length).fill(null), ...q90];
-
+            
             const nowIndex = historicalLabels.length > 0 ? historicalLabels.length - 1 : 0;
+            const lastHistLevel = historicalLevels.length > 0 ? historicalLevels[historicalLevels.length - 1] : null;
+
+            // Forecast padding with connection point
+            const forecastPadding = new Array(historicalLabels.length).fill(null);
+            if (lastHistLevel !== null && forecastPadding.length > 0) {
+                forecastPadding[forecastPadding.length - 1] = lastHistLevel;
+            }
+
+            const forecastQ10Dataset = [...forecastPadding, ...q10];
+            const forecastQ50Dataset = [...forecastPadding, ...q50];
+            const forecastQ90Dataset = [...forecastPadding, ...q90];
 
             // --- 2. UPDATE STATS ---
             const stats = {
