@@ -1660,6 +1660,7 @@
             font-weight: 600;
             margin-top: 15px;
             transition: var(--transition);
+            display: none; /* Nascondi di default */
         }
 
         #resetZoomBtn:hover {
@@ -4045,6 +4046,25 @@ passwordInput.focus();
         };
 
         // ==================== UTILITY FUNCTIONS ====================
+        const sharedZoomOptions = {
+            pan: {
+                enabled: true,
+                mode: 'x',
+                modifierKey: null,
+                onPanComplete: showResetButton
+            },
+            zoom: {
+                wheel: {
+                    enabled: true
+                },
+                pinch: {
+                    enabled: true
+                },
+                mode: 'x',
+                onZoomComplete: showResetButton
+            }
+        };
+
         function getFlowFromLevel(sensorId, level) {
             if (level === null || level === undefined || isNaN(level)) return null;
             const station = DEFLUSSO_DATA.find(s => s.sensorId === sensorId);
@@ -4329,6 +4349,13 @@ passwordInput.focus();
             
             document.getElementById(`speed-bar-${station}`).style.width = `${speedPercent}%`;
             document.getElementById(`gust-bar-${station}`).style.width = `${gustPercent}%`;
+        }
+
+        function showResetButton() {
+            const btn = document.getElementById('resetZoomBtn');
+            if (btn) {
+                btn.style.display = 'inline-block';
+            }
         }
 
         /** * Mostra errore di aggiornamento all'utente */ 
@@ -5476,10 +5503,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                         title: { display: true, text: 'Previsione Livello Idrometrico - Sensore 1112 (Bettolelle)', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
-                        zoom: {
-                            pan: { enabled: true, mode: 'x' },
-                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
-                        },
+                        zoom: sharedZoomOptions,
                         nowLinePlugin: { nowIndex: nowIndex }
                     },
                     scales: {
@@ -5517,10 +5541,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                         title: { display: true, text: 'Previsione Portata - Bettolelle', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
-                        zoom: {
-                            pan: { enabled: true, mode: 'x' },
-                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
-                        },
+                        zoom: sharedZoomOptions,
                         nowLinePlugin: { nowIndex: nowIndex }
                     },
                     scales: {
@@ -5831,7 +5852,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                     plugins: {
                         title: { display: true, text: 'Andamento Storico Livelli Idrometrici', color: '#FFFFFF', font: { size: 16 } },
                         legend: { labels: { color: '#E0E0E0' } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
+                        zoom: sharedZoomOptions
                     },
                     scales: {
                         x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
@@ -5881,7 +5902,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                     plugins: {
                         title: { display: true, text: 'Andamento Storico Portate Idrometriche', color: '#FFFFFF', font: { size: 16 } },
                         legend: { labels: { color: '#E0E0E0' } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
+                        zoom: { pan: { enabled: true, mode: 'x', modifierKey: null, onPanComplete: showResetButton }, zoom: { wheel: { enabled: true }, mode: 'x', onZoomComplete: showResetButton } }
                     },
                     scales: {
                         x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
@@ -5929,7 +5950,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                     plugins: {
                         title: { display: true, text: 'Andamento Storico Pioggia Cumulata', color: '#FFFFFF', font: { size: 16 } },
                         legend: { labels: { color: '#E0E0E0' } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
+                        zoom: { pan: { enabled: true, mode: 'x', modifierKey: null, onPanComplete: showResetButton }, zoom: { wheel: { enabled: true }, mode: 'x', onZoomComplete: showResetButton } }
                     },
                     scales: {
                         x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
@@ -5961,7 +5982,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                     plugins: {
                         title: { display: true, text: `Andamento Storico Vento - ${station}`, color: '#FFFFFF', font: { size: 16 } },
                         legend: { labels: { color: '#E0E0E0' } },
-                        zoom: { pan: { enabled: true, mode: 'x' }, zoom: { wheel: { enabled: true }, mode: 'x' } }
+                        zoom: { pan: { enabled: true, mode: 'x', modifierKey: null, onPanComplete: showResetButton }, zoom: { wheel: { enabled: true }, mode: 'x', onZoomComplete: showResetButton } }
                     },
                     scales: {
                         x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(224, 224, 224, 0.1)' } },
@@ -6543,10 +6564,11 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 frames.forEach(frame => {
                     const layer = L.tileLayer(`https://tilecache.rainviewer.com${frame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
                         tileSize: 256,
-                        opacity: 0,
+                        opacity: 0, // Inizialmente nascosto
                         zIndex: 10,
                         maxNativeZoom: 11
                     });
+                    layer.addTo(mapInstance); // Aggiungi subito alla mappa
                     this.layers.push(layer);
                 });
                 
@@ -6558,14 +6580,16 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
             function showFrame(mapInstance, index) {
                 if (!this.layers[index] || !this.frames[index]) return;
 
+                // Nascondi il layer precedente
                 const previousLayer = this.layers[this.currentIndex];
-                if (mapInstance.hasLayer(previousLayer)) {
-                    mapInstance.removeLayer(previousLayer);
+                if (previousLayer) {
+                    previousLayer.setOpacity(0);
                 }
 
+                // Mostra il layer corrente
                 if (this.isRadarVisible) {
                     const currentLayer = this.layers[index];
-                    currentLayer.addTo(mapInstance).setOpacity(0.8);
+                    currentLayer.setOpacity(0.8);
                 }
                 
                 this.currentIndex = index;
@@ -6846,7 +6870,13 @@ function updateSliderUI(index) {
             
             const canvas = container.querySelector('canvas');
             if (canvas && canvas.chart) {
-                canvas.chart.resize();
+                // Aggiungi un piccolo ritardo per consentire al browser di completare la transizione CSS
+                // prima di ridimensionare il grafico. Questo previene la distorsione.
+                setTimeout(() => {
+                    if (canvas.chart) {
+                        canvas.chart.resize();
+                    }
+                }, 100); // 100ms è un ritardo sicuro e impercettibile
             }
         }
 
@@ -7017,13 +7047,14 @@ function updateSliderUI(index) {
                 icon.setAttribute('data-feather', isVisible ? 'book' : 'book-open');
                 feather.replace();
             });
-            document.getElementById('resetZoomBtn').addEventListener('click', () => {
+            document.getElementById('resetZoomBtn').addEventListener('click', (e) => {
                 if (STATE.charts.forecast) STATE.charts.forecast.resetZoom();
                 if (STATE.charts.forecastFlowChart) STATE.charts.forecastFlowChart.resetZoom();
                 if (STATE.charts.forecastBettolelle3h) STATE.charts.forecastBettolelle3h.resetZoom();
                 if (STATE.charts.forecastFlowChartBettolelle3h) STATE.charts.forecastFlowChartBettolelle3h.resetZoom();
                 if (STATE.charts.forecastPonteGaribaldi6h) STATE.charts.forecastPonteGaribaldi6h.resetZoom();
                 if (STATE.charts.forecastFlowChartPonteGaribaldi6h) STATE.charts.forecastFlowChartPonteGaribaldi6h.resetZoom();
+                e.target.style.display = 'none';
             });
 
             // Chart action buttons
