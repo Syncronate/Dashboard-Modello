@@ -2851,7 +2851,7 @@ max-width: 400px;
 
             <hr style="border-color: var(--border-color); margin: 40px 0;">
 
-            <h2 class="chart-title" style="text-align: center;">Previsioni idro Ponte Garibaldi 2h</h2>
+            <h2 class="chart-title" style="text-align: center;">Previsioni idro Ponte Garibaldi 3h</h2>
             <div class="container">
                 <div class="chart-wrapper">
                     <div class="chart-header">
@@ -5305,7 +5305,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 if (firstForecast) referenceTime = firstForecast.getTime();
             }
 
-            const threeHoursAgo = referenceTime - (2 * 60 * 60 * 1000);
+            const threeHoursAgo = referenceTime - (3 * 60 * 60 * 1000);
             
             // Get historical data
             const historicalData = STATE.regionHistoryData
@@ -5460,7 +5460,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                     datasets: [
                         { label: 'Soglia Critica', data: criticalDataset, borderColor: 'rgba(244, 67, 54, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
                         { label: 'Soglia Attenzione', data: warningDataset, borderColor: 'rgba(255, 193, 7, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
-                        { label: 'Storico 2h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
                         { label: 'Q50 (Mediana)', data: forecastQ50Dataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
@@ -5474,7 +5474,8 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
                         zoom: {
                             pan: { enabled: true, mode: 'x' },
-                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
                         },
                         nowLinePlugin: { nowIndex: nowIndex }
                     },
@@ -5497,7 +5498,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 data: {
                     labels: mergedLabels,
                     datasets: [
-                        { label: 'Storico 2h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
                         { label: 'Q50 (Mediana)', data: forecastQ50FlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
@@ -5511,7 +5512,8 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
                         zoom: {
                             pan: { enabled: true, mode: 'x' },
-                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
                         },
                         nowLinePlugin: { nowIndex: nowIndex }
                     },
@@ -5550,7 +5552,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 if (firstForecast) referenceTime = firstForecast.getTime();
             }
 
-            const threeHoursAgo = referenceTime - (2 * 60 * 60 * 1000);
+            const threeHoursAgo = referenceTime - (3 * 60 * 60 * 1000);
             
             // Get historical data
             const historicalData = STATE.regionHistoryData
@@ -5699,7 +5701,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                     datasets: [
                         { label: 'Soglia Critica', data: criticalDataset, borderColor: 'rgba(244, 67, 54, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
                         { label: 'Soglia Attenzione', data: warningDataset, borderColor: 'rgba(255, 193, 7, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
-                        { label: 'Storico 2h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
                         { label: 'Q50 (Mediana)', data: forecastQ50Dataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
@@ -5708,12 +5710,13 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        title: { display: true, text: 'Previsione Idro Ponte Garibaldi 2h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                        title: { display: true, text: 'Previsione Idro Ponte Garibaldi 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
                         zoom: { 
                             pan: { enabled: true, mode: 'x' }, 
-                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
                         },
                         nowLinePlugin: { nowIndex: nowIndex }
                     },
@@ -5736,7 +5739,7 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 data: {
                     labels: mergedLabels,
                     datasets: [
-                        { label: 'Storico 2h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                        { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
                         { label: 'Q50 (Mediana)', data: forecastQ50FlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
@@ -5745,12 +5748,13 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        title: { display: true, text: 'Previsione Portata - Ponte Garibaldi 2h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                        title: { display: true, text: 'Previsione Portata - Ponte Garibaldi 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
                         zoom: {
                             pan: { enabled: true, mode: 'x' },
-                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
                         },
                         nowLinePlugin: { nowIndex: nowIndex }
                     },
