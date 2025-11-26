@@ -3970,7 +3970,7 @@ passwordInput.focus();
                     'Pianello di Ostra': { warning: 1.5, critical: 2.0 },
                     'Nevola': { warning: 2.0, critical: 2.5 },
                     'Passo Ripe': { warning: 1.0, critical: 1.2 },
-                    'Misa (Bettolelle)': { warning: 1.8, critical: 2.0, activation: 3.70, activationFlow: 220 },
+                    'Misa (Bettolelle)': { warning: 1.8, critical: 2.0 },
                     'Ponte Garibaldi': { warning: 1.5, critical: 2.2 },
                     'Cesano': { warning: 0.5, critical: 1.0 },
                     'Foce Cesano': { warning: 1.3, critical: 1.5 }
@@ -5305,13 +5305,13 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 if (firstForecast) referenceTime = firstForecast.getTime();
             }
 
-            const historyStartTime = referenceTime - (2 * 60 * 60 * 1000);
+            const threeHoursAgo = referenceTime - (2 * 60 * 60 * 1000);
             
             // Get historical data
             const historicalData = STATE.regionHistoryData
                 .filter(r => {
                     const d = parseCustomDate(r.Data_Ora);
-                    return d && d.getTime() >= historyStartTime && d.getTime() <= referenceTime;
+                    return d && d.getTime() >= threeHoursAgo && d.getTime() <= referenceTime;
                 })
                 .sort((a, b) => (parseCustomDate(a.Data_Ora) || 0) - (parseCustomDate(b.Data_Ora) || 0));
 
@@ -5344,11 +5344,8 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
             // Threshold lines
             const thresholdWarning = CONFIG.thresholds.hydroThresholds['Misa (Bettolelle)'].warning;
             const thresholdCritical = CONFIG.thresholds.hydroThresholds['Misa (Bettolelle)'].critical;
-            const thresholdActivation = CONFIG.thresholds.hydroThresholds['Misa (Bettolelle)'].activation || 3.70;
-
             const warningDataset = new Array(mergedLabels.length).fill(thresholdWarning);
             const criticalDataset = new Array(mergedLabels.length).fill(thresholdCritical);
-            const activationDataset = new Array(mergedLabels.length).fill(thresholdActivation);
 
             // --- 2. UPDATE STATS TABLES ---
             
@@ -5463,7 +5460,6 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                     datasets: [
                         { label: 'Soglia Critica', data: criticalDataset, borderColor: 'rgba(244, 67, 54, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
                         { label: 'Soglia Attenzione', data: warningDataset, borderColor: 'rgba(255, 193, 7, 0.8)', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, fill: false },
-                        { label: 'Attivazione Vasca', data: activationDataset, borderColor: '#9c27b0', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false },
                         { label: 'Storico 2h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
@@ -5496,15 +5492,11 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
             const forecastQ50FlowDataset = forecastQ50Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
             const forecastQ90FlowDataset = forecastQ90Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
 
-            const thresholdActivationFlow = CONFIG.thresholds.hydroThresholds['Misa (Bettolelle)'].activationFlow || 220;
-            const activationFlowDataset = new Array(mergedLabels.length).fill(thresholdActivationFlow);
-
             safeCreateChart('forecastFlowChart', {
                 type: 'line',
                 data: {
                     labels: mergedLabels,
                     datasets: [
-                        { label: 'Attivazione Vasca', data: activationFlowDataset, borderColor: '#9c27b0', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false },
                         { label: 'Storico 2h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
                         { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
@@ -5558,13 +5550,13 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
                 if (firstForecast) referenceTime = firstForecast.getTime();
             }
 
-            const historyStartTime = referenceTime - (2 * 60 * 60 * 1000);
+            const threeHoursAgo = referenceTime - (2 * 60 * 60 * 1000);
             
             // Get historical data
             const historicalData = STATE.regionHistoryData
                 .filter(r => {
                     const d = parseCustomDate(r.Data_Ora);
-                    return d && d.getTime() >= historyStartTime && d.getTime() <= referenceTime;
+                    return d && d.getTime() >= threeHoursAgo && d.getTime() <= referenceTime;
                 })
                 .sort((a, b) => (parseCustomDate(a.Data_Ora) || 0) - (parseCustomDate(b.Data_Ora) || 0));
 
@@ -7155,31 +7147,12 @@ function updateSliderUI(index) {
                 const thresholds = CONFIG.thresholds.hydroThresholds[station];
                 const stationDiv = document.createElement('div');
                 stationDiv.className = 'settings-item';
-                
-                let extraInputs = '';
-                if (station === 'Misa (Bettolelle)') {
-                     extraInputs = `
-                        <div style="margin-top: 5px; width: 100%;">
-                            <span style="font-size: 0.85em; display: block; margin-bottom: 2px;">Attivazione Vasca:</span>
-                            <div style="display: flex; gap: 5px;">
-                                <input type="number" data-station="${station}" data-level="activation" value="${thresholds.activation || 3.70}" step="0.1" placeholder="Metri (m)">
-                                <input type="number" data-station="${station}" data-level="activationFlow" value="${thresholds.activationFlow || 220}" step="10" placeholder="Portata (m³/s)">
-                            </div>
-                        </div>
-                     `;
-                     stationDiv.style.flexDirection = 'column';
-                     stationDiv.style.alignItems = 'flex-start';
-                }
-
                 stationDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <span>${station} (m):</span>
-                        <div style="display: flex; gap: 5px;">
-                            <input type="number" data-station="${station}" data-level="warning" value="${thresholds.warning}" step="0.1" placeholder="Allerta">
-                            <input type="number" data-station="${station}" data-level="critical" value="${thresholds.critical}" step="0.1" placeholder="Critica">
-                        </div>
+                    <span>${station} (m):</span>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" data-station="${station}" data-level="warning" value="${thresholds.warning}" step="0.1" placeholder="Allerta">
+                        <input type="number" data-station="${station}" data-level="critical" value="${thresholds.critical}" step="0.1" placeholder="Critica">
                     </div>
-                    ${extraInputs}
                 `;
                 hydroContainer.appendChild(stationDiv);
             }
