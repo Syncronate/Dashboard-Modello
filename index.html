@@ -345,7 +345,7 @@
         }
 
         .sidebar ul li a.active {
-            background-color: rgba(59, 130, 246, 0.1);
+            background-color: rgba(255, 255, 255, 0.1);
             color: var(--primary-color);
             font-weight: 600;
         }
@@ -1058,7 +1058,7 @@
             width: 56px;
             height: 56px;
             border-radius: var(--radius-md);
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--primary-color);
             display: flex;
             align-items: center;
@@ -1068,7 +1068,7 @@
         
         .quick-stat-card:hover .quick-stat-icon {
             background: var(--primary-color);
-            color: white;
+            color: var(--dark-bg);
             transform: scale(1.1) rotate(5deg);
         }
 
@@ -1241,14 +1241,14 @@
         .filter-container select:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
         }
 
         .filter-container button {
             cursor: pointer;
             font-weight: 600;
             background: var(--primary-color);
-            color: white;
+            color: var(--dark-bg);
             border: none;
             padding: 10px 24px;
             display: flex;
@@ -1292,9 +1292,9 @@
 
         .quick-filter-btn.active {
             background: var(--primary-color);
-            color: white;
+            color: var(--dark-bg);
             border-color: var(--primary-color);
-            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         /* === DATA GROUPS === */
@@ -1659,12 +1659,12 @@
         }
 
         tbody tr:hover {
-            background-color: rgba(59, 130, 246, 0.1) !important;
+            background-color: rgba(255, 255, 255, 0.05) !important;
             color: var(--text-color);
         }
 
         tbody tr.highlighted {
-            background-color: rgba(59, 130, 246, 0.2) !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
             color: var(--primary-color);
             font-weight: 600;
             border-left: 3px solid var(--primary-color);
@@ -6465,7 +6465,17 @@ function updateMobileForecastList(data) {
                 }
 
                 // Colora il marker in base all'allerta
-                const iconColor = alertLevel === 'critical' ? 'var(--danger-color)' : alertLevel === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)';
+                let iconColor;
+                let textColor = 'white';
+                
+                if (alertLevel === 'critical') {
+                    iconColor = 'var(--danger-color)';
+                } else if (alertLevel === 'warning') {
+                    iconColor = 'var(--warning-color)';
+                } else {
+                    // Normal state: Dark Grey to contrast with light map elements
+                    iconColor = '#3f3f46'; // Zinc 700
+                }
                 
                 const isMobile = utils.isMobile();
                 const iconSize = isMobile ? MAP_CONSTANTS.ICON_SIZE_MOBILE : MAP_CONSTANTS.ICON_SIZE_DESKTOP;
@@ -6493,7 +6503,7 @@ function updateMobileForecastList(data) {
                                 top: ${iconSize * 0.5}px;
                                 left: -${iconSize/2.5}px;
                                 width: ${iconSize/1.25}px;
-                                color: white;
+                                color: ${textColor};
                                 font-size: ${fontSize};
                                 font-weight: bold;
                                 text-align: center;
@@ -6504,9 +6514,9 @@ function updateMobileForecastList(data) {
                 } else {
                     // Icona a cerchio per idrometri
                     iconHtml = `
-                        <div style="background-color: ${iconColor}; color: white; 
+                        <div style="background-color: ${iconColor}; color: ${textColor}; 
                             width: ${iconSize}px; height: ${iconSize}px; 
-                            border-radius: 50%; border: 3px solid white; 
+                            border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); 
                             display: flex; align-items: center; justify-content: center; 
                             text-align: center; font-size: ${fontSize}; font-weight: bold; 
                             box-shadow: var(--shadow-lg);">
