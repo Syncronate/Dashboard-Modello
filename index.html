@@ -6351,6 +6351,10 @@ function updateMobileForecastList(data) {
                 lowerBand[historicalLabels.length - 1] = lastHistLevel;
             }
 
+            // Calculate zoom start (approx 3 hours of history to center the forecast)
+            const zoomStartIndex = Math.max(0, historicalLabels.length - 12);
+            const zoomMin = historicalLabels[zoomStartIndex];
+
             safeCreateChart('experimentalForecastChart', {
                 type: 'line',
                 data: {
@@ -6401,10 +6405,19 @@ function updateMobileForecastList(data) {
                     plugins: {
                         legend: { display: true, labels: { color: '#E0E0E0' } },
                         tooltip: { mode: 'index', intersect: false },
-                        title: { display: true, text: 'Previsione Livello Bettolelle (Modello Sperimentale)', color: '#fff' }
+                        title: { display: true, text: 'Previsione Livello Bettolelle (Modello Sperimentale)', color: '#fff' },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+                        }
                     },
                     scales: {
-                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        x: { 
+                            min: zoomMin,
+                            ticks: { color: '#E0E0E0', maxRotation: 45 }, 
+                            grid: { color: 'rgba(255,255,255,0.1)' } 
+                        },
                         y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(255,255,255,0.1)' }, title: { display: true, text: 'Livello (m)', color: '#fff' } }
                     }
                 }
@@ -6440,6 +6453,10 @@ function updateMobileForecastList(data) {
             if (lastHistFlow !== null) forecastPadding[historicalLabels.length - 1] = lastHistFlow;
             const forecastDataset = [...forecastPadding, ...forecastFlows];
 
+            // Calculate zoom start (approx 3 hours of history to center the forecast)
+            const zoomStartIndex = Math.max(0, historicalLabels.length - 12);
+            const zoomMin = historicalLabels[zoomStartIndex];
+
             safeCreateChart('experimentalFlowChart', {
                 type: 'line',
                 data: {
@@ -6473,10 +6490,19 @@ function updateMobileForecastList(data) {
                     plugins: {
                         legend: { display: true, labels: { color: '#E0E0E0' } },
                         tooltip: { mode: 'index', intersect: false },
-                        title: { display: true, text: 'Previsione Portata Bettolelle', color: '#fff' }
+                        title: { display: true, text: 'Previsione Portata Bettolelle', color: '#fff' },
+                        zoom: {
+                            pan: { enabled: true, mode: 'x' },
+                            zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+                            limits: { x: { min: 'original', max: 'original' }, y: { min: 'original', max: 'original' } }
+                        }
                     },
                     scales: {
-                        x: { ticks: { color: '#E0E0E0', maxRotation: 45 }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        x: { 
+                            min: zoomMin,
+                            ticks: { color: '#E0E0E0', maxRotation: 45 }, 
+                            grid: { color: 'rgba(255,255,255,0.1)' } 
+                        },
                         y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(255,255,255,0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#fff' } }
                     }
                 }
