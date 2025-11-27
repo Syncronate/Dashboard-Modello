@@ -3089,7 +3089,7 @@ max-width: 400px;
             <div class="container">
                 <div class="chart-wrapper">
                     <div class="chart-header">
-                        <span class="chart-title">Livello Idrometrico (1h, 2h, 3h)</span>
+                        <span class="chart-title">Livello Idrometrico (1h - 6h)</span>
                         <div class="chart-actions">
                             <button class="chart-btn" id="download-experimental-forecast-chart">
                                 <i data-feather="camera" class="feather-icon"></i> Scarica
@@ -6271,18 +6271,30 @@ function updateMobileForecastList(data) {
             // 3 Hour Forecast (Autoregressive + Trend)
             // Bettolelle(t + 3h) = -0.396 + 0.865 * Bettolelle(t) + 1.007 * (Bettolelle(t) - Bettolelle(t-30')) + 0.399 * Serra(t) - 0.007 * Pianello(t) + 0.020 * Passo_Ripe(t) - 0.039 * Corinaldo(t) + Sedimento
             const f3 = -0.396 + 0.865 * bettolelle_t + 1.007 * bettolelle_diff + 0.399 * serra_t - 0.007 * pianello_t + 0.020 * passo_t - 0.039 * corinaldo_t + SEDIMENTO;
+
+            // 4 Hour Forecast
+            // Bettolelle(t + 4h) = -0.362 + 0.858 * Bettolelle(t) + 0.877 * (Bettolelle(t) - Bettolelle(t-30')) + 0.416 * Serra(t) - 0.023 * Pianello(t) + 0.023 * Passo_Ripe(t) - 0.058 * Corinaldo(t) + Sedimento
+            const f4 = -0.362 + 0.858 * bettolelle_t + 0.877 * bettolelle_diff + 0.416 * serra_t - 0.023 * pianello_t + 0.023 * passo_t - 0.058 * corinaldo_t + SEDIMENTO;
+
+            // 5 Hour Forecast
+            // Bettolelle(t + 5h) = -0.324 + 0.860 * Bettolelle(t) + 0.725 * (Bettolelle(t) - Bettolelle(t-30')) + 0.406 * Serra(t) - 0.041 * Pianello(t) + 0.025 * Passo_Ripe(t) - 0.074 * Corinaldo(t) + Sedimento
+            const f5 = -0.324 + 0.860 * bettolelle_t + 0.725 * bettolelle_diff + 0.406 * serra_t - 0.041 * pianello_t + 0.025 * passo_t - 0.074 * corinaldo_t + SEDIMENTO;
+
+            // 6 Hour Forecast
+            // Bettolelle(t + 6h) = -0.286 + 0.864 * Bettolelle(t) + 0.617 * (Bettolelle(t) - Bettolelle(t-30')) + 0.394 * Serra(t) - 0.057 * Pianello(t) + 0.027 * Passo_Ripe(t) - 0.091 * Corinaldo(t) + Sedimento
+            const f6 = -0.286 + 0.864 * bettolelle_t + 0.617 * bettolelle_diff + 0.394 * serra_t - 0.057 * pianello_t + 0.027 * passo_t - 0.091 * corinaldo_t + SEDIMENTO;
             
             // Timestamps
             const t_now = parseCustomDate(row_t.Data_Ora).getTime();
-            const times = [t_now + 3600000, t_now + 7200000, t_now + 10800000];
-            const values = [f1, f2, f3];
+            const times = [t_now + 3600000, t_now + 7200000, t_now + 10800000, t_now + 14400000, t_now + 18000000, t_now + 21600000];
+            const values = [f1, f2, f3, f4, f5, f6];
             
             // Store
             STATE.experimentalForecast = values.map((v, i) => ({
                 timestamp: new Date(times[i]),
                 level: v,
                 flow: getFlowFromLevel(1112, v), // Bettolelle ID
-                uncertainty: 0.15 // Fixed visual band based on approx RMSE
+                uncertainty: i < 3 ? 0.15 : 0.20 // Wider band for 4-6h due to lower R2
             }));
             
             updateExperimentalTable();
