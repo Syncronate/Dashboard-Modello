@@ -3125,7 +3125,6 @@ max-width: 400px;
                             <tr>
                                 <th>🕐 Timestamp</th>
                                 <th>Livello Previsto (m)</th>
-                                <th>Incertezza (±m)</th>
                                 <th>Portata (m³/s)</th>
                             </tr>
                         </thead>
@@ -6192,109 +6191,207 @@ function updateMobileForecastList(data) {
 
         // ==================== EXPERIMENTAL FORECAST FUNCTIONS ====================
         function calculateExperimentalForecasts() {
-            if (!STATE.regionHistoryData || STATE.regionHistoryData.length < 5) return;
+            if (!STATE.regionHistoryData || STATE.regionHistoryData.length < 20) {
+                console.warn('Dati storici insufficienti per il modello sperimentale');
+                return;
+            }
 
-            const data = STATE.regionHistoryData;
-            // Ordina per data crescente per sicurezza
-            const sortedData = [...data].sort((a, b) => {
-                const dateA = parseCustomDate(a.Data_Ora);
-                const dateB = parseCustomDate(b.Data_Ora);
-                return (dateA && dateB) ? dateA - dateB : 0;
+            // 1. Prepare Data Map for Robust Timestamp Access
+            const dataMap = new Map();
+            const timestamps = [];
+
+            STATE.regionHistoryData.forEach(row => {
+                const date = parseCustomDate(row.Data_Ora);
+                if (date) {
+                    const ts = date.getTime();
+                    dataMap.set(ts, row);
+                    timestamps.push(ts);
+                }
             });
+            
+            timestamps.sort((a, b) => a - b);
+            
+            if (timestamps.length === 0) return;
 
-            const lastIndex = sortedData.length - 1;
-            
-            // Helper to get value
-            const getVal = (row, col) => parseAndFixDecimal(row[col]);
-            
-            // Columns
+            // Column Constants
+            const C_BETTOLELLE = 'Misa - Livello Misa (mt)';
             const C_SERRA = 'Serra dei Conti - Livello Misa (mt)';
             const C_PIANELLO = 'Pianello di Ostra - Livello Misa (mt)';
+            const C_CORINALDO = 'Nevola - Livello Nevola (mt)';
             const C_PASSO = 'Passo Ripe - Livello Nevola (mt)';
-            const C_CORINALDO = 'Nevola - Livello Nevola (mt)'; 
             
-            // Trova l'ultimo indice dove tutti i dati attuali (t) sono disponibili
-            // Procediamo a ritroso dall'ultimo record disponibile
-            let t_index = -1;
+            // --- Helper Functions for Smoothing & Diff ---
+            // Data is smoothed using a 1-hour moving average with window=2 on 30min data.
+            // Smooth(t) = (Raw(t) + Raw(t - 30min)) / 2
             
-            for (let i = lastIndex; i >= 4; i--) {
-                const row = sortedData[i];
-                if (
-                    !isNaN(getVal(row, C_SERRA)) &&
-                    !isNaN(getVal(row, C_PIANELLO)) &&
-                    !isNaN(getVal(row, C_PASSO)) &&
-                    !isNaN(getVal(row, C_CORINALDO))
-                ) {
-                    t_index = i;
-                    break;
+            const getRaw = (col, ts) => {
+                const row = dataMap.get(ts);
+                if (!row) return NaN;
+                return parseAndFixDecimal(row[col]);
+            };
+            
+            const getSmooth = (col, ts) => {
+                const val1 = getRaw(col, ts);
+                const val2 = getRaw(col, ts - 1800000); // 30 mins ago
+                if (isNaN(val1) || isNaN(val2)) return NaN;
+                return (val1 + val2) / 2;
+            };
+
+            const getDiff = (col, t1, t2) => {
+                const s1 = getSmooth(col, t1);
+                const s2 = getSmooth(col, t2);
+                if (isNaN(s1) || isNaN(s2)) return NaN;
+                return s1 - s2;
+            };
+
+            const getAccel = (ts) => {
+                // Acceleration = Delta_1 - Delta_2
+                // Delta_1 = Smooth(t) - Smooth(t-30)
+                // Delta_2 = Smooth(t-30) - Smooth(t-60)
+                // Result = Smooth(t) - 2*Smooth(t-30) + Smooth(t-60)
+                // Calculates acceleration for Bettolelle
+                const s_t = getSmooth(C_BETTOLELLE, ts);
+                const s_t30 = getSmooth(C_BETTOLELLE, ts - 1800000);
+                const s_t60 = getSmooth(C_BETTOLELLE, ts - 3600000);
+
+                if (isNaN(s_t) || isNaN(s_t30) || isNaN(s_t60)) return NaN;
+                return s_t - 2 * s_t30 + s_t60;
+            };
+
+            // Find latest valid timestamp T where we have sufficient history.
+            // The model requires data back to t - 180min (smoothed), so we need raw data at t - 210min.
+            
+            let T = 0;
+            let found = false;
+            
+            // Search backwards from the latest timestamp
+            for (let i = timestamps.length - 1; i >= 0; i--) {
+                const ts = timestamps[i];
+
+                // Check if we have the oldest required raw data point (t - 210 min) for Serra
+                if (dataMap.has(ts - 210 * 60000)) {
+                    // Validation: Check if key smoothed values are valid numbers
+                    const acc = getAccel(ts);
+                    const serra_old = getSmooth(C_SERRA, ts - 180 * 60000);
+                    const bettolelle_now = getSmooth(C_BETTOLELLE, ts);
+
+                    if (!isNaN(acc) && !isNaN(serra_old) && !isNaN(bettolelle_now)) {
+                        T = ts;
+                        found = true;
+                        break;
+                    }
                 }
             }
             
-            if (t_index === -1) {
-                console.warn('Dati insufficienti per il modello sperimentale');
+            if (!found) {
+                console.warn('Impossibile trovare un timestamp con sufficiente storico per il nuovo modello (richiesti ~3.5h)');
                 return;
             }
 
-            const row_t = sortedData[t_index];
-            const row_t_30 = sortedData[t_index - 2];
-            const row_t_60 = sortedData[t_index - 4];
-            
-            if (!row_t || !row_t_30 || !row_t_60) return;
-            
-            // Values
-            const bettolelle_t = getVal(row_t, 'Misa - Livello Misa (mt)');
-            const bettolelle_t_30 = getVal(row_t_30, 'Misa - Livello Misa (mt)'); // t - 30'
-            const serra_t = getVal(row_t, C_SERRA);
-            const serra_t_60 = getVal(row_t_60, C_SERRA); // t - 1h
-            const pianello_t = getVal(row_t, C_PIANELLO);
-            const passo_t = getVal(row_t, C_PASSO);
-            const corinaldo_t = getVal(row_t, C_CORINALDO);
-            const corinaldo_t_30 = getVal(row_t_30, C_CORINALDO); // t - 30'
-            
-            // Validation (double check lagged variables)
-            if ([serra_t_60, corinaldo_t_30, bettolelle_t, bettolelle_t_30].some(isNaN)) {
-                console.warn('Dati storici mancanti per i lag temporali o variabili correnti');
-                return;
-            }
-            
-            const SEDIMENTO = 0.37;
-            const bettolelle_diff = bettolelle_t - bettolelle_t_30;
-            
-            // 1 Hour Forecast (Autoregressive + Trend)
-            // Bettolelle(t + 1h) = -0.388 + 0.961 * Bettolelle(t) + 0.754 * (Bettolelle(t) - Bettolelle(t-30')) + 0.062 * Serra(t - 1h) + 0.020 * Pianello(t) + 0.005 * Passo_Ripe(t) + 0.005 * Corinaldo(t - 30') + Sedimento
-            const f1 = -0.388 + 0.961 * bettolelle_t + 0.754 * bettolelle_diff + 0.062 * serra_t_60 + 0.020 * pianello_t + 0.005 * passo_t + 0.005 * corinaldo_t_30 + SEDIMENTO;
-            
-            // 2 Hour Forecast (Autoregressive + Trend)
-            // Bettolelle(t + 2h) = -0.413 + 0.893 * Bettolelle(t) + 1.014 * (Bettolelle(t) - Bettolelle(t-30')) + 0.310 * Serra(t) + 0.006 * Pianello(t) + 0.015 * Passo_Ripe(t) - 0.017 * Corinaldo(t) + Sedimento
-            const f2 = -0.413 + 0.893 * bettolelle_t + 1.014 * bettolelle_diff + 0.310 * serra_t + 0.006 * pianello_t + 0.015 * passo_t - 0.017 * corinaldo_t + SEDIMENTO;
-            
-            // 3 Hour Forecast (Autoregressive + Trend)
-            // Bettolelle(t + 3h) = -0.396 + 0.865 * Bettolelle(t) + 1.007 * (Bettolelle(t) - Bettolelle(t-30')) + 0.399 * Serra(t) - 0.007 * Pianello(t) + 0.020 * Passo_Ripe(t) - 0.039 * Corinaldo(t) + Sedimento
-            const f3 = -0.396 + 0.865 * bettolelle_t + 1.007 * bettolelle_diff + 0.399 * serra_t - 0.007 * pianello_t + 0.020 * passo_t - 0.039 * corinaldo_t + SEDIMENTO;
+            // Time Constants (ms)
+            const M30 = 30 * 60000;
+            const M60 = 60 * 60000;
+            const M90 = 90 * 60000;
+            const M120 = 120 * 60000;
+            const M150 = 150 * 60000;
+            const M180 = 180 * 60000;
 
-            // 4 Hour Forecast
-            // Bettolelle(t + 4h) = -0.362 + 0.858 * Bettolelle(t) + 0.877 * (Bettolelle(t) - Bettolelle(t-30')) + 0.416 * Serra(t) - 0.023 * Pianello(t) + 0.023 * Passo_Ripe(t) - 0.058 * Corinaldo(t) + Sedimento
-            const f4 = -0.362 + 0.858 * bettolelle_t + 0.877 * bettolelle_diff + 0.416 * serra_t - 0.023 * pianello_t + 0.023 * passo_t - 0.058 * corinaldo_t + SEDIMENTO;
-
-            // 5 Hour Forecast
-            // Bettolelle(t + 5h) = -0.324 + 0.860 * Bettolelle(t) + 0.725 * (Bettolelle(t) - Bettolelle(t-30')) + 0.406 * Serra(t) - 0.041 * Pianello(t) + 0.025 * Passo_Ripe(t) - 0.074 * Corinaldo(t) + Sedimento
-            const f5 = -0.324 + 0.860 * bettolelle_t + 0.725 * bettolelle_diff + 0.406 * serra_t - 0.041 * pianello_t + 0.025 * passo_t - 0.074 * corinaldo_t + SEDIMENTO;
-
-            // 6 Hour Forecast
-            // Bettolelle(t + 6h) = -0.286 + 0.864 * Bettolelle(t) + 0.617 * (Bettolelle(t) - Bettolelle(t-30')) + 0.394 * Serra(t) - 0.057 * Pianello(t) + 0.027 * Passo_Ripe(t) - 0.091 * Corinaldo(t) + Sedimento
-            const f6 = -0.286 + 0.864 * bettolelle_t + 0.617 * bettolelle_diff + 0.394 * serra_t - 0.057 * pianello_t + 0.027 * passo_t - 0.091 * corinaldo_t + SEDIMENTO;
+            const Acc = getAccel(T);
             
-            // Timestamps
-            const t_now = parseCustomDate(row_t.Data_Ora).getTime();
-            const times = [t_now + 3600000, t_now + 7200000, t_now + 10800000, t_now + 14400000, t_now + 18000000, t_now + 21600000];
-            const values = [f1, f2, f3, f4, f5, f6];
+            // Concise helpers for formulas
+            const S = (col, offset) => getSmooth(col, T - offset);
+            const D = (col, off1, off2) => getDiff(col, T - off1, T - off2);
+
+            // --- 30 Minute Forecast (t + 0.5h) ---
+            const f05 = 0.003
+                + -0.003 * S(C_SERRA, M90) + 0.098 * D(C_SERRA, M90, M120) + 0.046 * D(C_SERRA, M120, M150) + -0.053 * D(C_SERRA, M150, M180)
+                + 0.001 * S(C_PIANELLO, M30) + 0.035 * D(C_PIANELLO, M30, M60) + 0.008 * D(C_PIANELLO, M60, M90) + 0.010 * D(C_PIANELLO, M90, M120)
+                + -0.000 * S(C_CORINALDO, M60) + 0.247 * D(C_CORINALDO, M60, M90) + 0.045 * D(C_CORINALDO, M90, M120) + 0.036 * D(C_CORINALDO, M120, M150)
+                + 0.000 * S(C_PASSO, M30) + 0.027 * D(C_PASSO, M30, M60) + 0.005 * D(C_PASSO, M60, M90) + 0.007 * D(C_PASSO, M90, M120)
+                + 0.998 * S(C_BETTOLELLE, 0) + 0.430 * D(C_BETTOLELLE, 0, M30) + -0.041 * D(C_BETTOLELLE, M30, M60) + 0.197 * D(C_BETTOLELLE, M60, M90)
+                + 0.471 * Acc;
+
+            // --- 1 Hour Forecast (t + 1h) ---
+            const f1 = 0.002
+                + -0.008 * S(C_SERRA, M60) + 0.256 * D(C_SERRA, M60, M90) + 0.096 * D(C_SERRA, M90, M120) + 0.070 * D(C_SERRA, M120, M150)
+                + 0.008 * S(C_PIANELLO, 0) + 0.108 * D(C_PIANELLO, 0, M30) + 0.033 * D(C_PIANELLO, M30, M60) + 0.058 * D(C_PIANELLO, M60, M90)
+                + 0.002 * S(C_CORINALDO, M30) + 0.675 * D(C_CORINALDO, M30, M60) + 0.204 * D(C_CORINALDO, M60, M90) + 0.281 * D(C_CORINALDO, M90, M120)
+                + 0.001 * S(C_PASSO, 0) + 0.072 * D(C_PASSO, 0, M30) + 0.038 * D(C_PASSO, M30, M60) + 0.036 * D(C_PASSO, M60, M90)
+                + 0.993 * S(C_BETTOLELLE, 0) + 0.507 * D(C_BETTOLELLE, 0, M30) + 0.007 * D(C_BETTOLELLE, M30, M60) + 0.095 * D(C_BETTOLELLE, M60, M90)
+                + 0.500 * Acc;
+
+            // --- 1.5 Hour Forecast (t + 1.5h) ---
+            const f1_5 = -0.003
+                + 0.000 * S(C_SERRA, M30) + 0.638 * D(C_SERRA, M30, M60) + -0.047 * D(C_SERRA, M60, M90) + 0.364 * D(C_SERRA, M90, M120)
+                + 0.010 * S(C_PIANELLO, 0) + 0.139 * D(C_PIANELLO, 0, M30) + 0.039 * D(C_PIANELLO, M30, M60) + 0.077 * D(C_PIANELLO, M60, M90)
+                + 0.007 * S(C_CORINALDO, 0) + 0.947 * D(C_CORINALDO, 0, M30) + 0.420 * D(C_CORINALDO, M30, M60) + 0.659 * D(C_CORINALDO, M60, M90)
+                + 0.002 * S(C_PASSO, 0) + 0.092 * D(C_PASSO, 0, M30) + 0.039 * D(C_PASSO, M30, M60) + 0.034 * D(C_PASSO, M60, M90)
+                + 0.985 * S(C_BETTOLELLE, 0) + 0.569 * D(C_BETTOLELLE, 0, M30) + 0.032 * D(C_BETTOLELLE, M30, M60) + 0.008 * D(C_BETTOLELLE, M60, M90)
+                + 0.537 * Acc;
+
+            // --- 2 Hour Forecast (t + 2h) ---
+            const f2 = -0.002
+                + 0.034 * S(C_SERRA, 0) + 1.065 * D(C_SERRA, 0, M30) + 0.001 * D(C_SERRA, M30, M60) + 0.587 * D(C_SERRA, M60, M90)
+                + 0.011 * S(C_PIANELLO, 0) + 0.172 * D(C_PIANELLO, 0, M30) + 0.047 * D(C_PIANELLO, M30, M60) + 0.100 * D(C_PIANELLO, M60, M90)
+                + -0.000 * S(C_CORINALDO, 0) + 1.366 * D(C_CORINALDO, 0, M30) + 0.442 * D(C_CORINALDO, M30, M60) + 0.767 * D(C_CORINALDO, M60, M90)
+                + 0.003 * S(C_PASSO, 0) + 0.097 * D(C_PASSO, 0, M30) + 0.031 * D(C_PASSO, M30, M60) + 0.023 * D(C_PASSO, M60, M90)
+                + 0.975 * S(C_BETTOLELLE, 0) + 0.589 * D(C_BETTOLELLE, 0, M30) + 0.020 * D(C_BETTOLELLE, M30, M60) + -0.064 * D(C_BETTOLELLE, M60, M90)
+                + 0.569 * Acc;
+
+            // --- 2.5 Hour Forecast (t + 2.5h) ---
+            const f2_5 = 0.005
+                + 0.042 * S(C_SERRA, 0) + 1.474 * D(C_SERRA, 0, M30) + -0.040 * D(C_SERRA, M30, M60) + 0.670 * D(C_SERRA, M60, M90)
+                + 0.009 * S(C_PIANELLO, 0) + 0.199 * D(C_PIANELLO, 0, M30) + 0.051 * D(C_PIANELLO, M30, M60) + 0.118 * D(C_PIANELLO, M60, M90)
+                + -0.004 * S(C_CORINALDO, 0) + 1.805 * D(C_CORINALDO, 0, M30) + 0.420 * D(C_CORINALDO, M30, M60) + 0.817 * D(C_CORINALDO, M60, M90)
+                + 0.004 * S(C_PASSO, 0) + 0.094 * D(C_PASSO, 0, M30) + 0.021 * D(C_PASSO, M30, M60) + 0.004 * D(C_PASSO, M60, M90)
+                + 0.970 * S(C_BETTOLELLE, 0) + 0.566 * D(C_BETTOLELLE, 0, M30) + -0.016 * D(C_BETTOLELLE, M30, M60) + -0.156 * D(C_BETTOLELLE, M60, M90)
+                + 0.582 * Acc;
+
+            // --- 3 Hour Forecast (t + 3h) ---
+            const f3 = 0.016
+                + 0.050 * S(C_SERRA, 0) + 1.840 * D(C_SERRA, 0, M30) + -0.143 * D(C_SERRA, M30, M60) + 0.729 * D(C_SERRA, M60, M90)
+                + 0.004 * S(C_PIANELLO, 0) + 0.222 * D(C_PIANELLO, 0, M30) + 0.058 * D(C_PIANELLO, M30, M60) + 0.133 * D(C_PIANELLO, M60, M90)
+                + -0.010 * S(C_CORINALDO, 0) + 2.114 * D(C_CORINALDO, 0, M30) + 0.365 * D(C_CORINALDO, M30, M60) + 0.833 * D(C_CORINALDO, M60, M90)
+                + 0.005 * S(C_PASSO, 0) + 0.081 * D(C_PASSO, 0, M30) + 0.008 * D(C_PASSO, M30, M60) + -0.021 * D(C_PASSO, M60, M90)
+                + 0.966 * S(C_BETTOLELLE, 0) + 0.531 * D(C_BETTOLELLE, 0, M30) + -0.047 * D(C_BETTOLELLE, M30, M60) + -0.246 * D(C_BETTOLELLE, M60, M90)
+                + 0.578 * Acc;
+
+            // --- 4 Hour Forecast (t + 4h) ---
+            const f4 = 0.047
+                + 0.060 * S(C_SERRA, 0) + 2.164 * D(C_SERRA, 0, M30) + -0.288 * D(C_SERRA, M30, M60) + 0.735 * D(C_SERRA, M60, M90)
+                + -0.011 * S(C_PIANELLO, 0) + 0.255 * D(C_PIANELLO, 0, M30) + 0.067 * D(C_PIANELLO, M30, M60) + 0.143 * D(C_PIANELLO, M60, M90)
+                + -0.026 * S(C_CORINALDO, 0) + 2.386 * D(C_CORINALDO, 0, M30) + 0.261 * D(C_CORINALDO, M30, M60) + 0.885 * D(C_CORINALDO, M60, M90)
+                + 0.008 * S(C_PASSO, 0) + 0.038 * D(C_PASSO, 0, M30) + -0.023 * D(C_PASSO, M30, M60) + -0.066 * D(C_PASSO, M60, M90)
+                + 0.962 * S(C_BETTOLELLE, 0) + 0.444 * D(C_BETTOLELLE, 0, M30) + -0.111 * D(C_BETTOLELLE, M30, M60) + -0.383 * D(C_BETTOLELLE, M60, M90)
+                + 0.555 * Acc;
+
+            // --- 5 Hour Forecast (t + 5h) ---
+            const f5 = 0.083
+                + 0.074 * S(C_SERRA, 0) + 2.100 * D(C_SERRA, 0, M30) + -0.328 * D(C_SERRA, M30, M60) + 0.543 * D(C_SERRA, M60, M90)
+                + -0.031 * S(C_PIANELLO, 0) + 0.265 * D(C_PIANELLO, 0, M30) + 0.077 * D(C_PIANELLO, M30, M60) + 0.165 * D(C_PIANELLO, M60, M90)
+                + -0.046 * S(C_CORINALDO, 0) + 2.420 * D(C_CORINALDO, 0, M30) + 0.260 * D(C_CORINALDO, M30, M60) + 0.929 * D(C_CORINALDO, M60, M90)
+                + 0.011 * S(C_PASSO, 0) + 0.002 * D(C_PASSO, 0, M30) + -0.032 * D(C_PASSO, M30, M60) + -0.078 * D(C_PASSO, M60, M90)
+                + 0.959 * S(C_BETTOLELLE, 0) + 0.345 * D(C_BETTOLELLE, 0, M30) + -0.166 * D(C_BETTOLELLE, M30, M60) + -0.452 * D(C_BETTOLELLE, M60, M90)
+                + 0.511 * Acc;
+
+            // --- 6 Hour Forecast (t + 6h) ---
+            const f6 = 0.121
+                + 0.092 * S(C_SERRA, 0) + 1.866 * D(C_SERRA, 0, M30) + -0.434 * D(C_SERRA, M30, M60) + 0.450 * D(C_SERRA, M60, M90)
+                + -0.053 * S(C_PIANELLO, 0) + 0.283 * D(C_PIANELLO, 0, M30) + 0.091 * D(C_PIANELLO, M30, M60) + 0.182 * D(C_PIANELLO, M60, M90)
+                + -0.068 * S(C_CORINALDO, 0) + 2.379 * D(C_CORINALDO, 0, M30) + 0.269 * D(C_CORINALDO, M30, M60) + 1.008 * D(C_CORINALDO, M60, M90)
+                + 0.014 * S(C_PASSO, 0) + -0.004 * D(C_PASSO, 0, M30) + -0.036 * D(C_PASSO, M30, M60) + -0.077 * D(C_PASSO, M60, M90)
+                + 0.958 * S(C_BETTOLELLE, 0) + 0.246 * D(C_BETTOLELLE, 0, M30) + -0.224 * D(C_BETTOLELLE, M30, M60) + -0.426 * D(C_BETTOLELLE, M60, M90)
+                + 0.470 * Acc;
             
-            // Store
+            // Output Timestamps
+            const times = [T + M30, T + M60, T + M90, T + 2*M60, T + M150, T + 3*M60, T + 4*M60, T + 5*M60, T + 6*M60];
+            const values = [f05, f1, f1_5, f2, f2_5, f3, f4, f5, f6];
+            
+            // Store results
             STATE.experimentalForecast = values.map((v, i) => ({
                 timestamp: new Date(times[i]),
                 level: v,
-                flow: getFlowFromLevel(1112, v), // Bettolelle ID
-                uncertainty: i < 3 ? 0.15 : 0.20 // Wider band for 4-6h due to lower R2
+                flow: getFlowFromLevel(1112, v) // Bettolelle ID
             }));
             
             updateExperimentalTable();
@@ -6315,7 +6412,6 @@ function updateMobileForecastList(data) {
                 tr.innerHTML = `
                     <td>${formatDateTime(row.timestamp)}</td>
                     <td><strong>${row.level.toFixed(2)}</strong></td>
-                    <td>±${row.uncertainty.toFixed(2)}</td>
                     <td>${row.flow ? row.flow.toFixed(2) : 'N/D'}</td>
                 `;
                 tableBody.appendChild(tr);
@@ -6342,26 +6438,37 @@ function updateMobileForecastList(data) {
             const forecastLabels = STATE.experimentalForecast.map(f => formatDateTime(f.timestamp));
             const forecastLevels = STATE.experimentalForecast.map(f => f.level);
             
+            // Split forecast into "Reliable" (0-3h) and "Trend" (>3h)
+            // Indices: 0=0.5h, 1=1h, 2=1.5h, 3=2h, 4=2.5h, 5=3h
+            const splitIndex = 5; // Index of 3h forecast
+
+            // Reliable Dataset: from history end to 3h mark
+            const reliableValues = forecastLevels.slice(0, splitIndex + 1);
+
+            // Trend Dataset: starts at 3h mark (to connect line) to end
+            const trendValues = forecastLevels.slice(splitIndex);
+
             // Merged Labels
             const mergedLabels = [...historicalLabels, ...forecastLabels];
             
             // Historical Dataset (padded with nulls for forecast)
             const historicalDataset = [...historicalLevels, ...new Array(forecastLabels.length).fill(null)];
             
-            // Forecast Dataset (padded with nulls for history, connected to last point)
-            const forecastPadding = new Array(historicalLabels.length).fill(null);
-            if (lastHistLevel !== null) forecastPadding[historicalLabels.length - 1] = lastHistLevel;
-            const forecastDataset = [...forecastPadding, ...forecastLevels];
+            // 1. Reliable Forecast Dataset
+            // Padding: history length - 1 (to overlap with last history point)
+            const reliablePadding = new Array(historicalLabels.length).fill(null);
+            if (lastHistLevel !== null) reliablePadding[historicalLabels.length - 1] = lastHistLevel;
             
-            // Uncertainty Bands
-            const upperBand = [...new Array(historicalLabels.length).fill(null), ...STATE.experimentalForecast.map(f => f.level + f.uncertainty)];
-            const lowerBand = [...new Array(historicalLabels.length).fill(null), ...STATE.experimentalForecast.map(f => f.level - f.uncertainty)];
+            // Trailing nulls for the trend part
+            const reliableTrailing = new Array(forecastLevels.length - reliableValues.length).fill(null);
             
-            if (lastHistLevel !== null) {
-                // Connect bands to current point (uncertainty 0 at t=0)
-                upperBand[historicalLabels.length - 1] = lastHistLevel;
-                lowerBand[historicalLabels.length - 1] = lastHistLevel;
-            }
+            const reliableDataset = [...reliablePadding, ...reliableValues, ...reliableTrailing];
+
+            // 2. Trend Forecast Dataset
+            // Padding: history length + reliable length - 1 (overlap 1 point)
+            const trendPadding = new Array(historicalLabels.length + reliableValues.length - 1).fill(null);
+
+            const trendDataset = [...trendPadding, ...trendValues];
 
             // Calculate zoom start (approx 3 hours of history to center the forecast)
             const zoomStartIndex = Math.max(0, historicalLabels.length - 12);
@@ -6382,8 +6489,8 @@ function updateMobileForecastList(data) {
                             tension: 0.4
                         },
                         {
-                            label: 'Previsione',
-                            data: forecastDataset,
+                            label: 'Previsione (0-3h)',
+                            data: reliableDataset,
                             borderColor: '#f59e0b',
                             borderWidth: 2,
                             borderDash: [5, 5],
@@ -6392,21 +6499,14 @@ function updateMobileForecastList(data) {
                             tension: 0.4
                         },
                         {
-                            label: 'Incertezza (Upper)',
-                            data: upperBand,
-                            borderColor: 'transparent',
-                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                            fill: '+1',
-                            pointRadius: 0,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Incertezza (Lower)',
-                            data: lowerBand,
-                            borderColor: 'transparent',
-                            backgroundColor: 'transparent',
+                            label: 'Tendenza Deflusso (>3h)',
+                            data: trendDataset,
+                            borderColor: '#f59e0b',
+                            borderWidth: 2,
+                            borderDash: [2, 5], // Different dash style for lower confidence
+                            pointRadius: 2,
+                            opacity: 0.6, // Slightly faded
                             fill: false,
-                            pointRadius: 0,
                             tension: 0.4
                         }
                     ]
