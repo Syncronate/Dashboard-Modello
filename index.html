@@ -6392,8 +6392,7 @@ function updateMobileForecastList(data) {
             STATE.experimentalForecast = values.map((v, i) => ({
                 timestamp: new Date(times[i]),
                 level: v,
-                flow: getFlowFromLevel(1112, v), // Bettolelle ID
-                uncertainty: i <= 5 ? 0.15 : 0.20 // Wider band for 4-6h due to lower R2
+                flow: getFlowFromLevel(1112, v) // Bettolelle ID
             }));
             
             updateExperimentalTable();
@@ -6414,7 +6413,6 @@ function updateMobileForecastList(data) {
                 tr.innerHTML = `
                     <td>${formatDateTime(row.timestamp)}</td>
                     <td><strong>${row.level.toFixed(2)}</strong></td>
-                    <td>±${row.uncertainty.toFixed(2)}</td>
                     <td>${row.flow ? row.flow.toFixed(2) : 'N/D'}</td>
                 `;
                 tableBody.appendChild(tr);
@@ -6441,26 +6439,37 @@ function updateMobileForecastList(data) {
             const forecastLabels = STATE.experimentalForecast.map(f => formatDateTime(f.timestamp));
             const forecastLevels = STATE.experimentalForecast.map(f => f.level);
             
+            // Split forecast into "Reliable" (0-3h) and "Trend" (>3h)
+            // Indices: 0=0.5h, 1=1h, 2=1.5h, 3=2h, 4=2.5h, 5=3h
+            const splitIndex = 5; // Index of 3h forecast
+            
+            // Reliable Dataset: from history end to 3h mark
+            const reliableValues = forecastLevels.slice(0, splitIndex + 1);
+            
+            // Trend Dataset: starts at 3h mark (to connect line) to end
+            const trendValues = forecastLevels.slice(splitIndex); 
+            
             // Merged Labels
             const mergedLabels = [...historicalLabels, ...forecastLabels];
             
             // Historical Dataset (padded with nulls for forecast)
             const historicalDataset = [...historicalLevels, ...new Array(forecastLabels.length).fill(null)];
             
-            // Forecast Dataset (padded with nulls for history, connected to last point)
-            const forecastPadding = new Array(historicalLabels.length).fill(null);
-            if (lastHistLevel !== null) forecastPadding[historicalLabels.length - 1] = lastHistLevel;
-            const forecastDataset = [...forecastPadding, ...forecastLevels];
+            // 1. Reliable Forecast Dataset
+            // Padding: history length - 1 (to overlap with last history point)
+            const reliablePadding = new Array(historicalLabels.length).fill(null);
+            if (lastHistLevel !== null) reliablePadding[historicalLabels.length - 1] = lastHistLevel;
             
-            // Uncertainty Bands
-            const upperBand = [...new Array(historicalLabels.length).fill(null), ...STATE.experimentalForecast.map(f => f.level + f.uncertainty)];
-            const lowerBand = [...new Array(historicalLabels.length).fill(null), ...STATE.experimentalForecast.map(f => f.level - f.uncertainty)];
+            // Trailing nulls for the trend part
+            const reliableTrailing = new Array(forecastLevels.length - reliableValues.length).fill(null);
             
-            if (lastHistLevel !== null) {
-                // Connect bands to current point (uncertainty 0 at t=0)
-                upperBand[historicalLabels.length - 1] = lastHistLevel;
-                lowerBand[historicalLabels.length - 1] = lastHistLevel;
-            }
+            const reliableDataset = [...reliablePadding, ...reliableValues, ...reliableTrailing];
+            
+            // 2. Trend Forecast Dataset
+            // Padding: history length + reliable length - 1 (overlap 1 point)
+            const trendPadding = new Array(historicalLabels.length + reliableValues.length - 1).fill(null);
+            
+            const trendDataset = [...trendPadding, ...trendValues];
 
             // Calculate zoom start (approx 3 hours of history to center the forecast)
             const zoomStartIndex = Math.max(0, historicalLabels.length - 12);
@@ -6481,8 +6490,8 @@ function updateMobileForecastList(data) {
                             tension: 0.4
                         },
                         {
-                            label: 'Previsione',
-                            data: forecastDataset,
+                            label: 'Previsione (0-3h)',
+                            data: reliableDataset,
                             borderColor: '#f59e0b',
                             borderWidth: 2,
                             borderDash: [5, 5],
@@ -6491,21 +6500,14 @@ function updateMobileForecastList(data) {
                             tension: 0.4
                         },
                         {
-                            label: 'Incertezza (Upper)',
-                            data: upperBand,
-                            borderColor: 'transparent',
-                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                            fill: '+1',
-                            pointRadius: 0,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Incertezza (Lower)',
-                            data: lowerBand,
-                            borderColor: 'transparent',
-                            backgroundColor: 'transparent',
+                            label: 'Tendenza Deflusso (>3h)',
+                            data: trendDataset,
+                            borderColor: '#f59e0b',
+                            borderWidth: 2,
+                            borderDash: [2, 5], // Different dash style for lower confidence
+                            pointRadius: 2,
+                            opacity: 0.6, // Slightly faded
                             fill: false,
-                            pointRadius: 0,
                             tension: 0.4
                         }
                     ]
