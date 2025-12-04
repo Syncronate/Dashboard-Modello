@@ -6302,6 +6302,10 @@ function updateMobileForecastList(data) {
             const S = (col, offset) => getSmooth(col, T - offset);
             const D = (col, off1, off2) => getDiff(col, T - off1, T - off2);
 
+            // NOTE: This model is highly sensitive to the trend of 'Nevola - Livello Nevola (mt)' (C_CORINALDO).
+            // A rapid rise (spike) in Corinaldo levels will be amplified by coefficients > 2.0 in forecast horizons > 1.5h.
+            // This is intended behavior for flood prediction but may cause false alarms if sensor data is noisy.
+
             // --- 30 Minute Forecast (t + 0.5h) ---
             const f05 = 0.003
                 + -0.003 * S(C_SERRA, M90) + 0.098 * D(C_SERRA, M90, M120) + 0.046 * D(C_SERRA, M120, M150) + -0.053 * D(C_SERRA, M150, M180)
