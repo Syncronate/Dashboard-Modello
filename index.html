@@ -5064,18 +5064,35 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
         // Verifica se ci sono nuovi dati
         let hasNewData = false;
         
-        if (filteredRegion.length > 0 && 
-            filteredRegion.length !== STATE.regionHistoryData.length) {
+        // Helper per ottenere l'ultimo timestamp
+        const getLastTimestamp = (data) => {
+            if (!data || data.length === 0) return 0;
+            const lastRow = data[data.length - 1];
+            const date = parseCustomDate(lastRow.Data_Ora);
+            return date ? date.getTime() : 0;
+        };
+
+        // Verifica se ci sono nuovi dati controllando sia la lunghezza che il timestamp più recente
+        const regionChanged = filteredRegion.length > 0 && (
+            filteredRegion.length !== STATE.regionHistoryData.length ||
+            getLastTimestamp(filteredRegion) > getLastTimestamp(STATE.regionHistoryData)
+        );
+
+        if (regionChanged) {
             STATE.regionHistoryData = filteredRegion;
             hasNewData = true;
-            console.log(`✅ Caricati ${filteredRegion.length} record regionali (era ${regionHistory.length} prima del filtro)`);
+            console.log(`✅ Nuovi dati regionali rilevati (Record: ${filteredRegion.length}, Ultimo: ${filteredRegion[filteredRegion.length-1]?.Data_Ora})`);
         }
         
-        if (filteredWeatherlink.length > 0 && 
-            filteredWeatherlink.length !== STATE.weatherlinkHistoryData.length) {
+        const weatherlinkChanged = filteredWeatherlink.length > 0 && (
+            filteredWeatherlink.length !== STATE.weatherlinkHistoryData.length ||
+            getLastTimestamp(filteredWeatherlink) > getLastTimestamp(STATE.weatherlinkHistoryData)
+        );
+
+        if (weatherlinkChanged) {
             STATE.weatherlinkHistoryData = filteredWeatherlink;
             hasNewData = true;
-            console.log(`✅ Caricati ${filteredWeatherlink.length} record weatherlink (era ${weatherlinkHistory.length} prima del filtro)`);
+            console.log(`✅ Nuovi dati WeatherLink rilevati (Record: ${filteredWeatherlink.length}, Ultimo: ${filteredWeatherlink[filteredWeatherlink.length-1]?.Data_Ora})`);
         }
 
         if (hasNewData) {
@@ -7582,14 +7599,37 @@ function updateSliderUI(index) {
                         }
                         
                         switch(targetSection.id) {
-                            case 'overview': drawOverviewCharts(); break;
-                            case 'mappa': if (!STATE.map) initMap(); else STATE.map.invalidateSize(); break;
-                            case 'previsioni': if (!STATE.charts.forecast) fetchForecastData(); break;
-                            case 'idrometri': if (!STATE.charts.hydroHistory) drawHydroHistoryChart(); break;
-                            case 'portate-idrometri': if (!STATE.charts.portataHistory) drawPortataHistoryChart(); break;
-                            case 'pluviometri': if (!STATE.charts.rainHistory) drawRainHistoryChart(); break;
-                            case 'anemometri': if (!STATE.charts.windHistory) drawWindHistoryChart(); break;
-                            case 'analisi': updateStatisticsTables(); break;
+                            case 'overview':
+                                drawOverviewCharts();
+                                break;
+                            case 'mappa':
+                                if (!STATE.map) initMap(); else STATE.map.invalidateSize();
+                                break;
+                            case 'previsioni':
+                                // Forza aggiornamento dati e grafici previsioni
+                                fetchForecastData();
+                                fetchForecastDataBettolelle3h();
+                                fetchForecastDataPonteGaribaldi6h();
+                                break;
+                            case 'idrometri':
+                                // Forza ridisegno grafico idrometri
+                                drawHydroHistoryChart();
+                                break;
+                            case 'portate-idrometri':
+                                // Forza ridisegno grafico portate
+                                drawPortataHistoryChart();
+                                break;
+                            case 'pluviometri':
+                                // Forza ridisegno grafico pluviometri
+                                drawRainHistoryChart();
+                                break;
+                            case 'anemometri':
+                                // Forza ridisegno grafico anemometri
+                                drawWindHistoryChart();
+                                break;
+                            case 'analisi':
+                                updateStatisticsTables();
+                                break;
                             case 'scale-deflusso':
                                 // Generate content only on first visit to the section
                                 if (targetSection.innerHTML.trim().startsWith('<!--')) {
@@ -7786,34 +7826,34 @@ function updateSliderUI(index) {
                 
                 try {
                     // Mostra toast informativo
-                    showToast('Aggiornamento in corso...', 'info');
+                    showToast('Aggiornamento completo in corso...', 'info');
                     
-                    // 1. Aggiorna dati real-time
-                    await Promise.all([
+                    // 1. Parallelizza tutte le richieste per velocità (come nel ciclo automatico)
+                    const realtimePromise = Promise.all([
                         updateAllLatestData(),
-                        updateOfficialAlerts()
+                        updateOfficialAlerts(),
+                        (async () => {
+                            const radarPromises = [];
+                            if (STATE.map) radarPromises.push(fetchRadarData(STATE.map));
+                            if (STATE.dashboardMap) radarPromises.push(fetchRadarData(STATE.dashboardMap));
+                            if (radarPromises.length > 0) await Promise.all(radarPromises);
+                        })()
                     ]);
-                    
-                    // 2. Aggiorna previsioni
-                    await Promise.all([
+
+                    const forecastPromise = Promise.all([
                         fetchForecastData(),
                         fetchForecastDataBettolelle3h(),
                         fetchForecastDataPonteGaribaldi6h()
                     ]);
+
+                    // Esegui tutto in parallelo
+                    await Promise.all([realtimePromise, forecastPromise]);
                     
-                    // 3. Aggiorna dati storici (NUOVO!)
+                    // 2. Aggiorna dati storici
                     await updateHistoricalData();
                     
-                    // 4. Rigenera TUTTI i grafici (NUOVO!)
+                    // 3. Rigenera TUTTI i grafici
                     regenerateAllCharts();
-                    
-                    // 5. Aggiorna radar
-                    const radarPromises = [];
-                    if (STATE.map) radarPromises.push(fetchRadarData(STATE.map));
-                    if (STATE.dashboardMap) radarPromises.push(fetchRadarData(STATE.dashboardMap));
-                    if (radarPromises.length > 0) {
-                        await Promise.all(radarPromises);
-                    }
                     
                     showToast('Aggiornamento completato con successo!', 'success');
                     console.log('Refresh manuale completato');
@@ -8191,10 +8231,10 @@ async function initDashboard() {
             const startTime = Date.now();
             
             try {
-                console.log('🔄 Inizio ciclo aggiornamento completo...');
+                console.log('🔄 Inizio ciclo aggiornamento completo UNIFICATO...');
                 
-                // FASE 1: Aggiorna dati real-time
-                await Promise.all([
+                // FASE 1: Aggiorna dati real-time, allerte e radar
+                const realtimePromise = Promise.all([
                     executeWithRetry(() => updateAllLatestData(), 'aggiornamento dati sensori'),
                     executeWithRetry(() => updateOfficialAlerts(), 'aggiornamento allerte ufficiali'),
                     executeWithRetry(() => {
@@ -8204,11 +8244,23 @@ async function initDashboard() {
                         return Promise.all(radarPromises);
                     }, 'aggiornamento dati radar')
                 ]);
+
+                // FASE 2: Aggiorna tutte le previsioni
+                const forecastPromise = Promise.all([
+                    executeWithRetry(() => fetchForecastData(), 'previsioni base'),
+                    executeWithRetry(() => fetchForecastDataBettolelle3h(), 'previsioni Bettolelle 3h'),
+                    executeWithRetry(() => fetchForecastDataPonteGaribaldi6h(), 'previsioni Ponte Garibaldi 6h')
+                ]);
+
+                // Esegui Fase 1 e 2 in parallelo per velocità
+                await Promise.all([realtimePromise, forecastPromise]);
                 
-                // FASE 2: Aggiorna dati storici (NUOVO!)
+                // FASE 3: Aggiorna dati storici (dopo i dati real-time per coerenza)
                 await updateHistoricalData();
                 
-                // FASE 3: Rigenera grafici attivi (NUOVO!)
+                // FASE 4: Rigenera grafici attivi
+                // NOTA: I grafici nascosti si aggiorneranno automaticamente quando l'utente ci clicca sopra
+                // grazie alla modifica in initNavigation. Qui aggiorniamo solo quello visibile.
                 regenerateActiveCharts();
                 
                 const duration = Date.now() - startTime;
@@ -8233,53 +8285,13 @@ async function initDashboard() {
             }
         }
 
-        async function runForecastUpdateLoop() {
-            if (CONFIG.advanced.preventOverlap && STATE.isUpdating.forecast) {
-                console.warn('⚠️ Aggiornamento previsioni già in corso, salto questo ciclo');
-                STATE.updateIntervals.forecast = setTimeout(runForecastUpdateLoop, CONFIG.intervals.forecastUpdate);
-                return;
-            }
-            STATE.isUpdating.forecast = true;
-            const startTime = Date.now();
-            try {
-                console.log('🔄 Inizio aggiornamento previsioni...');
-                const results = await Promise.allSettled([
-                    executeWithRetry(() => fetchForecastData(), 'previsioni base'),
-                    executeWithRetry(() => fetchForecastDataBettolelle3h(), 'previsioni Bettolelle 3h'),
-                    executeWithRetry(() => fetchForecastDataPonteGaribaldi6h(), 'previsioni Ponte Garibaldi 6h')
-                ]);
-                const successful = results.filter(r => r.status === 'fulfilled').length;
-                const failed = results.filter(r => r.status === 'rejected').length;
-                const duration = Date.now() - startTime;
-                console.log(`✅ Aggiornamento previsioni completato in ${duration}ms (${successful} OK, ${failed} errori)`);
-                if (successful > 0) {
-                    STATE.updateStats.lastSuccess = new Date();
-                }
-                if (successful === 0) {
-                    throw new Error('Tutte le chiamate di previsione sono fallite');
-                }
-            } catch (error) {
-                console.error('❌ Errore nel ciclo di aggiornamento previsioni:', error);
-                showUpdateError('previsioni');
-            } finally {
-                STATE.isUpdating.forecast = false;
-                let nextInterval = CONFIG.intervals.forecastUpdate;
-                if (STATE.updateStats.consecutiveErrors >= 3) {
-                    nextInterval = Math.min(nextInterval * 2, 600000);
-                    console.warn(`⚠️ Troppi errori consecutivi, intervallo previsioni aumentato a ${nextInterval/1000}s`);
-                }
-                STATE.updateIntervals.forecast = setTimeout(runForecastUpdateLoop, nextInterval);
-            }
-        }
-
         function startAutoRefresh() {
             // Interrompe i cicli precedenti se esistono
             if (STATE.updateIntervals.data) clearTimeout(STATE.updateIntervals.data);
-            if (STATE.updateIntervals.forecast) clearTimeout(STATE.updateIntervals.forecast);
+            if (STATE.updateIntervals.forecast) clearTimeout(STATE.updateIntervals.forecast); // Legacy cleanup
 
-            // Avvia i nuovi cicli di aggiornamento
+            // Avvia il ciclo unico di aggiornamento
             runDataUpdateLoop();
-            runForecastUpdateLoop();
         }
 
         function handleResize() {
