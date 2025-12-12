@@ -2600,6 +2600,42 @@ max-width: 400px;
 }
 
 /* === FORECAST TABS === */
+        /* === FORECAST LAYOUT SPECIFIC === */
+        .forecast-container {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        
+        .forecast-container .chart-wrapper {
+            width: 100% !important;
+            min-width: 0 !important;
+            flex: none !important;
+        }
+
+        .toggle-table-btn {
+            background: linear-gradient(135deg, var(--light-bg), var(--medium-bg));
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px auto 10px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: var(--transition);
+            width: fit-content;
+            font-size: 0.9em;
+        }
+        
+        .toggle-table-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
 .forecast-tabs {
     display: flex;
     justify-content: center;
@@ -2867,7 +2903,7 @@ max-width: 400px;
             <!-- Tab 1: Bettolelle -->
             <div id="tab-bettolelle" class="forecast-tab-content active">
                 <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsione Idrometrica Misa (Bettolelle)</h2>
-                <div class="container">
+                <div class="container forecast-container">
                     <div class="chart-wrapper">
                         <div class="chart-header">
                             <span class="chart-title">Andamento Previsto</span>
@@ -2933,7 +2969,10 @@ max-width: 400px;
                             <canvas id="forecastFlowChart"></canvas>
                         </div>
                     </div>
-                    <div class="table-container card" id="desktop-forecast-table" style="grid-column: 1 / -1; width: 100%;">
+                    <button class="toggle-table-btn" onclick="toggleForecastTable('desktop-forecast-table', 'mobile-forecast-list')">
+                        <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                    </button>
+                    <div class="table-container card" id="desktop-forecast-table" style="grid-column: 1 / -1; width: 100%; display: none;">
                         <table id="dataTable">
                             <thead>
                                 <tr>
@@ -2946,14 +2985,14 @@ max-width: 400px;
                             <tbody></tbody>
                         </table>
                     </div>
-                    <div id="mobile-forecast-list" class="table-mobile-list card"></div>
+                    <div id="mobile-forecast-list" class="table-mobile-list card" style="display: none;"></div>
                 </div>
             </div>
 
             <!-- Tab 2: Bettolelle 3h -->
             <div id="tab-bettolelle-3h" class="forecast-tab-content">
                 <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni idro bettolelle 3h</h2>
-                <div class="container">
+                <div class="container forecast-container">
                     <div class="chart-wrapper">
                         <div class="chart-header">
                             <span class="chart-title">Andamento Previsto</span>
@@ -3019,7 +3058,10 @@ max-width: 400px;
                             <canvas id="forecastFlowChartBettolelle3h"></canvas>
                         </div>
                     </div>
-                    <div class="table-container card" id="desktop-forecast-table-bettolelle-3h" style="grid-column: 1 / -1; width: 100%;">
+                    <button class="toggle-table-btn" onclick="toggleForecastTable('desktop-forecast-table-bettolelle-3h', 'mobile-forecast-list-bettolelle-3h')">
+                        <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                    </button>
+                    <div class="table-container card" id="desktop-forecast-table-bettolelle-3h" style="grid-column: 1 / -1; width: 100%; display: none;">
                         <table id="dataTableBettolelle3h">
                             <thead>
                                 <tr>
@@ -3032,14 +3074,14 @@ max-width: 400px;
                             <tbody></tbody>
                         </table>
                     </div>
-                    <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card"></div>
+                    <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card" style="display: none;"></div>
                 </div>
             </div>
 
             <!-- Tab 3: Ponte Garibaldi 6h -->
             <div id="tab-garibaldi-6h" class="forecast-tab-content">
                 <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni idro Ponte garibaldi 6h</h2>
-                <div class="container">
+                <div class="container forecast-container">
                     <div class="chart-wrapper">
                         <div class="chart-header">
                             <span class="chart-title">Andamento Previsto</span>
@@ -3105,7 +3147,10 @@ max-width: 400px;
                             <canvas id="forecastFlowChartPonteGaribaldi6h"></canvas>
                         </div>
                     </div>
-                    <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h" style="grid-column: 1 / -1; width: 100%;">
+                    <button class="toggle-table-btn" onclick="toggleForecastTable('desktop-forecast-table-ponte-garibaldi-6h', 'mobile-forecast-list-ponte-garibaldi-6h')">
+                        <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                    </button>
+                    <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h" style="grid-column: 1 / -1; width: 100%; display: none;">
                         <table id="dataTablePonteGaribaldi6h">
                             <thead>
                                 <tr>
@@ -3118,14 +3163,14 @@ max-width: 400px;
                             <tbody></tbody>
                         </table>
                     </div>
-                    <div id="mobile-forecast-list-ponte-garibaldi-6h" class="table-mobile-list card"></div>
+                    <div id="mobile-forecast-list-ponte-garibaldi-6h" class="table-mobile-list card" style="display: none;"></div>
                 </div>
             </div>
 
             <!-- Tab 4: Experimental -->
             <div id="tab-experimental" class="forecast-tab-content">
                 <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Modello Previsionale Matematico</h2>
-                <div class="container">
+                <div class="container forecast-container">
                     <div class="chart-wrapper">
                         <div class="chart-header">
                             <span class="chart-title">Livello Idrometrico (1h - 6h)</span>
@@ -3158,7 +3203,10 @@ max-width: 400px;
                             <canvas id="experimentalFlowChart"></canvas>
                         </div>
                     </div>
-                    <div class="table-container card" style="grid-column: 1 / -1; width: 100%;">
+                    <button class="toggle-table-btn" onclick="toggleForecastTable('experimental-table-container')">
+                        <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                    </button>
+                    <div class="table-container card" id="experimental-table-container" style="grid-column: 1 / -1; width: 100%; display: none;">
                         <table id="experimentalDataTable">
                             <thead>
                                 <tr>
@@ -5997,7 +6045,7 @@ function updateMobileForecastList(data) {
 
             if (isMobile) {
                 desktopTableContainer.style.display = 'none';
-                mobileListContainer.style.display = 'block';
+                // mobileListContainer.style.display = 'block'; // Keep user state
                 mobileListContainer.innerHTML = '';
 
                 data.forEach((row, index) => {
@@ -6017,7 +6065,7 @@ function updateMobileForecastList(data) {
                     mobileListContainer.appendChild(card);
                 });
             } else {
-                desktopTableContainer.style.display = 'block';
+                // desktopTableContainer.style.display = 'block'; // Keep user state
                 mobileListContainer.style.display = 'none';
                 const tableBody = document.getElementById('dataTableBettolelle3h').getElementsByTagName('tbody')[0];
                 tableBody.innerHTML = '';
@@ -6202,7 +6250,7 @@ function updateMobileForecastList(data) {
 
             if (isMobile) {
                 desktopTableContainer.style.display = 'none';
-                mobileListContainer.style.display = 'block';
+                // mobileListContainer.style.display = 'block'; // Keep user state
                 mobileListContainer.innerHTML = '';
 
                 data.forEach((row, index) => {
@@ -6222,7 +6270,7 @@ function updateMobileForecastList(data) {
                     mobileListContainer.appendChild(card);
                 });
             } else {
-                desktopTableContainer.style.display = 'block';
+                // desktopTableContainer.style.display = 'block'; // Keep user state
                 mobileListContainer.style.display = 'none';
                 const tableBody = document.getElementById('dataTablePonteGaribaldi6h').getElementsByTagName('tbody')[0];
                 tableBody.innerHTML = '';
@@ -7814,8 +7862,37 @@ function updateSliderUI(index) {
             }
             
             const canvas = container.querySelector('canvas');
-            if (canvas && canvas.chart) {
-                canvas.chart.resize();
+            if (canvas) {
+                // Reset delle dimensioni inline per permettere il ridimensionamento corretto
+                canvas.style.height = '';
+                canvas.style.width = '';
+                
+                if (canvas.chart) {
+                    canvas.chart.resize();
+                }
+            }
+        }
+
+        function toggleForecastTable(desktopId, mobileId) {
+            const desktopTable = document.getElementById(desktopId);
+            const mobileTable = document.getElementById(mobileId);
+            const isMobile = utils.isMobile();
+            
+            let targetTable = isMobile ? mobileTable : desktopTable;
+            
+            // Se mobileId non è fornito (es. Experimental), usa solo desktopTable
+            if (!mobileId) targetTable = desktopTable;
+            
+            // Se siamo su mobile ma non c'è una tabella mobile specifica, e.g. experimental, 
+            // potremmo voler mostrare quella desktop adattata o nulla.
+            // Nel caso experimental abbiamo messo solo un ID contenitore generico.
+            
+            if (targetTable) {
+                const isHidden = targetTable.style.display === 'none';
+                targetTable.style.display = isHidden ? 'block' : 'none';
+                
+                // Aggiorna il testo del pulsante se necessario (opzionale)
+                // const btn = event.currentTarget; // Richiede di passare 'this' o event
             }
         }
 
