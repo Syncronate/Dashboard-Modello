@@ -1745,22 +1745,6 @@
             border-left: 4px solid var(--primary-color);
         }
 
-        #resetZoomBtn {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 15px;
-            transition: var(--transition);
-        }
-
-        #resetZoomBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
 
 
         /* === RESPONSIVE === */
@@ -2614,6 +2598,61 @@ max-width: 400px;
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* === FORECAST TABS === */
+.forecast-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.forecast-tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    position: relative;
+    transition: var(--transition);
+    border-radius: var(--radius-sm);
+}
+
+.forecast-tab-btn:hover {
+    color: var(--text-color);
+    background-color: var(--light-bg);
+}
+
+.forecast-tab-btn.active {
+    color: var(--primary-color);
+    font-weight: 600;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.forecast-tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -11px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 3px 3px 0 0;
+}
+
+.forecast-tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.forecast-tab-content.active {
+    display: block;
+}
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
@@ -2815,321 +2854,322 @@ max-width: 400px;
         <!-- PREVISIONI IDRO PAGE -->
         <section id="previsioni" class="page-section">
             <div class="header">
-                <h1><i data-feather="activity" class="feather-icon"></i> Previsione Idrometrica Misa (Bettolelle)</h1>
-                <button id="toggle-instructions-btn" class="toggle-btn">
-                    <i data-feather="book-open" class="feather-icon"></i> Mostra Istruzioni
-                </button>
-                <div id="instructions-container" class="instructions">
-                    <p class="subtitle">
-                        <b>🖱️ Sposta:</b> Trascina il grafico con il mouse per spostarti nel tempo.<br/>
-                        <b>🔍 Zoom:</b> Usa la rotellina del mouse per ingrandire/rimpicciolire.<br/>
-                        <b>🔄 Reset:</b> Clicca "Reset Zoom" per tornare alla vista completa.<br/>
-                        <b>✨ Interazione:</b> Passa il mouse sulla tabella per evidenziare i punti corrispondenti sul grafico.<br/>
-                        <b>📊 Quantili:</b> Q10 (minimo), Q50 (mediana), Q90 (massimo) rappresentano la fascia di previsione.
-                    </p>
-                    <button id="resetZoomBtn">🔄 Reset Zoom Grafico</button>
-                </div>
+                <h1><i data-feather="activity" class="feather-icon"></i> Previsioni Idrometriche</h1>
             </div>
             
-            <div class="container">
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-title">Andamento Previsto</span>
-                        <div class="chart-actions">
-                            <button class="chart-btn" id="download-forecast-chart">
-                                <i data-feather="camera" class="feather-icon"></i> Scarica
-                            </button>
-                            <button class="chart-btn" id="fullscreen-forecast">
-                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                            </button>
+            <div class="forecast-tabs">
+                <button class="forecast-tab-btn active" data-tab="tab-bettolelle">Misa (Bettolelle)</button>
+                <button class="forecast-tab-btn" data-tab="tab-bettolelle-3h">Bettolelle 3h</button>
+                <button class="forecast-tab-btn" data-tab="tab-garibaldi-6h">Ponte Garibaldi 6h</button>
+                <button class="forecast-tab-btn" data-tab="tab-experimental">Modello Sperimentale</button>
+            </div>
+            
+            <!-- Tab 1: Bettolelle -->
+            <div id="tab-bettolelle" class="forecast-tab-content active">
+                <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsione Idrometrica Misa (Bettolelle)</h2>
+                <div class="container">
+                    <div class="chart-wrapper">
+                        <div class="chart-header">
+                            <span class="chart-title">Andamento Previsto</span>
+                            <div class="chart-actions">
+                                <button class="chart-btn" id="download-forecast-chart">
+                                    <i data-feather="camera" class="feather-icon"></i> Scarica
+                                </button>
+                                <button class="chart-btn" id="fullscreen-forecast">
+                                    <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-container card" id="forecastChart-container">
+                            <canvas id="forecastChart"></canvas>
+                        </div>
+                        <div class="card">
+                            <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
+                            <table class="stats-table" id="forecast-stats-table">
+                                <thead>
+                                    <tr>
+                                        <th>Metrica</th>
+                                        <th>Q10 (min)</th>
+                                        <th>Q50 (med)</th>
+                                        <th>Q90 (max)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Livello Medio</td>
+                                        <td id="q10-avg">--</td>
+                                        <td id="q50-avg">--</td>
+                                        <td id="q90-avg">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Picco Massimo</td>
+                                        <td id="q10-max">--</td>
+                                        <td id="q50-max">--</td>
+                                        <td id="q90-max">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Valore Minimo</td>
+                                        <td id="q10-min">--</td>
+                                        <td id="q50-min">--</td>
+                                        <td id="q90-min">--</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="chart-container card" id="forecastChart-container">
-                        <canvas id="forecastChart"></canvas>
+                    <div class="chart-wrapper">
+                        <div class="chart-header">
+                            <span class="chart-title">Portata Prevista (m³/s)</span>
+                            <div class="chart-actions">
+                                <button class="chart-btn" id="download-forecast-flow-chart">
+                                    <i data-feather="camera" class="feather-icon"></i> Scarica
+                                </button>
+                                <button class="chart-btn" id="fullscreen-forecast-flow">
+                                    <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-container card" id="forecastFlowChart-container">
+                            <canvas id="forecastFlowChart"></canvas>
+                        </div>
                     </div>
-                    <div class="card">
-                        <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
-                        <table class="stats-table" id="forecast-stats-table">
+                    <div class="table-container card" id="desktop-forecast-table" style="flex-basis: 100%; min-width: 100%;">
+                        <table id="dataTable">
                             <thead>
                                 <tr>
-                                    <th>Metrica</th>
-                                    <th>Q10 (min)</th>
-                                    <th>Q50 (med)</th>
-                                    <th>Q90 (max)</th>
+                                    <th>🕐 Timestamp</th>
+                                    <th>Q10 (m)</th>
+                                    <th>Q50 (m)</th>
+                                    <th>Q90 (m)</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Livello Medio</td>
-                                    <td id="q10-avg">--</td>
-                                    <td id="q50-avg">--</td>
-                                    <td id="q90-avg">--</td>
-                                </tr>
-                                <tr>
-                                    <td>Picco Massimo</td>
-                                    <td id="q10-max">--</td>
-                                    <td id="q50-max">--</td>
-                                    <td id="q90-max">--</td>
-                                </tr>
-                                <tr>
-                                    <td>Valore Minimo</td>
-                                    <td id="q10-min">--</td>
-                                    <td id="q50-min">--</td>
-                                    <td id="q90-min">--</td>
-                                </tr>
-                            </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
+                    <div id="mobile-forecast-list" class="table-mobile-list card"></div>
                 </div>
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-title">Portata Prevista (m³/s)</span>
-                        <div class="chart-actions">
-                            <button class="chart-btn" id="download-forecast-flow-chart">
-                                <i data-feather="camera" class="feather-icon"></i> Scarica
-                            </button>
-                            <button class="chart-btn" id="fullscreen-forecast-flow">
-                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                            </button>
-                        </div>
-                    </div>
-                    <div class="chart-container card" id="forecastFlowChart-container">
-                        <canvas id="forecastFlowChart"></canvas>
-                    </div>
-                </div>
-                <div class="table-container card" id="desktop-forecast-table" style="flex-basis: 100%; min-width: 100%;">
-                    <table id="dataTable">
-                        <thead>
-                            <tr>
-                                <th>🕐 Timestamp</th>
-                                <th>Q10 (m)</th>
-                                <th>Q50 (m)</th>
-                                <th>Q90 (m)</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div id="mobile-forecast-list" class="table-mobile-list card"></div>
             </div>
 
-            <hr style="border-color: var(--border-color); margin: 40px 0;">
-
-            <h2 class="chart-title" style="text-align: center;">Previsioni idro bettolelle 3h</h2>
-            <div class="container">
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-title">Andamento Previsto</span>
-                        <div class="chart-actions">
-                            <button class="chart-btn" id="download-forecast-chart-bettolelle-3h">
-                                <i data-feather="camera" class="feather-icon"></i> Scarica
-                            </button>
-                            <button class="chart-btn" id="fullscreen-forecast-bettolelle-3h">
-                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                            </button>
+            <!-- Tab 2: Bettolelle 3h -->
+            <div id="tab-bettolelle-3h" class="forecast-tab-content">
+                <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni idro bettolelle 3h</h2>
+                <div class="container">
+                    <div class="chart-wrapper">
+                        <div class="chart-header">
+                            <span class="chart-title">Andamento Previsto</span>
+                            <div class="chart-actions">
+                                <button class="chart-btn" id="download-forecast-chart-bettolelle-3h">
+                                    <i data-feather="camera" class="feather-icon"></i> Scarica
+                                </button>
+                                <button class="chart-btn" id="fullscreen-forecast-bettolelle-3h">
+                                    <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-container card" id="forecastChartBettolelle3h-container">
+                            <canvas id="forecastChartBettolelle3h"></canvas>
+                        </div>
+                        <div class="card">
+                            <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
+                            <table class="stats-table" id="forecast-stats-table-bettolelle-3h">
+                                <thead>
+                                    <tr>
+                                        <th>Metrica</th>
+                                        <th>Q10 (min)</th>
+                                        <th>Q50 (med)</th>
+                                        <th>Q90 (max)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Livello Medio</td>
+                                        <td id="q10-avg-bettolelle-3h">--</td>
+                                        <td id="q50-avg-bettolelle-3h">--</td>
+                                        <td id="q90-avg-bettolelle-3h">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Picco Massimo</td>
+                                        <td id="q10-max-bettolelle-3h">--</td>
+                                        <td id="q50-max-bettolelle-3h">--</td>
+                                        <td id="q90-max-bettolelle-3h">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Valore Minimo</td>
+                                        <td id="q10-min-bettolelle-3h">--</td>
+                                        <td id="q50-min-bettolelle-3h">--</td>
+                                        <td id="q90-min-bettolelle-3h">--</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="chart-container card" id="forecastChartBettolelle3h-container">
-                        <canvas id="forecastChartBettolelle3h"></canvas>
+                    <div class="chart-wrapper">
+                        <div class="chart-header">
+                            <span class="chart-title">Portata Prevista (m³/s)</span>
+                            <div class="chart-actions">
+                                <button class="chart-btn" id="download-forecast-flow-chart-bettolelle-3h">
+                                    <i data-feather="camera" class="feather-icon"></i> Scarica
+                                </button>
+                                <button class="chart-btn" id="fullscreen-forecast-flow-bettolelle-3h">
+                                    <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-container card" id="forecastFlowChartBettolelle3h-container">
+                            <canvas id="forecastFlowChartBettolelle3h"></canvas>
+                        </div>
                     </div>
-                    <div class="card">
-                        <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
-                        <table class="stats-table" id="forecast-stats-table-bettolelle-3h">
+                    <div class="table-container card" id="desktop-forecast-table-bettolelle-3h" style="flex-basis: 100%; min-width: 100%;">
+                        <table id="dataTableBettolelle3h">
                             <thead>
                                 <tr>
-                                    <th>Metrica</th>
-                                    <th>Q10 (min)</th>
-                                    <th>Q50 (med)</th>
-                                    <th>Q90 (max)</th>
+                                    <th>🕐 Timestamp</th>
+                                    <th>Q10 (m)</th>
+                                    <th>Q50 (m)</th>
+                                    <th>Q90 (m)</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Livello Medio</td>
-                                    <td id="q10-avg-bettolelle-3h">--</td>
-                                    <td id="q50-avg-bettolelle-3h">--</td>
-                                    <td id="q90-avg-bettolelle-3h">--</td>
-                                </tr>
-                                <tr>
-                                    <td>Picco Massimo</td>
-                                    <td id="q10-max-bettolelle-3h">--</td>
-                                    <td id="q50-max-bettolelle-3h">--</td>
-                                    <td id="q90-max-bettolelle-3h">--</td>
-                                </tr>
-                                <tr>
-                                    <td>Valore Minimo</td>
-                                    <td id="q10-min-bettolelle-3h">--</td>
-                                    <td id="q50-min-bettolelle-3h">--</td>
-                                    <td id="q90-min-bettolelle-3h">--</td>
-                                </tr>
-                            </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
+                    <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card"></div>
                 </div>
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-title">Portata Prevista (m³/s)</span>
-                        <div class="chart-actions">
-                            <button class="chart-btn" id="download-forecast-flow-chart-bettolelle-3h">
-                                <i data-feather="camera" class="feather-icon"></i> Scarica
-                            </button>
-                            <button class="chart-btn" id="fullscreen-forecast-flow-bettolelle-3h">
-                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                            </button>
-                        </div>
-                    </div>
-                    <div class="chart-container card" id="forecastFlowChartBettolelle3h-container">
-                        <canvas id="forecastFlowChartBettolelle3h"></canvas>
-                    </div>
-                </div>
-                <div class="table-container card" id="desktop-forecast-table-bettolelle-3h" style="flex-basis: 100%; min-width: 100%;">
-                    <table id="dataTableBettolelle3h">
-                        <thead>
-                            <tr>
-                                <th>🕐 Timestamp</th>
-                                <th>Q10 (m)</th>
-                                <th>Q50 (m)</th>
-                                <th>Q90 (m)</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card"></div>
             </div>
 
-            <hr style="border-color: var(--border-color); margin: 40px 0;">
-
-            <h2 class="chart-title" style="text-align: center;">Previsioni idro Ponte garibaldi 6h</h2>
-            <div class="container">
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-title">Andamento Previsto</span>
-                        <div class="chart-actions">
-                            <button class="chart-btn" id="download-forecast-chart-ponte-garibaldi-6h">
-                                <i data-feather="camera" class="feather-icon"></i> Scarica
-                            </button>
-                            <button class="chart-btn" id="fullscreen-forecast-ponte-garibaldi-6h">
-                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                            </button>
+            <!-- Tab 3: Ponte Garibaldi 6h -->
+            <div id="tab-garibaldi-6h" class="forecast-tab-content">
+                <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni idro Ponte garibaldi 6h</h2>
+                <div class="container">
+                    <div class="chart-wrapper">
+                        <div class="chart-header">
+                            <span class="chart-title">Andamento Previsto</span>
+                            <div class="chart-actions">
+                                <button class="chart-btn" id="download-forecast-chart-ponte-garibaldi-6h">
+                                    <i data-feather="camera" class="feather-icon"></i> Scarica
+                                </button>
+                                <button class="chart-btn" id="fullscreen-forecast-ponte-garibaldi-6h">
+                                    <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-container card" id="forecastChartPonteGaribaldi6h-container">
+                            <canvas id="forecastChartPonteGaribaldi6h"></canvas>
+                        </div>
+                        <div class="card">
+                            <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
+                            <table class="stats-table" id="forecast-stats-table-ponte-garibaldi-6h">
+                                <thead>
+                                    <tr>
+                                        <th>Metrica</th>
+                                        <th>Q10 (min)</th>
+                                        <th>Q50 (med)</th>
+                                        <th>Q90 (max)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Livello Medio</td>
+                                        <td id="q10-avg-ponte-garibaldi-6h">--</td>
+                                        <td id="q50-avg-ponte-garibaldi-6h">--</td>
+                                        <td id="q90-avg-ponte-garibaldi-6h">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Picco Massimo</td>
+                                        <td id="q10-max-ponte-garibaldi-6h">--</td>
+                                        <td id="q50-max-ponte-garibaldi-6h">--</td>
+                                        <td id="q90-max-ponte-garibaldi-6h">--</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Valore Minimo</td>
+                                        <td id="q10-min-ponte-garibaldi-6h">--</td>
+                                        <td id="q50-min-ponte-garibaldi-6h">--</td>
+                                        <td id="q90-min-ponte-garibaldi-6h">--</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="chart-container card" id="forecastChartPonteGaribaldi6h-container">
-                        <canvas id="forecastChartPonteGaribaldi6h"></canvas>
+                    <div class="chart-wrapper">
+                        <div class="chart-header">
+                            <span class="chart-title">Portata Prevista (m³/s)</span>
+                            <div class="chart-actions">
+                                <button class="chart-btn" id="download-forecast-flow-chart-ponte-garibaldi-6h">
+                                    <i data-feather="camera" class="feather-icon"></i> Scarica
+                                </button>
+                                <button class="chart-btn" id="fullscreen-forecast-flow-ponte-garibaldi-6h">
+                                    <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-container card" id="forecastFlowChartPonteGaribaldi6h-container">
+                            <canvas id="forecastFlowChartPonteGaribaldi6h"></canvas>
+                        </div>
                     </div>
-                    <div class="card">
-                        <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
-                        <table class="stats-table" id="forecast-stats-table-ponte-garibaldi-6h">
+                    <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h" style="flex-basis: 100%; min-width: 100%;">
+                        <table id="dataTablePonteGaribaldi6h">
                             <thead>
                                 <tr>
-                                    <th>Metrica</th>
-                                    <th>Q10 (min)</th>
-                                    <th>Q50 (med)</th>
-                                    <th>Q90 (max)</th>
+                                    <th>🕐 Timestamp</th>
+                                    <th>Q10 (m)</th>
+                                    <th>Q50 (m)</th>
+                                    <th>Q90 (m)</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Livello Medio</td>
-                                    <td id="q10-avg-ponte-garibaldi-6h">--</td>
-                                    <td id="q50-avg-ponte-garibaldi-6h">--</td>
-                                    <td id="q90-avg-ponte-garibaldi-6h">--</td>
-                                </tr>
-                                <tr>
-                                    <td>Picco Massimo</td>
-                                    <td id="q10-max-ponte-garibaldi-6h">--</td>
-                                    <td id="q50-max-ponte-garibaldi-6h">--</td>
-                                    <td id="q90-max-ponte-garibaldi-6h">--</td>
-                                </tr>
-                                <tr>
-                                    <td>Valore Minimo</td>
-                                    <td id="q10-min-ponte-garibaldi-6h">--</td>
-                                    <td id="q50-min-ponte-garibaldi-6h">--</td>
-                                    <td id="q90-min-ponte-garibaldi-6h">--</td>
-                                </tr>
-                            </tbody>
+                            <tbody></tbody>
                         </table>
                     </div>
+                    <div id="mobile-forecast-list-ponte-garibaldi-6h" class="table-mobile-list card"></div>
                 </div>
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-title">Portata Prevista (m³/s)</span>
-                        <div class="chart-actions">
-                            <button class="chart-btn" id="download-forecast-flow-chart-ponte-garibaldi-6h">
-                                <i data-feather="camera" class="feather-icon"></i> Scarica
-                            </button>
-                            <button class="chart-btn" id="fullscreen-forecast-flow-ponte-garibaldi-6h">
-                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                            </button>
-                        </div>
-                    </div>
-                    <div class="chart-container card" id="forecastFlowChartPonteGaribaldi6h-container">
-                        <canvas id="forecastFlowChartPonteGaribaldi6h"></canvas>
-                    </div>
-                </div>
-                <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h" style="flex-basis: 100%; min-width: 100%;">
-                    <table id="dataTablePonteGaribaldi6h">
-                        <thead>
-                            <tr>
-                                <th>🕐 Timestamp</th>
-                                <th>Q10 (m)</th>
-                                <th>Q50 (m)</th>
-                                <th>Q90 (m)</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <div id="mobile-forecast-list-ponte-garibaldi-6h" class="table-mobile-list card"></div>
             </div>
 
-            <hr style="border-color: var(--border-color); margin: 40px 0;">
-
-            <h2 class="chart-title" style="text-align: center;">Modello Previsionale Matematico</h2>
-            <div class="container">
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-title">Livello Idrometrico (1h - 6h)</span>
-                        <div class="chart-actions">
-                            <button class="chart-btn" id="download-experimental-forecast-chart">
-                                <i data-feather="camera" class="feather-icon"></i> Scarica
-                            </button>
-                            <button class="chart-btn" id="fullscreen-experimental-forecast">
-                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                            </button>
+            <!-- Tab 4: Experimental -->
+            <div id="tab-experimental" class="forecast-tab-content">
+                <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Modello Previsionale Matematico</h2>
+                <div class="container">
+                    <div class="chart-wrapper">
+                        <div class="chart-header">
+                            <span class="chart-title">Livello Idrometrico (1h - 6h)</span>
+                            <div class="chart-actions">
+                                <button class="chart-btn" id="download-experimental-forecast-chart">
+                                    <i data-feather="camera" class="feather-icon"></i> Scarica
+                                </button>
+                                <button class="chart-btn" id="fullscreen-experimental-forecast">
+                                    <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-container card" id="experimentalForecastChart-container">
+                            <canvas id="experimentalForecastChart"></canvas>
                         </div>
                     </div>
-                    <div class="chart-container card" id="experimentalForecastChart-container">
-                        <canvas id="experimentalForecastChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-title">Portata Prevista (m³/s)</span>
-                        <div class="chart-actions">
-                            <button class="chart-btn" id="download-experimental-flow-chart">
-                                <i data-feather="camera" class="feather-icon"></i> Scarica
-                            </button>
-                            <button class="chart-btn" id="fullscreen-experimental-flow">
-                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                            </button>
+                    <div class="chart-wrapper">
+                        <div class="chart-header">
+                            <span class="chart-title">Portata Prevista (m³/s)</span>
+                            <div class="chart-actions">
+                                <button class="chart-btn" id="download-experimental-flow-chart">
+                                    <i data-feather="camera" class="feather-icon"></i> Scarica
+                                </button>
+                                <button class="chart-btn" id="fullscreen-experimental-flow">
+                                    <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="chart-container card" id="experimentalFlowChart-container">
+                            <canvas id="experimentalFlowChart"></canvas>
                         </div>
                     </div>
-                    <div class="chart-container card" id="experimentalFlowChart-container">
-                        <canvas id="experimentalFlowChart"></canvas>
+                    <div class="table-container card" style="flex-basis: 100%; min-width: 100%;">
+                        <table id="experimentalDataTable">
+                            <thead>
+                                <tr>
+                                    <th>🕐 Timestamp</th>
+                                    <th>Livello Previsto (m)</th>
+                                    <th>Portata (m³/s)</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
-                </div>
-                <div class="table-container card" style="flex-basis: 100%; min-width: 100%;">
-                    <table id="experimentalDataTable">
-                        <thead>
-                            <tr>
-                                <th>🕐 Timestamp</th>
-                                <th>Livello Previsto (m)</th>
-                                <th>Portata (m³/s)</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
                 </div>
             </div>
         </section>
@@ -7583,6 +7623,27 @@ function updateSliderUI(index) {
         }
 
         // ==================== NAVIGATION & INTERACTIONS ====================
+        function initForecastTabs() {
+            const tabs = document.querySelectorAll('.forecast-tab-btn');
+            const contents = document.querySelectorAll('.forecast-tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Deactivate all
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.remove('active'));
+
+                    // Activate clicked
+                    tab.classList.add('active');
+                    const targetId = tab.dataset.tab;
+                    document.getElementById(targetId).classList.add('active');
+                    
+                    // Force resize of charts in the new tab
+                    handleResize();
+                });
+            });
+        }
+
         function initNavigation() {
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.addEventListener('click', function(e) {
@@ -7610,6 +7671,7 @@ function updateSliderUI(index) {
                                 fetchForecastData(); 
                                 fetchForecastDataBettolelle3h();
                                 fetchForecastDataPonteGaribaldi6h();
+                                handleResize(); // Ensure active tab charts are resized
                                 break;
                             case 'idrometri': 
                                 // Forza ridisegno grafico idrometri
@@ -7902,14 +7964,8 @@ function updateSliderUI(index) {
                 icon.setAttribute('data-feather', isVisible ? 'book' : 'book-open');
                 feather.replace();
             });
-            document.getElementById('resetZoomBtn').addEventListener('click', () => {
-                if (STATE.charts.forecast) STATE.charts.forecast.resetZoom();
-                if (STATE.charts.forecastFlowChart) STATE.charts.forecastFlowChart.resetZoom();
-                if (STATE.charts.forecastBettolelle3h) STATE.charts.forecastBettolelle3h.resetZoom();
-                if (STATE.charts.forecastFlowChartBettolelle3h) STATE.charts.forecastFlowChartBettolelle3h.resetZoom();
-                if (STATE.charts.forecastPonteGaribaldi6h) STATE.charts.forecastPonteGaribaldi6h.resetZoom();
-                if (STATE.charts.forecastFlowChartPonteGaribaldi6h) STATE.charts.forecastFlowChartPonteGaribaldi6h.resetZoom();
-            });
+            // Removed resetZoomBtn event listener as the button was removed.
+            // Zoom reset can be done via double-click on charts if configured, or we can add individual reset buttons later.
 
             // Chart action buttons
             const chartActions = {
@@ -8339,6 +8395,7 @@ async function initDashboard() {
             }
 
             initNavigation();
+            initForecastTabs();
             initQuickFilters();
             initUIInteractions();
             initFullscreenButtons();
