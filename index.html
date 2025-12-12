@@ -2863,7 +2863,7 @@ max-width: 400px;
                 <button class="forecast-tab-btn" data-tab="tab-garibaldi-6h">Ponte Garibaldi 6h</button>
                 <button class="forecast-tab-btn" data-tab="tab-experimental">Modello Sperimentale</button>
             </div>
-            
+
             <!-- Tab 1: Bettolelle -->
             <div id="tab-bettolelle" class="forecast-tab-content active">
                 <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsione Idrometrica Misa (Bettolelle)</h2>
@@ -2933,7 +2933,7 @@ max-width: 400px;
                             <canvas id="forecastFlowChart"></canvas>
                         </div>
                     </div>
-                    <div class="table-container card" id="desktop-forecast-table" style="flex-basis: 100%; min-width: 100%;">
+                    <div class="table-container card" id="desktop-forecast-table" style="grid-column: 1 / -1; width: 100%;">
                         <table id="dataTable">
                             <thead>
                                 <tr>
@@ -3019,7 +3019,7 @@ max-width: 400px;
                             <canvas id="forecastFlowChartBettolelle3h"></canvas>
                         </div>
                     </div>
-                    <div class="table-container card" id="desktop-forecast-table-bettolelle-3h" style="flex-basis: 100%; min-width: 100%;">
+                    <div class="table-container card" id="desktop-forecast-table-bettolelle-3h" style="grid-column: 1 / -1; width: 100%;">
                         <table id="dataTableBettolelle3h">
                             <thead>
                                 <tr>
@@ -3105,7 +3105,7 @@ max-width: 400px;
                             <canvas id="forecastFlowChartPonteGaribaldi6h"></canvas>
                         </div>
                     </div>
-                    <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h" style="flex-basis: 100%; min-width: 100%;">
+                    <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h" style="grid-column: 1 / -1; width: 100%;">
                         <table id="dataTablePonteGaribaldi6h">
                             <thead>
                                 <tr>
@@ -3158,7 +3158,7 @@ max-width: 400px;
                             <canvas id="experimentalFlowChart"></canvas>
                         </div>
                     </div>
-                    <div class="table-container card" style="flex-basis: 100%; min-width: 100%;">
+                    <div class="table-container card" style="grid-column: 1 / -1; width: 100%;">
                         <table id="experimentalDataTable">
                             <thead>
                                 <tr>
@@ -5715,14 +5715,38 @@ async function updateHistoricalData(daysToLoad = 7, forceFullLoad = false) {
         }
 
         function updateForecastTable(data) {
-    const isMobile = utils.isMobile();
-    
-    if (isMobile) {
-        updateMobileForecastList(data);
-    } else {
-        updateDesktopForecastTable(data);
-    }
-}
+            const isMobile = utils.isMobile();
+
+            const desktopTableContainer = document.getElementById('desktop-forecast-table');
+            const mobileListContainer = document.getElementById('mobile-forecast-list');
+
+            if (isMobile) {
+                desktopTableContainer.style.display = 'none';
+                mobileListContainer.style.display = 'block';
+                mobileListContainer.innerHTML = '';
+
+                data.forEach((row, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'table-mobile-item';
+                    card.innerHTML = `
+                        <div class="timestamp">${row['Timestamp Previsione']}</div>
+                        <div class="data-row">
+                            <span>Q50 (Mediana):</span>
+                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)} m</strong>
+                        </div>
+                        <div class="data-row">
+                            <span>Q90 (Massimo):</span>
+                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)} m</strong>
+                        </div>
+                    `;
+                    mobileListContainer.appendChild(card);
+                });
+            } else {
+                desktopTableContainer.style.display = 'block';
+                mobileListContainer.style.display = 'none';
+                updateDesktopForecastTable(data);
+            }
+        }
 
 function updateDesktopForecastTable(data) {
     const desktopTableContainer = document.getElementById('desktop-forecast-table');
@@ -7956,14 +7980,6 @@ function updateSliderUI(index) {
             });
 
             // Forecast page buttons
-            document.getElementById('toggle-instructions-btn').addEventListener('click', function() {
-                const instructions = document.getElementById('instructions-container');
-                const isVisible = instructions.classList.toggle('visible');
-                const icon = this.querySelector('.feather-icon');
-                this.childNodes[2].nodeValue = isVisible ? ' Nascondi Istruzioni' : ' Mostra Istruzioni';
-                icon.setAttribute('data-feather', isVisible ? 'book' : 'book-open');
-                feather.replace();
-            });
             // Removed resetZoomBtn event listener as the button was removed.
             // Zoom reset can be done via double-click on charts if configured, or we can add individual reset buttons later.
 
