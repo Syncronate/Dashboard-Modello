@@ -2896,7 +2896,7 @@ max-width: 400px;
             <div class="forecast-tabs">
                 <button class="forecast-tab-btn active" data-tab="tab-bettolelle">Misa (Bettolelle)</button>
                 <button class="forecast-tab-btn" data-tab="tab-bettolelle-3h">Bettolelle 3h</button>
-                <button class="forecast-tab-btn" data-tab="tab-garibaldi-6h">Ponte Garibaldi 6h</button>
+                <button class="forecast-tab-btn" data-tab="tab-garibaldi-6h">Ponte Garibaldi 3h</button>
                 <button class="forecast-tab-btn" data-tab="tab-experimental">Modello Sperimentale</button>
             </div>
             
@@ -3078,9 +3078,9 @@ max-width: 400px;
                 </div>
             </div>
 
-            <!-- Tab 3: Ponte Garibaldi 6h -->
+            <!-- Tab 3: Ponte Garibaldi 3h -->
             <div id="tab-garibaldi-6h" class="forecast-tab-content">
-                <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni idro Ponte garibaldi 6h</h2>
+                <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni idro Ponte garibaldi 3h</h2>
                 <div class="container forecast-container">
                     <div class="chart-wrapper">
                         <div class="chart-header">
@@ -4774,7 +4774,7 @@ passwordInput.focus();
         }
     }
 
-    // Analisi Previsione Ponte Garibaldi 6h
+    // Analisi Previsione Ponte Garibaldi 3h
     if (STATE.forecastDataPonteGaribaldi6h && STATE.forecastDataPonteGaribaldi6h.length > 0) {
         let maxPredictedLevel6h = -Infinity;
         let peakTimestamp6h = null;
@@ -6100,7 +6100,7 @@ function updateMobileForecastList(data) {
             }
         }
 
-        // New functions for Ponte Garibaldi 6h
+        // New functions for Ponte Garibaldi 3h
         function drawForecastChartPonteGaribaldi6h(labels, q10, q50, q90) {
             // --- 1. PREPARE DATA ---
             let referenceTime = Date.now();
@@ -6184,7 +6184,7 @@ function updateMobileForecastList(data) {
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        title: { display: true, text: 'Previsione Idro Ponte Garibaldi 6h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                        title: { display: true, text: 'Previsione Idro Ponte Garibaldi 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
                         zoom: { 
@@ -6223,7 +6223,7 @@ function updateMobileForecastList(data) {
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        title: { display: true, text: 'Previsione Portata - Ponte Garibaldi 6h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                        title: { display: true, text: 'Previsione Portata - Ponte Garibaldi 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                         legend: { labels: { color: '#E0E0E0' } },
                         tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
                         zoom: {
@@ -6314,7 +6314,7 @@ function updateMobileForecastList(data) {
                 updateForecastTablePonteGaribaldi6h(filteredData);
                 drawForecastChartPonteGaribaldi6h(labels, q10, q50, q90);
             } catch (error) {
-                console.error('Error fetching Ponte Garibaldi 6h forecast data:', error);
+                console.error('Error fetching Ponte Garibaldi 3h forecast data:', error);
             }
         }
 
@@ -8398,7 +8398,7 @@ async function initDashboard() {
                 const forecastPromise = Promise.all([
                     executeWithRetry(() => fetchForecastData(), 'previsioni base'),
                     executeWithRetry(() => fetchForecastDataBettolelle3h(), 'previsioni Bettolelle 3h'),
-                    executeWithRetry(() => fetchForecastDataPonteGaribaldi6h(), 'previsioni Ponte Garibaldi 6h')
+                    executeWithRetry(() => fetchForecastDataPonteGaribaldi6h(), 'previsioni Ponte Garibaldi 3h')
                 ]);
 
                 // Esegui Fase 1 e 2 in parallelo per velocità
