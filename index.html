@@ -3154,22 +3154,66 @@
                     <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsione Idrometrica
                         Bettolelle
                         (6h)</h2>
-                    <div class="container forecast-container">
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span class="chart-title">Andamento Previsto</span>
-                                <div class="chart-actions">
-                                    <button class="chart-btn" id="download-forecast-chart">
-                                        <i data-feather="camera" class="feather-icon"></i> Scarica
-                                    </button>
-                                    <button class="chart-btn" id="fullscreen-forecast">
-                                        <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                    </button>
+                    <div class="container forecast-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                        <!-- Colonna Sinistra: Grafici (75%) -->
+                        <div style="flex: 3; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+                            <div class="chart-wrapper">
+                                <div class="chart-header">
+                                    <span class="chart-title">Andamento Previsto</span>
+                                    <div class="chart-actions">
+                                        <button class="chart-btn" id="download-forecast-chart">
+                                            <i data-feather="camera" class="feather-icon"></i> Scarica
+                                        </button>
+                                        <button class="chart-btn" id="fullscreen-forecast">
+                                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="chart-container card" id="forecastChart-container">
+                                    <canvas id="forecastChart"></canvas>
                                 </div>
                             </div>
-                            <div class="chart-container card" id="forecastChart-container">
-                                <canvas id="forecastChart"></canvas>
+
+                            <div class="chart-wrapper">
+                                <div class="chart-header">
+                                    <span class="chart-title">Portata Prevista (m³/s)</span>
+                                    <div class="chart-actions">
+                                        <button class="chart-btn" id="download-forecast-flow-chart">
+                                            <i data-feather="camera" class="feather-icon"></i> Scarica
+                                        </button>
+                                        <button class="chart-btn" id="fullscreen-forecast-flow">
+                                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="chart-container card" id="forecastFlowChart-container">
+                                    <canvas id="forecastFlowChart"></canvas>
+                                </div>
                             </div>
+
+                            <button class="toggle-table-btn"
+                                onclick="toggleForecastTable('desktop-forecast-table', 'mobile-forecast-list')">
+                                <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                            </button>
+                            <div class="table-container card" id="desktop-forecast-table"
+                                style="width: 100%; display: none;">
+                                <table id="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>🕐 Timestamp</th>
+                                            <th>Q10 (m)</th>
+                                            <th>Q50 (m)</th>
+                                            <th>Q90 (m)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div id="mobile-forecast-list" class="table-mobile-list card" style="display: none;"></div>
+                        </div>
+
+                        <!-- Colonna Destra: Tabelle (25%) -->
+                        <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 20px;">
                             <div class="card">
                                 <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
                                 <table class="stats-table" id="forecast-stats-table">
@@ -3203,7 +3247,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="card" style="margin-top: 15px;">
+                            <div class="card">
                                 <h3 style="color: var(--primary-color); margin-top: 0;">
                                     <i data-feather="eye" class="feather-icon"></i> Feature Importance TFT
                                 </h3>
@@ -3227,308 +3271,313 @@
                                 </table>
                             </div>
                         </div>
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span class="chart-title">Portata Prevista (m³/s)</span>
-                                <div class="chart-actions">
-                                    <button class="chart-btn" id="download-forecast-flow-chart">
-                                        <i data-feather="camera" class="feather-icon"></i> Scarica
-                                    </button>
-                                    <button class="chart-btn" id="fullscreen-forecast-flow">
-                                        <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-container card" id="forecastFlowChart-container">
-                                <canvas id="forecastFlowChart"></canvas>
-                            </div>
-                        </div>
-                        <button class="toggle-table-btn"
-                            onclick="toggleForecastTable('desktop-forecast-table', 'mobile-forecast-list')">
-                            <i data-feather="list" class="feather-icon"></i> Mostra Dati
-                        </button>
-                        <div class="table-container card" id="desktop-forecast-table"
-                            style="grid-column: 1 / -1; width: 100%; display: none;">
-                            <table id="dataTable">
-                                <thead>
-                                    <tr>
-                                        <th>🕐 Timestamp</th>
-                                        <th>Q10 (m)</th>
-                                        <th>Q50 (m)</th>
-                                        <th>Q90 (m)</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div id="mobile-forecast-list" class="table-mobile-list card" style="display: none;"></div>
                     </div>
-                </div>
 
-                <!-- Tab 1: Bettolelle 3h (Active by default) -->
-                <div id="tab-bettolelle-3h" class="forecast-tab-content active">
-                    <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni Idro Bettolelle
-                        (3h)</h2>
-                    <div class="container forecast-container">
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span class="chart-title">Andamento Previsto</span>
-                                <div class="chart-actions">
-                                    <button class="chart-btn" id="download-forecast-chart-bettolelle-3h">
-                                        <i data-feather="camera" class="feather-icon"></i> Scarica
-                                    </button>
-                                    <button class="chart-btn" id="fullscreen-forecast-bettolelle-3h">
-                                        <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                    </button>
+                    <!-- Tab 1: Bettolelle 3h (Active by default) -->
+                    <div id="tab-bettolelle-3h" class="forecast-tab-content active">
+                        <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni Idro
+                            Bettolelle
+                            (3h)</h2>
+                        <div class="container forecast-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                            <!-- Colonna Sinistra: Grafici (75%) -->
+                            <div style="flex: 3; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+                                <div class="chart-wrapper">
+                                    <div class="chart-header">
+                                        <span class="chart-title">Andamento Previsto</span>
+                                        <div class="chart-actions">
+                                            <button class="chart-btn" id="download-forecast-chart-bettolelle-3h">
+                                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                                            </button>
+                                            <button class="chart-btn" id="fullscreen-forecast-bettolelle-3h">
+                                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container card" id="forecastChartBettolelle3h-container">
+                                        <canvas id="forecastChartBettolelle3h"></canvas>
+                                    </div>
+                                </div>
+
+                                <div class="chart-wrapper">
+                                    <div class="chart-header">
+                                        <span class="chart-title">Portata Prevista (m³/s)</span>
+                                        <div class="chart-actions">
+                                            <button class="chart-btn" id="download-forecast-flow-chart-bettolelle-3h">
+                                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                                            </button>
+                                            <button class="chart-btn" id="fullscreen-forecast-flow-bettolelle-3h">
+                                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container card" id="forecastFlowChartBettolelle3h-container">
+                                        <canvas id="forecastFlowChartBettolelle3h"></canvas>
+                                    </div>
+                                </div>
+
+                                <button class="toggle-table-btn"
+                                    onclick="toggleForecastTable('desktop-forecast-table-bettolelle-3h', 'mobile-forecast-list-bettolelle-3h')">
+                                    <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                                </button>
+                                <div class="table-container card" id="desktop-forecast-table-bettolelle-3h"
+                                    style="width: 100%; display: none;">
+                                    <table id="dataTableBettolelle3h">
+                                        <thead>
+                                            <tr>
+                                                <th>🕐 Timestamp</th>
+                                                <th>Q10 (m)</th>
+                                                <th>Q50 (m)</th>
+                                                <th>Q90 (m)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card"
+                                    style="display: none;"></div>
+                            </div>
+
+                            <!-- Colonna Destra: Tabelle (25%) -->
+                            <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 20px;">
+                                <div class="card">
+                                    <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
+                                    <table class="stats-table" id="forecast-stats-table-bettolelle-3h">
+                                        <thead>
+                                            <tr>
+                                                <th>Metrica</th>
+                                                <th>Q10 (min)</th>
+                                                <th>Q50 (med)</th>
+                                                <th>Q90 (max)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Livello Medio</td>
+                                                <td id="q10-avg-bettolelle-3h">--</td>
+                                                <td id="q50-avg-bettolelle-3h">--</td>
+                                                <td id="q90-avg-bettolelle-3h">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Picco Massimo</td>
+                                                <td id="q10-max-bettolelle-3h">--</td>
+                                                <td id="q50-max-bettolelle-3h">--</td>
+                                                <td id="q90-max-bettolelle-3h">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Valore Minimo</td>
+                                                <td id="q10-min-bettolelle-3h">--</td>
+                                                <td id="q50-min-bettolelle-3h">--</td>
+                                                <td id="q90-min-bettolelle-3h">--</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="card">
+                                    <h3 style="color: var(--primary-color); margin-top: 0;">
+                                        <i data-feather="eye" class="feather-icon"></i> Feature Importance TFT
+                                    </h3>
+                                    <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">
+                                        Peso attribuito dal modello a ciascuna feature per questa previsione
+                                    </p>
+                                    <table class="stats-table" id="feature-importance-table-3h">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>Feature</th>
+                                                <th>Peso (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="3" style="text-align:center; color: var(--text-muted);">
+                                                    Caricamento...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            <div class="chart-container card" id="forecastChartBettolelle3h-container">
-                                <canvas id="forecastChartBettolelle3h"></canvas>
-                            </div>
-                            <div class="card">
-                                <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
-                                <table class="stats-table" id="forecast-stats-table-bettolelle-3h">
+                            <button class="toggle-table-btn"
+                                onclick="toggleForecastTable('desktop-forecast-table-bettolelle-3h', 'mobile-forecast-list-bettolelle-3h')">
+                                <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                            </button>
+                            <div class="table-container card" id="desktop-forecast-table-bettolelle-3h"
+                                style="grid-column: 1 / -1; width: 100%; display: none;">
+                                <table id="dataTableBettolelle3h">
                                     <thead>
                                         <tr>
-                                            <th>Metrica</th>
-                                            <th>Q10 (min)</th>
-                                            <th>Q50 (med)</th>
-                                            <th>Q90 (max)</th>
+                                            <th>🕐 Timestamp</th>
+                                            <th>Q10 (m)</th>
+                                            <th>Q50 (m)</th>
+                                            <th>Q90 (m)</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Livello Medio</td>
-                                            <td id="q10-avg-bettolelle-3h">--</td>
-                                            <td id="q50-avg-bettolelle-3h">--</td>
-                                            <td id="q90-avg-bettolelle-3h">--</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Picco Massimo</td>
-                                            <td id="q10-max-bettolelle-3h">--</td>
-                                            <td id="q50-max-bettolelle-3h">--</td>
-                                            <td id="q90-max-bettolelle-3h">--</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Valore Minimo</td>
-                                            <td id="q10-min-bettolelle-3h">--</td>
-                                            <td id="q50-min-bettolelle-3h">--</td>
-                                            <td id="q90-min-bettolelle-3h">--</td>
-                                        </tr>
-                                    </tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
-                            <div class="card" style="margin-top: 15px;">
-                                <h3 style="color: var(--primary-color); margin-top: 0;">
-                                    <i data-feather="eye" class="feather-icon"></i> Feature Importance TFT
-                                </h3>
-                                <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">
-                                    Peso attribuito dal modello a ciascuna feature per questa previsione
-                                </p>
-                                <table class="stats-table" id="feature-importance-table-3h">
+                            <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card"
+                                style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: Ponte Garibaldi 3h -->
+                    <div id="tab-garibaldi-6h" class="forecast-tab-content">
+                        <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni idro Ponte
+                            garibaldi 3h</h2>
+                        <div class="container forecast-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                            <!-- Left Column: Charts (75%) -->
+                            <div style="flex: 3; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+                                <div class="chart-wrapper">
+                                    <div class="chart-header">
+                                        <span class="chart-title">Andamento Previsto</span>
+                                        <div class="chart-actions">
+                                            <button class="chart-btn" id="download-forecast-chart-ponte-garibaldi-6h">
+                                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                                            </button>
+                                            <button class="chart-btn" id="fullscreen-forecast-ponte-garibaldi-6h">
+                                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container card" id="forecastChartPonteGaribaldi6h-container">
+                                        <canvas id="forecastChartPonteGaribaldi6h"></canvas>
+                                    </div>
+                                </div>
+
+                                <div class="chart-wrapper">
+                                    <div class="chart-header">
+                                        <span class="chart-title">Portata Prevista (m³/s)</span>
+                                        <div class="chart-actions">
+                                            <button class="chart-btn"
+                                                id="download-forecast-flow-chart-ponte-garibaldi-6h">
+                                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                                            </button>
+                                            <button class="chart-btn" id="fullscreen-forecast-flow-ponte-garibaldi-6h">
+                                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container card" id="forecastFlowChartPonteGaribaldi6h-container">
+                                        <canvas id="forecastFlowChartPonteGaribaldi6h"></canvas>
+                                    </div>
+                                </div>
+
+                                <button class="toggle-table-btn"
+                                    onclick="toggleForecastTable('desktop-forecast-table-ponte-garibaldi-6h', 'mobile-forecast-list-ponte-garibaldi-6h')">
+                                    <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                                </button>
+                                <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h"
+                                    style="width: 100%; display: none;">
+                                    <table id="dataTablePonteGaribaldi6h">
+                                        <thead>
+                                            <tr>
+                                                <th>🕐 Timestamp</th>
+                                                <th>Q10 (m)</th>
+                                                <th>Q50 (m)</th>
+                                                <th>Q90 (m)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div id="mobile-forecast-list-ponte-garibaldi-6h" class="table-mobile-list card"
+                                    style="display: none;"></div>
+                            </div>
+
+                            <!-- Right Column: Stats (25%) -->
+                            <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 20px;">
+                                <div class="card">
+                                    <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
+                                    <table class="stats-table" id="forecast-stats-table-ponte-garibaldi-6h">
+                                        <thead>
+                                            <tr>
+                                                <th>Metrica</th>
+                                                <th>Q10 (min)</th>
+                                                <th>Q50 (med)</th>
+                                                <th>Q90 (max)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Livello Medio</td>
+                                                <td id="q10-avg-ponte-garibaldi-6h">--</td>
+                                                <td id="q50-avg-ponte-garibaldi-6h">--</td>
+                                                <td id="q90-avg-ponte-garibaldi-6h">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Picco Massimo</td>
+                                                <td id="q10-max-ponte-garibaldi-6h">--</td>
+                                                <td id="q50-max-ponte-garibaldi-6h">--</td>
+                                                <td id="q90-max-ponte-garibaldi-6h">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Valore Minimo</td>
+                                                <td id="q10-min-ponte-garibaldi-6h">--</td>
+                                                <td id="q50-min-ponte-garibaldi-6h">--</td>
+                                                <td id="q90-min-ponte-garibaldi-6h">--</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 4: Experimental -->
+                    <div id="tab-experimental" class="forecast-tab-content">
+                        <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Modello Previsionale
+                            Matematico</h2>
+                        <div class="container forecast-container">
+                            <div class="chart-wrapper">
+                                <div class="chart-header">
+                                    <span class="chart-title">Livello Idrometrico (1h - 6h)</span>
+                                    <div class="chart-actions">
+                                        <button class="chart-btn" id="download-experimental-forecast-chart">
+                                            <i data-feather="camera" class="feather-icon"></i> Scarica
+                                        </button>
+                                        <button class="chart-btn" id="fullscreen-experimental-forecast">
+                                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="chart-container card" id="experimentalForecastChart-container">
+                                    <canvas id="experimentalForecastChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-wrapper">
+                                <div class="chart-header">
+                                    <span class="chart-title">Portata Prevista (m³/s)</span>
+                                    <div class="chart-actions">
+                                        <button class="chart-btn" id="download-experimental-flow-chart">
+                                            <i data-feather="camera" class="feather-icon"></i> Scarica
+                                        </button>
+                                        <button class="chart-btn" id="fullscreen-experimental-flow">
+                                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="chart-container card" id="experimentalFlowChart-container">
+                                    <canvas id="experimentalFlowChart"></canvas>
+                                </div>
+                            </div>
+                            <button class="toggle-table-btn"
+                                onclick="toggleForecastTable('experimental-table-container')">
+                                <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                            </button>
+                            <div class="table-container card" id="experimental-table-container"
+                                style="grid-column: 1 / -1; width: 100%; display: none;">
+                                <table id="experimentalDataTable">
                                     <thead>
                                         <tr>
-                                            <th>Rank</th>
-                                            <th>Feature</th>
-                                            <th>Peso (%)</th>
+                                            <th>🕐 Timestamp</th>
+                                            <th>Livello Previsto (m)</th>
+                                            <th>Portata (m³/s)</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="3" style="text-align:center; color: var(--text-muted);">
-                                                Caricamento...</td>
-                                        </tr>
-                                    </tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                         </div>
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span class="chart-title">Portata Prevista (m³/s)</span>
-                                <div class="chart-actions">
-                                    <button class="chart-btn" id="download-forecast-flow-chart-bettolelle-3h">
-                                        <i data-feather="camera" class="feather-icon"></i> Scarica
-                                    </button>
-                                    <button class="chart-btn" id="fullscreen-forecast-flow-bettolelle-3h">
-                                        <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-container card" id="forecastFlowChartBettolelle3h-container">
-                                <canvas id="forecastFlowChartBettolelle3h"></canvas>
-                            </div>
-                        </div>
-                        <button class="toggle-table-btn"
-                            onclick="toggleForecastTable('desktop-forecast-table-bettolelle-3h', 'mobile-forecast-list-bettolelle-3h')">
-                            <i data-feather="list" class="feather-icon"></i> Mostra Dati
-                        </button>
-                        <div class="table-container card" id="desktop-forecast-table-bettolelle-3h"
-                            style="grid-column: 1 / -1; width: 100%; display: none;">
-                            <table id="dataTableBettolelle3h">
-                                <thead>
-                                    <tr>
-                                        <th>🕐 Timestamp</th>
-                                        <th>Q10 (m)</th>
-                                        <th>Q50 (m)</th>
-                                        <th>Q90 (m)</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card"
-                            style="display: none;"></div>
                     </div>
-                </div>
-
-                <!-- Tab 3: Ponte Garibaldi 3h -->
-                <div id="tab-garibaldi-6h" class="forecast-tab-content">
-                    <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsioni idro Ponte
-                        garibaldi 3h</h2>
-                    <div class="container forecast-container">
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span class="chart-title">Andamento Previsto</span>
-                                <div class="chart-actions">
-                                    <button class="chart-btn" id="download-forecast-chart-ponte-garibaldi-6h">
-                                        <i data-feather="camera" class="feather-icon"></i> Scarica
-                                    </button>
-                                    <button class="chart-btn" id="fullscreen-forecast-ponte-garibaldi-6h">
-                                        <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-container card" id="forecastChartPonteGaribaldi6h-container">
-                                <canvas id="forecastChartPonteGaribaldi6h"></canvas>
-                            </div>
-                            <div class="card">
-                                <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
-                                <table class="stats-table" id="forecast-stats-table-ponte-garibaldi-6h">
-                                    <thead>
-                                        <tr>
-                                            <th>Metrica</th>
-                                            <th>Q10 (min)</th>
-                                            <th>Q50 (med)</th>
-                                            <th>Q90 (max)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Livello Medio</td>
-                                            <td id="q10-avg-ponte-garibaldi-6h">--</td>
-                                            <td id="q50-avg-ponte-garibaldi-6h">--</td>
-                                            <td id="q90-avg-ponte-garibaldi-6h">--</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Picco Massimo</td>
-                                            <td id="q10-max-ponte-garibaldi-6h">--</td>
-                                            <td id="q50-max-ponte-garibaldi-6h">--</td>
-                                            <td id="q90-max-ponte-garibaldi-6h">--</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Valore Minimo</td>
-                                            <td id="q10-min-ponte-garibaldi-6h">--</td>
-                                            <td id="q50-min-ponte-garibaldi-6h">--</td>
-                                            <td id="q90-min-ponte-garibaldi-6h">--</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span class="chart-title">Portata Prevista (m³/s)</span>
-                                <div class="chart-actions">
-                                    <button class="chart-btn" id="download-forecast-flow-chart-ponte-garibaldi-6h">
-                                        <i data-feather="camera" class="feather-icon"></i> Scarica
-                                    </button>
-                                    <button class="chart-btn" id="fullscreen-forecast-flow-ponte-garibaldi-6h">
-                                        <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-container card" id="forecastFlowChartPonteGaribaldi6h-container">
-                                <canvas id="forecastFlowChartPonteGaribaldi6h"></canvas>
-                            </div>
-                        </div>
-                        <button class="toggle-table-btn"
-                            onclick="toggleForecastTable('desktop-forecast-table-ponte-garibaldi-6h', 'mobile-forecast-list-ponte-garibaldi-6h')">
-                            <i data-feather="list" class="feather-icon"></i> Mostra Dati
-                        </button>
-                        <div class="table-container card" id="desktop-forecast-table-ponte-garibaldi-6h"
-                            style="grid-column: 1 / -1; width: 100%; display: none;">
-                            <table id="dataTablePonteGaribaldi6h">
-                                <thead>
-                                    <tr>
-                                        <th>🕐 Timestamp</th>
-                                        <th>Q10 (m)</th>
-                                        <th>Q50 (m)</th>
-                                        <th>Q90 (m)</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                        <div id="mobile-forecast-list-ponte-garibaldi-6h" class="table-mobile-list card"
-                            style="display: none;"></div>
-                    </div>
-                </div>
-
-                <!-- Tab 4: Experimental -->
-                <div id="tab-experimental" class="forecast-tab-content">
-                    <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Modello Previsionale
-                        Matematico</h2>
-                    <div class="container forecast-container">
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span class="chart-title">Livello Idrometrico (1h - 6h)</span>
-                                <div class="chart-actions">
-                                    <button class="chart-btn" id="download-experimental-forecast-chart">
-                                        <i data-feather="camera" class="feather-icon"></i> Scarica
-                                    </button>
-                                    <button class="chart-btn" id="fullscreen-experimental-forecast">
-                                        <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-container card" id="experimentalForecastChart-container">
-                                <canvas id="experimentalForecastChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="chart-wrapper">
-                            <div class="chart-header">
-                                <span class="chart-title">Portata Prevista (m³/s)</span>
-                                <div class="chart-actions">
-                                    <button class="chart-btn" id="download-experimental-flow-chart">
-                                        <i data-feather="camera" class="feather-icon"></i> Scarica
-                                    </button>
-                                    <button class="chart-btn" id="fullscreen-experimental-flow">
-                                        <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chart-container card" id="experimentalFlowChart-container">
-                                <canvas id="experimentalFlowChart"></canvas>
-                            </div>
-                        </div>
-                        <button class="toggle-table-btn" onclick="toggleForecastTable('experimental-table-container')">
-                            <i data-feather="list" class="feather-icon"></i> Mostra Dati
-                        </button>
-                        <div class="table-container card" id="experimental-table-container"
-                            style="grid-column: 1 / -1; width: 100%; display: none;">
-                            <table id="experimentalDataTable">
-                                <thead>
-                                    <tr>
-                                        <th>🕐 Timestamp</th>
-                                        <th>Livello Previsto (m)</th>
-                                        <th>Portata (m³/s)</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
             </section>
 
             <!-- IDROMETRI PAGE -->
@@ -5057,7 +5106,7 @@
                 if (STATE.forecastData && STATE.forecastData.length > 0) {
                     let maxPredictedLevel = -Infinity;
                     let peakTimestamp = null;
-                    const forecastColumn = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)';
+                    const forecastColumn = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
 
                     STATE.forecastData.forEach(record => {
                         const level = parseAndFixDecimal(record[forecastColumn]);
@@ -5085,7 +5134,7 @@
                 if (STATE.forecastDataBettolelle3h && STATE.forecastDataBettolelle3h.length > 0) {
                     let maxPredictedLevel3h = -Infinity;
                     let peakTimestamp3h = null;
-                    const forecastColumn3h = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)';
+                    const forecastColumn3h = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
 
                     STATE.forecastDataBettolelle3h.forEach(record => {
                         const level = parseAndFixDecimal(record[forecastColumn3h]);
@@ -5114,7 +5163,7 @@
                 if (STATE.forecastDataPonteGaribaldi6h && STATE.forecastDataPonteGaribaldi6h.length > 0) {
                     let maxPredictedLevel6h = -Infinity;
                     let peakTimestamp6h = null;
-                    const forecastColumn6h = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)';
+                    const forecastColumn6h = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
 
                     STATE.forecastDataPonteGaribaldi6h.forEach(record => {
                         const level = parseAndFixDecimal(record[forecastColumn6h]);
@@ -5944,10 +5993,9 @@
                 }
             };
 
-            function drawForecastChart(labels, q10, q50, q90) {
+            function drawForecastChart(labels, prediction, _ignored1, _ignored2) {
                 // --- 1. PREPARE DATA ---
-                // Filter historical data (last 3 hours relative to the first forecast timestamp)
-                // If no forecast timestamp, use now
+                // "prediction" is the single array of values
                 let referenceTime = Date.now();
                 if (labels && labels.length > 0) {
                     const firstForecast = parseCustomDate(labels[0]);
@@ -5970,9 +6018,6 @@
                 // Merge Labels and Data
                 const mergedLabels = [...historicalLabels, ...labels];
 
-                // Dataset for Historical Levels
-                // It should align with mergedLabels. 
-                // Historical part has values, Forecast part is null.
                 const historicalLevelDataset = [
                     ...historicalLevels,
                     ...new Array(labels.length).fill(null)
@@ -5989,37 +6034,30 @@
                 }
 
                 // Datasets for Forecast Levels
-                // They should align with mergedLabels.
-                const forecastQ10Dataset = [...forecastPadding, ...q10];
-                const forecastQ50Dataset = [...forecastPadding, ...q50];
-                const forecastQ90Dataset = [...forecastPadding, ...q90];
+                const forecastDataset = [...forecastPadding, ...prediction];
 
                 // --- 2. UPDATE STATS TABLE (Forecast Only) ---
-                const stats = {
-                    q10: calculateStats(q10),
-                    q50: calculateStats(q50),
-                    q90: calculateStats(q90)
-                };
+                const stats = calculateStats(prediction);
+
+                // Update header dynamically
+                const tableHead = document.querySelector('#forecast-stats-table thead tr');
+                if (tableHead) {
+                    tableHead.innerHTML = `<th>Metrica</th><th>Valore Atteso</th>`;
+                }
 
                 const tableBody = document.querySelector('#forecast-stats-table tbody');
                 tableBody.innerHTML = `
                 <tr>
                     <td>Livello Medio</td>
-                    <td>${stats.q10.avg ? stats.q10.avg.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.avg ? stats.q50.avg.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.avg ? stats.q90.avg.toFixed(3) + ' m' : '--'}</td>
+                    <td>${stats.avg ? stats.avg.toFixed(3) + ' m' : '--'}</td>
                 </tr>
                 <tr>
                     <td>Picco Massimo</td>
-                    <td>${stats.q10.max ? stats.q10.max.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.max ? stats.q50.max.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.max ? stats.q90.max.toFixed(3) + ' m' : '--'}</td>
+                    <td>${stats.max ? stats.max.toFixed(3) + ' m' : '--'}</td>
                 </tr>
                 <tr>
                     <td>Valore Minimo</td>
-                    <td>${stats.q10.min ? stats.q10.min.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.min ? stats.q50.min.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.min ? stats.q90.min.toFixed(3) + ' m' : '--'}</td>
+                    <td>${stats.min ? stats.min.toFixed(3) + ' m' : '--'}</td>
                 </tr>
             `;
 
@@ -6030,15 +6068,13 @@
                         labels: mergedLabels,
                         datasets: [
                             { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                            { label: 'Q50 (Mediana)', data: forecastQ50Dataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Previsione 6h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                         ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                         plugins: {
-                            title: { display: true, text: 'Previsione Livello Idrometrico - Sensore 1112 (Bettolelle)', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                            title: { display: true, text: 'Previsione Livello Idrometrico - Bettolelle 6h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                             legend: { labels: { color: '#E0E0E0' } },
                             tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
                             zoom: {
@@ -6061,9 +6097,7 @@
 
                 // Convert all datasets to flow
                 const historicalFlowDataset = historicalLevelDataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
-                const forecastQ10FlowDataset = forecastQ10Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
-                const forecastQ50FlowDataset = forecastQ50Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
-                const forecastQ90FlowDataset = forecastQ90Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+                const forecastFlowDataset = forecastDataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
 
                 safeCreateChart('forecastFlowChart', {
                     type: 'line',
@@ -6071,15 +6105,13 @@
                         labels: mergedLabels,
                         datasets: [
                             { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                            { label: 'Q50 (Mediana)', data: forecastQ50FlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Previsione 6h', data: forecastFlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                         ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                         plugins: {
-                            title: { display: true, text: 'Previsione Portata - Bettolelle', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                            title: { display: true, text: 'Previsione Portata - Bettolelle 6h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                             legend: { labels: { color: '#E0E0E0' } },
                             tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
                             zoom: {
@@ -6100,6 +6132,7 @@
 
             function updateForecastTable(data) {
                 const isMobile = utils.isMobile();
+                const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
 
                 const desktopTableContainer = document.getElementById('desktop-forecast-table');
                 const mobileListContainer = document.getElementById('mobile-forecast-list');
@@ -6115,12 +6148,8 @@
                         card.innerHTML = `
                         <div class="timestamp">${row['Timestamp Previsione']}</div>
                         <div class="data-row">
-                            <span>Q50 (Mediana):</span>
-                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)} m</strong>
-                        </div>
-                        <div class="data-row">
-                            <span>Q90 (Massimo):</span>
-                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)} m</strong>
+                            <span>Previsto:</span>
+                            <strong>${parseAndFixDecimal(row[singleCol]).toFixed(3)} m</strong>
                         </div>
                     `;
                         mobileListContainer.appendChild(card);
@@ -6135,41 +6164,34 @@
             function updateDesktopForecastTable(data) {
                 const desktopTableContainer = document.getElementById('desktop-forecast-table');
                 desktopTableContainer.style.display = 'block';
+                const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
 
                 const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-
-                // OTTIMIZZAZIONE: Usa DocumentFragment per batch insert
                 const fragment = document.createDocumentFragment();
 
                 data.forEach((row, index) => {
                     let tr = document.createElement('tr');
                     tr.dataset.index = index;
+                    const val = parseAndFixDecimal(row[singleCol]);
                     tr.innerHTML = `
             <td>${row['Timestamp Previsione']}</td>
-            <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
-            <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
-            <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
+            <td>${val.toFixed(3)}</td>
+            <td>${val.toFixed(3)}</td>
+            <td>${val.toFixed(3)}</td>
         `;
-
-                    // Event delegation invece di listener su ogni riga
                     fragment.appendChild(tr);
                 });
 
                 tableBody.innerHTML = '';
                 tableBody.appendChild(fragment);
 
-                // Event delegation
                 tableBody.addEventListener('mouseenter', (e) => {
                     if (e.target.tagName === 'TD') {
                         const tr = e.target.closest('tr');
                         if (!tr || !tr.dataset.index) return;
-
                         const index = parseInt(tr.dataset.index, 10);
-
                         document.querySelectorAll('#dataTable tbody tr.highlighted').forEach(r => r.classList.remove('highlighted'));
-
                         tr.classList.add('highlighted');
-
                         STATE.currentHighlightedIndex = index;
                         if (STATE.charts.forecast) {
                             STATE.charts.forecast.update('none');
@@ -6179,7 +6201,6 @@
 
                 tableBody.addEventListener('mouseleave', () => {
                     document.querySelectorAll('#dataTable tbody tr.highlighted').forEach(r => r.classList.remove('highlighted'));
-
                     STATE.currentHighlightedIndex = -1;
                     if (STATE.charts.forecast) {
                         STATE.charts.forecast.update('none');
@@ -6220,21 +6241,22 @@
                     STATE.forecastData = filteredData;
 
                     const labels = filteredData.map(row => row['Timestamp Previsione']);
-                    const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
-                    const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
-                    const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
+                    const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
+                    const prediction = filteredData.map(row => parseAndFixDecimal(row[singleCol]));
 
                     // Update table AND chart
                     updateForecastTable(filteredData);
-                    drawForecastChart(labels, q10, q50, q90);
+                    drawForecastChart(labels, prediction, prediction, prediction);
                 } catch (error) {
                     console.error('Error fetching forecast data:', error);
                 }
             }
 
             // New functions for Bettolelle 3h
-            function drawForecastChartBettolelle3h(labels, q10, q50, q90) {
+            function drawForecastChartBettolelle3h(labels, prediction, _ignored1, _ignored2) {
                 // --- 1. PREPARE DATA ---
+                // "prediction" is the single array of values (passed as q10/q50/q90 in fetch but all identical)
+
                 let referenceTime = Date.now();
                 if (labels && labels.length > 0) {
                     const firstForecast = parseCustomDate(labels[0]);
@@ -6267,38 +6289,37 @@
                     forecastPadding[forecastPadding.length - 1] = lastHistLevel;
                 }
 
-                const forecastQ10Dataset = [...forecastPadding, ...q10];
-                const forecastQ50Dataset = [...forecastPadding, ...q50];
-                const forecastQ90Dataset = [...forecastPadding, ...q90];
+                const forecastDataset = [...forecastPadding, ...prediction];
 
                 // --- 2. UPDATE STATS ---
-                const stats = {
-                    q10: calculateStats(q10),
-                    q50: calculateStats(q50),
-                    q90: calculateStats(q90)
-                };
+                const stats = calculateStats(prediction);
+
+                // Update Header dynamically for single column
+                const tableHead = document.querySelector('#forecast-stats-table-bettolelle-3h thead tr');
+                if (tableHead) {
+                    tableHead.innerHTML = `
+                        <th>Metrica</th>
+                        <th>Valore Atteso</th>
+                    `;
+                }
 
                 const tableBody = document.querySelector('#forecast-stats-table-bettolelle-3h tbody');
-                tableBody.innerHTML = `
-                <tr>
-                    <td>Livello Medio</td>
-                    <td>${stats.q10.avg ? stats.q10.avg.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.avg ? stats.q50.avg.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.avg ? stats.q90.avg.toFixed(3) + ' m' : '--'}</td>
-                </tr>
-                <tr>
-                    <td>Picco Massimo</td>
-                    <td>${stats.q10.max ? stats.q10.max.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.max ? stats.q50.max.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.max ? stats.q90.max.toFixed(3) + ' m' : '--'}</td>
-                </tr>
-                <tr>
-                    <td>Valore Minimo</td>
-                    <td>${stats.q10.min ? stats.q10.min.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.min ? stats.q50.min.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.min ? stats.q90.min.toFixed(3) + ' m' : '--'}</td>
-                </tr>
-            `;
+                if (tableBody) {
+                    tableBody.innerHTML = `
+                    <tr>
+                        <td>Livello Medio</td>
+                        <td>${stats.avg ? stats.avg.toFixed(3) + ' m' : '--'}</td>
+                    </tr>
+                    <tr>
+                        <td>Picco Massimo</td>
+                        <td>${stats.max ? stats.max.toFixed(3) + ' m' : '--'}</td>
+                    </tr>
+                    <tr>
+                        <td>Valore Minimo</td>
+                        <td>${stats.min ? stats.min.toFixed(3) + ' m' : '--'}</td>
+                    </tr>
+                `;
+                }
 
                 // --- 3. DRAW LEVEL CHART ---
                 safeCreateChart('forecastChartBettolelle3h', {
@@ -6307,9 +6328,7 @@
                         labels: mergedLabels,
                         datasets: [
                             { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                            { label: 'Q50 (Mediana)', data: forecastQ50Dataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Previsione 3h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                         ]
                     },
                     options: {
@@ -6336,9 +6355,7 @@
                 // --- 4. DRAW FLOW CHART ---
                 const SENSOR_ID_BETTOLELLE = 1112;
                 const historicalFlowDataset = historicalLevelDataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
-                const forecastQ10FlowDataset = forecastQ10Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
-                const forecastQ50FlowDataset = forecastQ50Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
-                const forecastQ90FlowDataset = forecastQ90Dataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
+                const forecastFlowDataset = forecastDataset.map(l => getFlowFromLevel(SENSOR_ID_BETTOLELLE, l));
 
                 safeCreateChart('forecastFlowChartBettolelle3h', {
                     type: 'line',
@@ -6346,9 +6363,7 @@
                         labels: mergedLabels,
                         datasets: [
                             { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                            { label: 'Q50 (Mediana)', data: forecastQ50FlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Previsione 3h', data: forecastFlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                         ]
                     },
                     options: {
@@ -6375,13 +6390,13 @@
 
             function updateForecastTableBettolelle3h(data) {
                 const isMobile = utils.isMobile();
+                const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
 
                 const desktopTableContainer = document.getElementById('desktop-forecast-table-bettolelle-3h');
                 const mobileListContainer = document.getElementById('mobile-forecast-list-bettolelle-3h');
 
                 if (isMobile) {
                     desktopTableContainer.style.display = 'none';
-                    // mobileListContainer.style.display = 'block'; // Keep user state
                     mobileListContainer.innerHTML = '';
 
                     data.forEach((row, index) => {
@@ -6390,29 +6405,25 @@
                         card.innerHTML = `
                         <div class="timestamp">${row['Timestamp Previsione']}</div>
                         <div class="data-row">
-                            <span>Q50 (Mediana):</span>
-                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)} m</strong>
-                        </div>
-                        <div class="data-row">
-                            <span>Q90 (Massimo):</span>
-                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)} m</strong>
+                            <span>Previsto:</span>
+                            <strong>${parseAndFixDecimal(row[singleCol]).toFixed(3)} m</strong>
                         </div>
                     `;
                         mobileListContainer.appendChild(card);
                     });
                 } else {
-                    // desktopTableContainer.style.display = 'block'; // Keep user state
                     mobileListContainer.style.display = 'none';
                     const tableBody = document.getElementById('dataTableBettolelle3h').getElementsByTagName('tbody')[0];
                     tableBody.innerHTML = '';
 
                     data.forEach((row, index) => {
                         let tr = tableBody.insertRow();
+                        const val = parseAndFixDecimal(row[singleCol]);
                         tr.innerHTML = `
                         <td>${row['Timestamp Previsione']}</td>
-                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']).toFixed(3)}</td>
-                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)}</td>
-                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)}</td>
+                        <td>${val.toFixed(3)}</td>
+                        <td>${val.toFixed(3)}</td>
+                        <td>${val.toFixed(3)}</td>
                     `;
                     });
                 }
@@ -6424,20 +6435,21 @@
                     const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                     STATE.forecastDataBettolelle3h = filteredData;
                     const labels = filteredData.map(row => row['Timestamp Previsione']);
-                    const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q10)']));
-                    const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']));
-                    const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']));
 
-                    // Update table AND chart
+                    // New TFT model outputs single prediction, not quantiles
+                    const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
+                    const predictions = filteredData.map(row => parseAndFixDecimal(row[singleCol]));
+
+                    // Use same prediction for all quantile params (chart will show single line)
                     updateForecastTableBettolelle3h(filteredData);
-                    drawForecastChartBettolelle3h(labels, q10, q50, q90);
+                    drawForecastChartBettolelle3h(labels, predictions, predictions, predictions);
                 } catch (error) {
                     console.error('Error fetching Bettolelle 3h forecast data:', error);
                 }
             }
 
             // New functions for Ponte Garibaldi 3h
-            function drawForecastChartPonteGaribaldi6h(labels, q10, q50, q90) {
+            function drawForecastChartPonteGaribaldi6h(labels, prediction, _ignored1, _ignored2) {
                 // --- 1. PREPARE DATA ---
                 let referenceTime = Date.now();
                 if (labels && labels.length > 0) {
@@ -6472,36 +6484,30 @@
                     forecastPadding[forecastPadding.length - 1] = lastHistLevel;
                 }
 
-                const forecastQ10Dataset = [...forecastPadding, ...q10];
-                const forecastQ50Dataset = [...forecastPadding, ...q50];
-                const forecastQ90Dataset = [...forecastPadding, ...q90];
+                const forecastDataset = [...forecastPadding, ...prediction];
 
                 // --- 2. UPDATE STATS ---
-                const stats = {
-                    q10: calculateStats(q10),
-                    q50: calculateStats(q50),
-                    q90: calculateStats(q90)
-                };
+                const stats = calculateStats(prediction);
 
                 const tableBody = document.querySelector('#forecast-stats-table-ponte-garibaldi-6h tbody');
+                // Update header dynamically
+                const tableHead = document.querySelector('#forecast-stats-table-ponte-garibaldi-6h thead tr');
+                if (tableHead) {
+                    tableHead.innerHTML = `<th>Metrica</th><th>Valore Atteso</th>`;
+                }
+
                 tableBody.innerHTML = `
                 <tr>
                     <td>Livello Medio</td>
-                    <td>${stats.q10.avg ? stats.q10.avg.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.avg ? stats.q50.avg.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.avg ? stats.q90.avg.toFixed(3) + ' m' : '--'}</td>
+                    <td>${stats.avg ? stats.avg.toFixed(3) + ' m' : '--'}</td>
                 </tr>
                 <tr>
                     <td>Picco Massimo</td>
-                    <td>${stats.q10.max ? stats.q10.max.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.max ? stats.q50.max.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.max ? stats.q90.max.toFixed(3) + ' m' : '--'}</td>
+                    <td>${stats.max ? stats.max.toFixed(3) + ' m' : '--'}</td>
                 </tr>
                 <tr>
                     <td>Valore Minimo</td>
-                    <td>${stats.q10.min ? stats.q10.min.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q50.min ? stats.q50.min.toFixed(3) + ' m' : '--'}</td>
-                    <td>${stats.q90.min ? stats.q90.min.toFixed(3) + ' m' : '--'}</td>
+                    <td>${stats.min ? stats.min.toFixed(3) + ' m' : '--'}</td>
                 </tr>
             `;
 
@@ -6512,9 +6518,7 @@
                         labels: mergedLabels,
                         datasets: [
                             { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q10 (Minimo)', data: forecastQ10Dataset, borderColor: 'rgba(255, 159, 64, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q90 (Massimo)', data: forecastQ90Dataset, borderColor: 'rgba(255, 159, 64, 1)', backgroundColor: 'rgba(255, 159, 64, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                            { label: 'Q50 (Mediana)', data: forecastQ50Dataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Previsione 3h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                         ]
                     },
                     options: {
@@ -6541,9 +6545,7 @@
                 // --- 4. DRAW FLOW CHART ---
                 const SENSOR_ID_GARIBALDI = 3405;
                 const historicalFlowDataset = historicalLevelDataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
-                const forecastQ10FlowDataset = forecastQ10Dataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
-                const forecastQ50FlowDataset = forecastQ50Dataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
-                const forecastQ90FlowDataset = forecastQ90Dataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
+                const forecastFlowDataset = forecastDataset.map(l => getFlowFromLevel(SENSOR_ID_GARIBALDI, l));
 
                 safeCreateChart('forecastFlowChartPonteGaribaldi6h', {
                     type: 'line',
@@ -6551,9 +6553,7 @@
                         labels: mergedLabels,
                         datasets: [
                             { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q10 (Minimo)', data: forecastQ10FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderDash: [5, 5], borderWidth: 2, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Q90 (Massimo)', data: forecastQ90FlowDataset, borderColor: 'rgba(76, 175, 80, 1)', backgroundColor: 'rgba(76, 175, 80, 0.2)', borderDash: [5, 5], borderWidth: 2, fill: '-1', pointRadius: 0, tension: 0.4 },
-                            { label: 'Q50 (Mediana)', data: forecastQ50FlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Previsione 3h', data: forecastFlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
                         ]
                     },
                     options: {
@@ -6580,6 +6580,7 @@
 
             function updateForecastTablePonteGaribaldi6h(data) {
                 const isMobile = utils.isMobile();
+                const singleCol = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
 
                 const desktopTableContainer = document.getElementById('desktop-forecast-table-ponte-garibaldi-6h');
                 const mobileListContainer = document.getElementById('mobile-forecast-list-ponte-garibaldi-6h');
@@ -6595,12 +6596,8 @@
                         card.innerHTML = `
                         <div class="timestamp">${row['Timestamp Previsione']}</div>
                         <div class="data-row">
-                            <span>Q50 (Mediana):</span>
-                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)']).toFixed(3)} m</strong>
-                        </div>
-                        <div class="data-row">
-                            <span>Q90 (Massimo):</span>
-                            <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q90)']).toFixed(3)} m</strong>
+                            <span>Previsto:</span>
+                            <strong>${parseAndFixDecimal(row[singleCol]).toFixed(3)} m</strong>
                         </div>
                     `;
                         mobileListContainer.appendChild(card);
@@ -6613,11 +6610,12 @@
 
                     data.forEach((row, index) => {
                         let tr = tableBody.insertRow();
+                        const val = parseAndFixDecimal(row[singleCol]);
                         tr.innerHTML = `
                         <td>${row['Timestamp Previsione']}</td>
-                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q10)']).toFixed(3)}</td>
-                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)']).toFixed(3)}</td>
-                        <td>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q90)']).toFixed(3)}</td>
+                        <td>${val.toFixed(3)}</td>
+                        <td>${val.toFixed(3)}</td>
+                        <td>${val.toFixed(3)}</td>
                     `;
                     });
                 }
@@ -6642,13 +6640,13 @@
                     const filteredData = data.filter(row => row && row['Timestamp Previsione']);
                     STATE.forecastDataPonteGaribaldi6h = filteredData;
                     const labels = filteredData.map(row => row['Timestamp Previsione']);
-                    const q10 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q10)']));
-                    const q50 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q50)']));
-                    const q90 = filteredData.map(row => parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi) (Q90)']));
+
+                    const singleCol = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
+                    const prediction = filteredData.map(row => parseAndFixDecimal(row[singleCol]));
 
                     // Update table AND chart
                     updateForecastTablePonteGaribaldi6h(filteredData);
-                    drawForecastChartPonteGaribaldi6h(labels, q10, q50, q90);
+                    drawForecastChartPonteGaribaldi6h(labels, prediction, prediction, prediction);
                 } catch (error) {
                     console.error('Error fetching Ponte Garibaldi 3h forecast data:', error);
                 }
