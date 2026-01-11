@@ -6397,7 +6397,12 @@
 
             function updateForecastTableBettolelle3h(data) {
                 const isMobile = utils.isMobile();
-                const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
+                // Robust column finding
+                let singleCol = findColumn(data[0], 'Sensore 1112');
+                if (!singleCol) singleCol = findColumn(data[0], 'Bettolelle');
+
+                // Fallback for empty data or undetected
+                if (!singleCol && data.length > 0) singleCol = Object.keys(data[0])[1] || 'Value'; // fallback
 
                 const desktopTableContainer = document.getElementById('desktop-forecast-table-bettolelle-3h');
                 const mobileListContainer = document.getElementById('mobile-forecast-list-bettolelle-3h');
@@ -6456,6 +6461,14 @@
                 }
             }
 
+            function findColumn(row, partialName) {
+                if (!row) return null;
+                const keys = Object.keys(row);
+                if (row[partialName] !== undefined) return partialName;
+                const lowerFor = partialName.toLowerCase();
+                return keys.find(k => k.toLowerCase().includes(lowerFor) || k.toLowerCase().trim() === lowerFor.trim()) || null;
+            }
+
             async function fetchForecastDataBettolelle3h() {
                 try {
                     console.log('📡 Fetching Bettolelle 3h forecast data...');
@@ -6471,12 +6484,19 @@
                     STATE.forecastDataBettolelle3h = filteredData;
                     const labels = filteredData.map(row => row['Timestamp Previsione']);
 
-                    // New TFT model outputs single prediction, not quantiles
-                    const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
-                    const predictions = filteredData.map(row => parseAndFixDecimal(row[singleCol]));
+                    // Robust column finding
+                    let valueCol = findColumn(filteredData[0], 'Sensore 1112');
+                    if (!valueCol) valueCol = findColumn(filteredData[0], 'Bettolelle');
+
+                    if (!valueCol) {
+                        console.error('❌ Could not find value column for Bettolelle 3h. Available keys:', Object.keys(filteredData[0]));
+                        return;
+                    }
+
+                    const predictions = filteredData.map(row => parseAndFixDecimal(row[valueCol]));
+                    console.log('🔢 First 5 predictions:', predictions.slice(0, 5));
 
                     console.log('📊 Bettolelle 3h: Aggiornamento tabella e grafico...');
-                    // Use same prediction for all quantile params (chart will show single line)
                     updateForecastTableBettolelle3h(filteredData);
                     drawForecastChartBettolelle3h(labels, predictions, predictions, predictions);
                     console.log('✅ Bettolelle 3h: Completato!');
@@ -6613,7 +6633,10 @@
 
             function updateForecastTablePonteGaribaldi6h(data) {
                 const isMobile = utils.isMobile();
-                const singleCol = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
+                // Robust column finding
+                let singleCol = findColumn(data[0], 'Sensore 3405');
+                if (!singleCol) singleCol = findColumn(data[0], 'Ponte Garibaldi');
+                if (!singleCol && data.length > 0) singleCol = Object.keys(data[0])[1] || 'Value';
 
                 const desktopTableContainer = document.getElementById('desktop-forecast-table-ponte-garibaldi-6h');
                 const mobileListContainer = document.getElementById('mobile-forecast-list-ponte-garibaldi-6h');
@@ -6690,8 +6713,16 @@
                     STATE.forecastDataPonteGaribaldi6h = filteredData;
                     const labels = filteredData.map(row => row['Timestamp Previsione']);
 
-                    const singleCol = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
-                    const prediction = filteredData.map(row => parseAndFixDecimal(row[singleCol]));
+                    // Robust column finding
+                    let valueCol = findColumn(filteredData[0], 'Sensore 3405');
+                    if (!valueCol) valueCol = findColumn(filteredData[0], 'Ponte Garibaldi');
+
+                    if (!valueCol) {
+                        console.error('❌ Could not find value column for Ponte Garibaldi 3h');
+                        return;
+                    }
+
+                    const prediction = filteredData.map(row => parseAndFixDecimal(row[valueCol]));
 
                     console.log('📊 Ponte Garibaldi 3h: Aggiornamento tabella e grafico...');
                     // Update table AND chart
