@@ -3388,8 +3388,6 @@
                                     </table>
                                 </div>
                             </div>
-                            <div id="mobile-forecast-list-bettolelle-3h" class="table-mobile-list card"
-                                style="display: none;"></div>
                         </div>
                     </div>
 
@@ -6403,6 +6401,7 @@
                     });
                 } else {
                     mobileListContainer.style.display = 'none';
+                    desktopTableContainer.style.display = 'block';
                     const tableBody = document.getElementById('dataTableBettolelle3h').getElementsByTagName('tbody')[0];
                     tableBody.innerHTML = '';
 
@@ -6596,6 +6595,7 @@
                     });
                 } else {
                     mobileListContainer.style.display = 'none';
+                    desktopTableContainer.style.display = 'block';
                     const tableBody = document.getElementById('dataTablePonteGaribaldi6h').getElementsByTagName('tbody')[0];
                     tableBody.innerHTML = '';
 
