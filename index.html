@@ -2852,16 +2852,7 @@
 
         /* === FORECAST TABS === */
         /* === FORECAST LAYOUT SPECIFIC === */
-        .forecast-container {
-            flex-direction: column !important;
-            align-items: stretch !important;
-        }
 
-        .forecast-container .chart-wrapper {
-            width: 100% !important;
-            min-width: 0 !important;
-            flex: none !important;
-        }
 
         .toggle-table-btn {
             background: linear-gradient(135deg, var(--light-bg), var(--medium-bg));
@@ -4701,7 +4692,7 @@
                     if (nowIndex === undefined || nowIndex === null || nowIndex < 0) return;
 
                     const x = xScale.getPixelForValue(nowIndex);
-
+                    if (x === undefined || x === null || isNaN(x)) return;
                     if (x < xScale.left || x > xScale.right) return; // Don't draw if out of view
 
                     ctx.save();
@@ -6509,7 +6500,7 @@
                     options: {
                         responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                         plugins: {
-                            title: { display: true, text: 'Previsione Idro Ponte Garibaldi 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                            title: { display: true, text: 'Previsione Livello Idrometrico Ponte Garibaldi (3h)', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                             legend: { labels: { color: '#E0E0E0' } },
                             tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(3) : '--'} m` } },
                             zoom: {
@@ -6544,7 +6535,7 @@
                     options: {
                         responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                         plugins: {
-                            title: { display: true, text: 'Previsione Portata - Ponte Garibaldi 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
+                            title: { display: true, text: 'Previsione Portata Ponte Garibaldi (3h)', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                             legend: { labels: { color: '#E0E0E0' } },
                             tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
                             zoom: {
@@ -8635,13 +8626,16 @@
                     // NUOVO: Carica solo 7 giorni inizialmente (molto più veloce!)
                     const dataLoadPromise = updateHistoricalData(7, false);
 
-                    // Carica previsioni e allerte in parallelo
+                    // 1. CARICA DATI STORICI (CRITICO: I grafici previsionali ne hanno bisogno per gli ultimi punti)
+                    await dataLoadPromise;
+
+                    // 2. Carica previsioni e allerte in parallelo
                     await Promise.all([
-                        dataLoadPromise,
                         fetchForecastData(),
                         fetchForecastDataBettolelle3h(),
                         fetchForecastDataPonteGaribaldi6h(),
-                        updateOfficialAlerts()
+                        updateOfficialAlerts(),
+                        loadFeatureImportance()
                     ]);
 
                     // Aggiorna dati real-time
@@ -8737,7 +8731,10 @@
                 try {
                     console.log('🔄 Inizio ciclo aggiornamento completo UNIFICATO...');
 
-                    // FASE 1: Aggiorna dati real-time, allerte e radar
+                    // FASE 1: Aggiorna dati storici (CRITICO per i grafici previsionali)
+                    await updateHistoricalData();
+
+                    // FASE 2: Aggiorna dati real-time, allerte e radar
                     const realtimePromise = Promise.all([
                         executeWithRetry(() => updateAllLatestData(), 'aggiornamento dati sensori'),
                         executeWithRetry(() => updateOfficialAlerts(), 'aggiornamento allerte ufficiali'),
@@ -8749,7 +8746,7 @@
                         }, 'aggiornamento dati radar')
                     ]);
 
-                    // FASE 2: Aggiorna tutte le previsioni
+                    // FASE 3: Aggiorna tutte le previsioni
                     const forecastPromise = Promise.all([
                         executeWithRetry(() => fetchForecastData(), 'previsioni base'),
                         executeWithRetry(() => fetchForecastDataBettolelle3h(), 'previsioni Bettolelle 3h'),
@@ -8757,11 +8754,8 @@
                         executeWithRetry(() => loadFeatureImportance(), 'feature importance TFT')
                     ]);
 
-                    // Esegui Fase 1 e 2 in parallelo per velocità
+                    // Esegui Fase 2 e 3 in parallelo
                     await Promise.all([realtimePromise, forecastPromise]);
-
-                    // FASE 3: Aggiorna dati storici (dopo i dati real-time per coerenza)
-                    await updateHistoricalData();
 
                     // FASE 4: Rigenera grafici attivi
                     // NOTA: I grafici nascosti si aggiorneranno automaticamente quando l'utente ci clicca sopra
