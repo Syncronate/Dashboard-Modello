@@ -6355,10 +6355,9 @@
                         }
                     },
                     plugins: [nowLinePlugin]
-                });
+                }, 'forecastBettolelle3h');
 
-                STATE.charts.forecastBettolelle3h.canvas.id = 'forecastChartBettolelle3h'; // Ensure ID matches for resizing if needed, seemingly redundant but safe
-                console.log('✅ Chart Bettolelle 3h creato:', !!STATE.charts.forecastBettolelle3h);
+                console.log('✅ Chart Bettolelle 3h creato con safeCreateChart');
 
                 // --- 4. DRAW FLOW CHART ---
                 const SENSOR_ID_BETTOLELLE = 1112;
