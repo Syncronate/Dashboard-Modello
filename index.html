@@ -3492,6 +3492,29 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <div class="card">
+                                    <h3 style="color: var(--primary-color); margin-top: 0;">
+                                        <i data-feather="eye" class="feather-icon"></i> Feature Importance TFT
+                                    </h3>
+                                    <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">
+                                        Peso attribuito dal modello a ciascuna feature per questa previsione
+                                    </p>
+                                    <table class="stats-table" id="feature-importance-table-garibaldi-3h">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>Feature</th>
+                                                <th>Peso (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="3" style="text-align:center; color: var(--text-muted);">
+                                                    Caricamento...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4561,6 +4584,7 @@
                     forecastPonteGaribaldi6h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=2110898760&single=true&output=csv',
                     featureImportance3h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=478627545&single=true&output=csv',
                     featureImportance6h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1313611757&single=true&output=csv',
+                    featureImportancePonteGaribaldi3h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=637803389&single=true&output=csv',
                     regionLatest: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=754529338&single=true&output=csv',
                     weatherlinkLatest: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=377471478&single=true&output=csv',
                     regionHistory: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=164189198&single=true&output=csv',
@@ -6047,8 +6071,8 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 6h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Storico 6h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                            { label: 'Previsione 6h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
                         ]
                     },
                     options: {
@@ -6307,8 +6331,8 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                            { label: 'Previsione 3h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
                         ]
                     },
                     options: {
@@ -6493,8 +6517,8 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                            { label: 'Previsione 3h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
                         ]
                     },
                     options: {
@@ -8689,6 +8713,22 @@
                     }
                 } catch (e) {
                     console.warn('Errore caricamento feature importance 6h:', e);
+                }
+
+                try {
+                    // Load Ponte Garibaldi 3h feature importance
+                    const dataGaribaldi3h = await fetchDataWithTimeout(CONFIG.urls.featureImportancePonteGaribaldi3h);
+                    const tbodyGaribaldi3h = document.querySelector('#feature-importance-table-garibaldi-3h tbody');
+                    if (tbodyGaribaldi3h && dataGaribaldi3h && dataGaribaldi3h.length > 0) {
+                        tbodyGaribaldi3h.innerHTML = dataGaribaldi3h.slice(0, 10).map(row => {
+                            const rank = row['Rank'] || row['rank'] || '-';
+                            const feature = row['Feature'] || row['feature'] || '-';
+                            const peso = row['Peso (%)'] || row['peso'] || row['Peso'] || '-';
+                            return `<tr><td>${rank}</td><td style="font-size: 0.85em;">${feature}</td><td>${peso}</td></tr>`;
+                        }).join('');
+                    }
+                } catch (e) {
+                    console.warn('Errore caricamento feature importance Ponte Garibaldi 3h:', e);
                 }
             }
 
