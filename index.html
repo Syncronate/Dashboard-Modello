@@ -2935,6 +2935,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <!-- Feather Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <!-- Leaflet CSS -->
@@ -3146,121 +3148,139 @@
                     <h2 class="chart-title" style="text-align: center; margin-bottom: 20px;">Previsione Idrometrica
                         Bettolelle
                         (6h)</h2>
-                    <div class="container forecast-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                        <!-- Colonna Sinistra: Grafici (75%) -->
-                        <div style="flex: 3; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
-                            <div class="chart-wrapper">
-                                <div class="chart-header">
-                                    <span class="chart-title">Andamento Previsto</span>
-                                    <div class="chart-actions">
-                                        <button class="chart-btn" id="download-forecast-chart">
-                                            <i data-feather="camera" class="feather-icon"></i> Scarica
-                                        </button>
-                                        <button class="chart-btn" id="fullscreen-forecast">
-                                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                        </button>
+                    <div class="container forecast-container" style="display: flex; flex-direction: column; gap: 20px;">
+
+                        <!-- Row 1: Level Chart + Stats -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                            <!-- Left: Level Chart (75%) -->
+                            <div style="flex: 3; min-width: 0;">
+                                <div class="chart-wrapper">
+                                    <div class="chart-header">
+                                        <span class="chart-title">Andamento Previsto</span>
+                                        <div class="chart-actions">
+                                            <button class="chart-btn" id="download-forecast-chart">
+                                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                                            </button>
+                                            <button class="chart-btn" id="fullscreen-forecast">
+                                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="chart-container card" id="forecastChart-container">
-                                    <canvas id="forecastChart"></canvas>
+                                    <div class="chart-container card" id="forecastChart-container">
+                                        <canvas id="forecastChart"></canvas>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="chart-wrapper">
-                                <div class="chart-header">
-                                    <span class="chart-title">Portata Prevista (m³/s)</span>
-                                    <div class="chart-actions">
-                                        <button class="chart-btn" id="download-forecast-flow-chart">
-                                            <i data-feather="camera" class="feather-icon"></i> Scarica
-                                        </button>
-                                        <button class="chart-btn" id="fullscreen-forecast-flow">
-                                            <i data-feather="maximize" class="feather-icon"></i> Fullscreen
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="chart-container card" id="forecastFlowChart-container">
-                                    <canvas id="forecastFlowChart"></canvas>
+                            <!-- Right: Stats (25%) -->
+                            <div style="flex: 1; min-width: 250px;">
+                                <div class="card" style="height: 100%;">
+                                    <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
+                                    <table class="stats-table" id="forecast-stats-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Metrica</th>
+                                                <th>Q10 (min)</th>
+                                                <th>Q50 (med)</th>
+                                                <th>Q90 (max)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Livello Medio</td>
+                                                <td id="q10-avg">--</td>
+                                                <td id="q50-avg">--</td>
+                                                <td id="q90-avg">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Picco Massimo</td>
+                                                <td id="q10-max">--</td>
+                                                <td id="q50-max">--</td>
+                                                <td id="q90-max">--</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Valore Minimo</td>
+                                                <td id="q10-min">--</td>
+                                                <td id="q50-min">--</td>
+                                                <td id="q90-min">--</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-
-                            <button class="toggle-table-btn"
-                                onclick="toggleForecastTable('desktop-forecast-table', 'mobile-forecast-list')">
-                                <i data-feather="list" class="feather-icon"></i> Mostra Dati
-                            </button>
-                            <div class="table-container card" id="desktop-forecast-table"
-                                style="width: 100%; display: none;">
-                                <table id="dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th>🕐 Timestamp</th>
-                                            <th>Q10 (m)</th>
-                                            <th>Q50 (m)</th>
-                                            <th>Q90 (m)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
-                            <div id="mobile-forecast-list" class="table-mobile-list card" style="display: none;"></div>
                         </div>
 
-                        <!-- Colonna Destra: Tabelle (25%) -->
-                        <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 20px;">
-                            <div class="card">
-                                <h3 style="color: var(--primary-color); margin-top: 0;">Statistiche Previsione</h3>
-                                <table class="stats-table" id="forecast-stats-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Metrica</th>
-                                            <th>Q10 (min)</th>
-                                            <th>Q50 (med)</th>
-                                            <th>Q90 (max)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Livello Medio</td>
-                                            <td id="q10-avg">--</td>
-                                            <td id="q50-avg">--</td>
-                                            <td id="q90-avg">--</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Picco Massimo</td>
-                                            <td id="q10-max">--</td>
-                                            <td id="q50-max">--</td>
-                                            <td id="q90-max">--</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Valore Minimo</td>
-                                            <td id="q10-min">--</td>
-                                            <td id="q50-min">--</td>
-                                            <td id="q90-min">--</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        <!-- Row 2: Flow Chart + Feature Importance -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                            <!-- Left: Flow Chart + Raw Data (75%) -->
+                            <div style="flex: 3; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+                                <div class="chart-wrapper">
+                                    <div class="chart-header">
+                                        <span class="chart-title">Portata Prevista (m³/s)</span>
+                                        <div class="chart-actions">
+                                            <button class="chart-btn" id="download-forecast-flow-chart">
+                                                <i data-feather="camera" class="feather-icon"></i> Scarica
+                                            </button>
+                                            <button class="chart-btn" id="fullscreen-forecast-flow">
+                                                <i data-feather="maximize" class="feather-icon"></i> Fullscreen
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-container card" id="forecastFlowChart-container">
+                                        <canvas id="forecastFlowChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <!-- Toggleable Raw Data Table -->
+                                <div>
+                                    <button class="toggle-table-btn"
+                                        onclick="toggleForecastTable('desktop-forecast-table', 'mobile-forecast-list')">
+                                        <i data-feather="list" class="feather-icon"></i> Mostra Dati
+                                    </button>
+                                    <div class="table-container card" id="desktop-forecast-table"
+                                        style="width: 100%; display: none;">
+                                        <table id="dataTable">
+                                            <thead>
+                                                <tr>
+                                                    <th>🕐 Timestamp</th>
+                                                    <th>Q10 (m)</th>
+                                                    <th>Q50 (m)</th>
+                                                    <th>Q90 (m)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody></tbody>
+                                        </table>
+                                    </div>
+                                    <div id="mobile-forecast-list" class="table-mobile-list card"
+                                        style="display: none;"></div>
+                                </div>
                             </div>
-                            <div class="card">
-                                <h3 style="color: var(--primary-color); margin-top: 0;">
-                                    <i data-feather="eye" class="feather-icon"></i> Feature Importance TFT
-                                </h3>
-                                <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">
-                                    Peso attribuito dal modello a ciascuna feature per questa previsione
-                                </p>
-                                <table class="stats-table" id="feature-importance-table-6h">
-                                    <thead>
-                                        <tr>
-                                            <th>Rank</th>
-                                            <th>Feature</th>
-                                            <th>Peso (%)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td colspan="3" style="text-align:center; color: var(--text-muted);">
-                                                Caricamento...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+
+                            <!-- Right: Feature Importance (25%) -->
+                            <div style="flex: 1; min-width: 250px;">
+                                <div class="card" style="height: 100%;">
+                                    <h3 style="color: var(--primary-color); margin-top: 0;">
+                                        <i data-feather="eye" class="feather-icon"></i> Feature Importance TFT
+                                    </h3>
+                                    <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">
+                                        Peso attribuito dal modello a ciascuna feature per questa previsione
+                                    </p>
+                                    <table class="stats-table" id="feature-importance-table-6h">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>Feature</th>
+                                                <th>Peso (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="3" style="text-align:center; color: var(--text-muted);">
+                                                    Caricamento...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -6103,8 +6123,25 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 6h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 6h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
+                            { label: 'Storico 6h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, datalabels: { display: false } },
+                            {
+                                label: 'Previsione 6h',
+                                data: forecastDataset,
+                                borderColor: '#f59e0b',
+                                borderWidth: 3,
+                                fill: false,
+                                pointRadius: 4,
+                                tension: 0.4,
+                                borderDash: [5, 5],
+                                datalabels: {
+                                    display: true,
+                                    color: '#FFFFFF',
+                                    align: 'top',
+                                    anchor: 'end',
+                                    font: { weight: 'bold' },
+                                    formatter: (val) => val ? val.toFixed(2) : ''
+                                }
+                            }
                         ]
                     },
                     options: {
@@ -6125,7 +6162,7 @@
                             y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
                         }
                     },
-                    plugins: [highlightPlugin, nowLinePlugin]
+                    plugins: [highlightPlugin, nowLinePlugin, ChartDataLabels]
                 }, 'forecast');
 
                 // --- 4. DRAW FLOW CHART (Parallel) ---
@@ -6140,8 +6177,25 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 6h', data: forecastFlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, datalabels: { display: false } },
+                            {
+                                label: 'Previsione 6h',
+                                data: forecastFlowDataset,
+                                borderColor: 'rgba(0, 188, 212, 1)',
+                                borderWidth: 3,
+                                fill: false,
+                                pointRadius: 4,
+                                tension: 0.4,
+                                borderDash: [5, 5],
+                                datalabels: {
+                                    display: true,
+                                    color: '#FFFFFF',
+                                    align: 'top',
+                                    anchor: 'end',
+                                    font: { weight: 'bold' },
+                                    formatter: (val) => val ? val.toFixed(2) : ''
+                                }
+                            }
                         ]
                     },
                     options: {
@@ -6162,7 +6216,7 @@
                             y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#FFFFFF' } }
                         }
                     },
-                    plugins: [highlightPlugin, nowLinePlugin]
+                    plugins: [highlightPlugin, nowLinePlugin, ChartDataLabels]
                 }, 'forecastFlowChart'); // Need to register this key in STATE.charts if used
             }
 
@@ -6364,8 +6418,25 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
+                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, datalabels: { display: false } },
+                            {
+                                label: 'Previsione 3h',
+                                data: forecastDataset,
+                                borderColor: '#f59e0b',
+                                borderWidth: 3,
+                                fill: false,
+                                pointRadius: 4,
+                                tension: 0.4,
+                                borderDash: [5, 5],
+                                datalabels: {
+                                    display: true,
+                                    color: '#FFFFFF',
+                                    align: 'top',
+                                    anchor: 'end',
+                                    font: { weight: 'bold' },
+                                    formatter: (val) => val ? val.toFixed(2) : ''
+                                }
+                            }
                         ]
                     },
                     options: {
@@ -6386,7 +6457,7 @@
                             y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
                         }
                     },
-                    plugins: [nowLinePlugin]
+                    plugins: [nowLinePlugin, ChartDataLabels]
                 }, 'forecastBettolelle3h');
 
                 console.log('✅ Chart Bettolelle 3h creato con safeCreateChart');
@@ -6401,8 +6472,25 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
+                            { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, datalabels: { display: false } },
+                            {
+                                label: 'Previsione 3h',
+                                data: forecastFlowDataset,
+                                borderColor: 'rgba(0, 188, 212, 1)',
+                                borderWidth: 3,
+                                fill: false,
+                                pointRadius: 4,
+                                tension: 0.4,
+                                borderDash: [5, 5],
+                                datalabels: {
+                                    display: true,
+                                    color: '#FFFFFF',
+                                    align: 'top',
+                                    anchor: 'end',
+                                    font: { weight: 'bold' },
+                                    formatter: (val) => val ? val.toFixed(2) : ''
+                                }
+                            }
                         ]
                     },
                     options: {
@@ -6423,7 +6511,7 @@
                             y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#FFFFFF' } }
                         }
                     },
-                    plugins: [nowLinePlugin]
+                    plugins: [nowLinePlugin, ChartDataLabels]
                 }, 'forecastFlowChartBettolelle3h');
             }
 
@@ -6602,8 +6690,25 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
+                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, datalabels: { display: false } },
+                            {
+                                label: 'Previsione 3h',
+                                data: forecastDataset,
+                                borderColor: '#f59e0b',
+                                borderWidth: 3,
+                                fill: false,
+                                pointRadius: 4,
+                                tension: 0.4,
+                                borderDash: [5, 5],
+                                datalabels: {
+                                    display: true,
+                                    color: '#FFFFFF',
+                                    align: 'top',
+                                    anchor: 'end',
+                                    font: { weight: 'bold' },
+                                    formatter: (val) => val ? val.toFixed(2) : ''
+                                }
+                            }
                         ]
                     },
                     options: {
@@ -6624,7 +6729,7 @@
                             y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Livello Idrometrico (m)', color: '#FFFFFF' } }
                         }
                     },
-                    plugins: [nowLinePlugin]
+                    plugins: [nowLinePlugin, ChartDataLabels]
                 }, 'forecastPonteGaribaldi6h');
 
                 // --- 4. DRAW FLOW CHART ---
@@ -6637,8 +6742,25 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
+                            { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, datalabels: { display: false } },
+                            {
+                                label: 'Previsione 3h',
+                                data: forecastFlowDataset,
+                                borderColor: 'rgba(0, 188, 212, 1)',
+                                borderWidth: 3,
+                                fill: false,
+                                pointRadius: 4,
+                                tension: 0.4,
+                                borderDash: [5, 5],
+                                datalabels: {
+                                    display: true,
+                                    color: '#FFFFFF',
+                                    align: 'top',
+                                    anchor: 'end',
+                                    font: { weight: 'bold' },
+                                    formatter: (val) => val ? val.toFixed(2) : ''
+                                }
+                            }
                         ]
                     },
                     options: {
@@ -6659,7 +6781,7 @@
                             y: { beginAtZero: true, ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(224, 224, 224, 0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#FFFFFF' } }
                         }
                     },
-                    plugins: [nowLinePlugin]
+                    plugins: [nowLinePlugin, ChartDataLabels]
                 }, 'forecastFlowChartPonteGaribaldi6h');
             }
 
@@ -7073,7 +7195,15 @@
                                 borderDash: [5, 5],
                                 pointRadius: 3,
                                 fill: false,
-                                tension: 0.4
+                                tension: 0.4,
+                                datalabels: {
+                                    display: true,
+                                    color: '#FFFFFF',
+                                    align: 'top',
+                                    anchor: 'end',
+                                    font: { weight: 'bold' },
+                                    formatter: (val) => val ? val.toFixed(2) : ''
+                                }
                             },
                             {
                                 label: 'Tendenza Deflusso (>3h)',
@@ -7109,7 +7239,8 @@
                             },
                             y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(255,255,255,0.1)' }, title: { display: true, text: 'Livello (m)', color: '#fff' } }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 }, 'experimentalForecast');
             }
 
@@ -7164,12 +7295,20 @@
                             {
                                 label: 'Portata Prevista',
                                 data: forecastDataset,
-                                borderColor: '#10b981',
-                                borderWidth: 2,
+                                borderColor: 'rgba(0, 188, 212, 1)',
+                                borderWidth: 3,
                                 borderDash: [5, 5],
-                                pointRadius: 3,
+                                pointRadius: 4,
                                 fill: false,
-                                tension: 0.4
+                                tension: 0.4,
+                                datalabels: {
+                                    display: true,
+                                    color: '#FFFFFF',
+                                    align: 'top',
+                                    anchor: 'end',
+                                    font: { weight: 'bold' },
+                                    formatter: (val) => val ? val.toFixed(2) : ''
+                                }
                             }
                         ]
                     },
@@ -7194,7 +7333,8 @@
                             },
                             y: { ticks: { color: '#E0E0E0' }, grid: { color: 'rgba(255,255,255,0.1)' }, title: { display: true, text: 'Portata (m³/s)', color: '#fff' } }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 }, 'experimentalFlow');
             }
 
