@@ -4847,6 +4847,18 @@
                 };
             }
 
+            function findColumn(headers, searchTerms) {
+                if (!headers || !searchTerms || searchTerms.length === 0) return null;
+                const found = headers.find(h => {
+                    const lowHeader = h.toLowerCase();
+                    return searchTerms.every(term => lowHeader.includes(term.toLowerCase()));
+                });
+                if (!found) {
+                    console.warn(`⚠️ Colonna non trovata per i termini: ${searchTerms.join(', ')}`);
+                }
+                return found;
+            }
+
             function getAlertLevel(value, warningThreshold, criticalThreshold) {
                 if (isNaN(value)) return 'normal';
                 if (value >= criticalThreshold) return 'critical';
@@ -6138,118 +6150,82 @@
             }
 
             function updateForecastTable(data) {
+                if (!data || data.length === 0) return;
                 const isMobile = utils.isMobile();
-                const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
-
-                const desktopTableContainer = document.getElementById('desktop-forecast-table');
-                const mobileListContainer = document.getElementById('mobile-forecast-list');
+                const headers = Object.keys(data[0]);
+                const timeCol = findColumn(headers, ['Timestamp', 'Previsione']) || 'Timestamp Previsione';
+                const valCol = findColumn(headers, ['Previsto', '1112', 'Bettolelle']) || 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
 
                 if (isMobile) {
-                    desktopTableContainer.style.display = 'none';
+                    updateMobileForecastList(data, timeCol, valCol);
+                } else {
+                    updateDesktopForecastTable(data, timeCol, valCol);
+                }
+            }
+
+            function updateDesktopForecastTable(data, timeCol, valCol) {
+                const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';
+                const fragment = document.createDocumentFragment();
+
+                data.forEach((row, index) => {
+                    let tr = document.createElement('tr');
+                    tr.dataset.index = index;
+                    const val = parseAndFixDecimal(row[valCol]);
+                    tr.innerHTML = `
+                        <td>${row[timeCol]}</td>
+                        <td>${val.toFixed(3)}</td>
+                        <td>${val.toFixed(3)}</td>
+                        <td>${val.toFixed(3)}</td>
+                    `;
+                    fragment.appendChild(tr);
+                });
+
+                tableBody.appendChild(fragment);
+
+                // Re-attach event listeners if needed (though delegation is better)
+                // Assuming highlight logic is handled elsewhere or by delegation
+            }
+
+            function updateMobileForecastList(data, timeCol, valCol) {
+                const mobileListContainer = document.getElementById('mobile-forecast-list');
+                const desktopTableContainer = document.getElementById('desktop-forecast-table');
+
+                if (desktopTableContainer) desktopTableContainer.style.display = 'none';
+                if (mobileListContainer) {
                     mobileListContainer.style.display = 'block';
                     mobileListContainer.innerHTML = '';
 
                     data.forEach((row, index) => {
                         const card = document.createElement('div');
                         card.className = 'table-mobile-item';
+                        const val = parseAndFixDecimal(row[valCol]);
                         card.innerHTML = `
-                        <div class="timestamp">${row['Timestamp Previsione']}</div>
-                        <div class="data-row">
-                            <span>Previsto:</span>
-                            <strong>${parseAndFixDecimal(row[singleCol]).toFixed(3)} m</strong>
-                        </div>
-                    `;
+                            <div class="timestamp">${row[timeCol]}</div>
+                            <div class="data-row">
+                                <span>Previsto:</span>
+                                <strong>${val.toFixed(3)} m</strong>
+                            </div>
+                        `;
                         mobileListContainer.appendChild(card);
                     });
-                } else {
-                    desktopTableContainer.style.display = 'block';
-                    mobileListContainer.style.display = 'none';
-                    updateDesktopForecastTable(data);
                 }
-            }
-
-            function updateDesktopForecastTable(data) {
-                const desktopTableContainer = document.getElementById('desktop-forecast-table');
-                desktopTableContainer.style.display = 'block';
-                const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
-
-                const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
-                const fragment = document.createDocumentFragment();
-
-                data.forEach((row, index) => {
-                    let tr = document.createElement('tr');
-                    tr.dataset.index = index;
-                    const val = parseAndFixDecimal(row[singleCol]);
-                    tr.innerHTML = `
-            <td>${row['Timestamp Previsione']}</td>
-            <td>${val.toFixed(3)}</td>
-            <td>${val.toFixed(3)}</td>
-            <td>${val.toFixed(3)}</td>
-        `;
-                    fragment.appendChild(tr);
-                });
-
-                tableBody.innerHTML = '';
-                tableBody.appendChild(fragment);
-
-                tableBody.addEventListener('mouseenter', (e) => {
-                    if (e.target.tagName === 'TD') {
-                        const tr = e.target.closest('tr');
-                        if (!tr || !tr.dataset.index) return;
-                        const index = parseInt(tr.dataset.index, 10);
-                        document.querySelectorAll('#dataTable tbody tr.highlighted').forEach(r => r.classList.remove('highlighted'));
-                        tr.classList.add('highlighted');
-                        STATE.currentHighlightedIndex = index;
-                        if (STATE.charts.forecast) {
-                            STATE.charts.forecast.update('none');
-                        }
-                    }
-                }, true);
-
-                tableBody.addEventListener('mouseleave', () => {
-                    document.querySelectorAll('#dataTable tbody tr.highlighted').forEach(r => r.classList.remove('highlighted'));
-                    STATE.currentHighlightedIndex = -1;
-                    if (STATE.charts.forecast) {
-                        STATE.charts.forecast.update('none');
-                    }
-                }, true);
-            }
-
-            function updateMobileForecastList(data) {
-                const desktopTableContainer = document.getElementById('desktop-forecast-table');
-                const mobileListContainer = document.getElementById('mobile-forecast-list');
-
-                desktopTableContainer.style.display = 'none';
-                mobileListContainer.style.display = 'block';
-                mobileListContainer.innerHTML = '';
-
-                data.forEach((row, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'table-mobile-item';
-                    card.innerHTML = `
-            <div class="timestamp">${row['Timestamp Previsione']}</div>
-            <div class="data-row">
-                <span>Q50 (Mediana):</span>
-                <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q50)']).toFixed(3)} m</strong>
-            </div>
-            <div class="data-row">
-                <span>Q90 (Massimo):</span>
-                <strong>${parseAndFixDecimal(row['Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle) (Q90)']).toFixed(3)} m</strong>
-            </div>
-        `;
-                    mobileListContainer.appendChild(card);
-                });
             }
 
             async function fetchForecastData() {
                 try {
                     const data = await fetchDataWithTimeout(CONFIG.urls.forecast);
-                    const filteredData = data.filter(row => row && row['Timestamp Previsione']);
+                    if (!data || data.length === 0) return;
+
+                    const headers = Object.keys(data[0]);
+                    const timeCol = findColumn(headers, ['Timestamp', 'Previsione']) || 'Timestamp Previsione';
+                    const valCol = findColumn(headers, ['Previsto', '1112', 'Bettolelle']) || 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
+
+                    const filteredData = data.filter(row => row && row[timeCol]);
                     STATE.forecastData = filteredData;
 
-                    const labels = filteredData.map(row => row['Timestamp Previsione']);
-                    const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
-                    const prediction = filteredData.map(row => parseAndFixDecimal(row[singleCol]));
+                    const labels = filteredData.map(row => row[timeCol]);
+                    const prediction = filteredData.map(row => parseAndFixDecimal(row[valCol]));
 
                     // Update table AND chart
                     updateForecastTable(filteredData);
@@ -6305,18 +6281,18 @@
                 const tableHead = document.querySelector('#forecast-stats-table-bettolelle-3h thead tr');
                 if (tableHead) {
                     tableHead.innerHTML = `
-                        <th>Metrica</th>
-                        <th>Valore Atteso</th>
-                    `;
+                            < th > Metrica</th >
+                                <th>Valore Atteso</th>
+                        `;
                 }
 
                 const tableBody = document.querySelector('#forecast-stats-table-bettolelle-3h tbody');
                 if (tableBody) {
                     tableBody.innerHTML = `
-                    <tr>
+                            < tr >
                         <td>Livello Medio</td>
                         <td>${stats.avg ? stats.avg.toFixed(3) + ' m' : '--'}</td>
-                    </tr>
+                    </tr >
                     <tr>
                         <td>Picco Massimo</td>
                         <td>${stats.max ? stats.max.toFixed(3) + ' m' : '--'}</td>
@@ -6325,7 +6301,7 @@
                         <td>Valore Minimo</td>
                         <td>${stats.min ? stats.min.toFixed(3) + ' m' : '--'}</td>
                     </tr>
-                `;
+                        `;
                 }
 
                 // --- 3. DRAW LEVEL CHART ---
@@ -6378,7 +6354,11 @@
                         plugins: {
                             title: { display: true, text: 'Previsione Portata - Bettolelle 3h', color: '#FFFFFF', font: { size: 16, weight: '300' } },
                             legend: { labels: { color: '#E0E0E0' } },
-                            tooltip: { backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s` } },
+                            tooltip: {
+                                backgroundColor: 'rgba(30, 30, 30, 0.9)', callbacks: {
+                                    label: (c) => `${c.dataset.label}: ${c.parsed.y !== null ? c.parsed.y.toFixed(2) : '--'} m³/s`
+                                }
+                            },
                             zoom: {
                                 pan: { enabled: true, mode: 'x' },
                                 zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
@@ -6396,8 +6376,11 @@
             }
 
             function updateForecastTableBettolelle3h(data) {
+                if (!data || data.length === 0) return;
                 const isMobile = utils.isMobile();
-                const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
+                const headers = Object.keys(data[0]);
+                const timeCol = findColumn(headers, ['Timestamp', 'Previsione']) || 'Timestamp Previsione';
+                const valCol = findColumn(headers, ['Previsto', '1112', 'Bettolelle']) || 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
 
                 const desktopTableContainer = document.getElementById('desktop-forecast-table-bettolelle-3h');
                 const mobileListContainer = document.getElementById('mobile-forecast-list-bettolelle-3h');
@@ -6410,10 +6393,10 @@
                         const card = document.createElement('div');
                         card.className = 'table-mobile-item';
                         card.innerHTML = `
-                        <div class="timestamp">${row['Timestamp Previsione']}</div>
+                        <div class="timestamp">${row[timeCol]}</div>
                         <div class="data-row">
                             <span>Previsto:</span>
-                            <strong>${parseAndFixDecimal(row[singleCol]).toFixed(3)} m</strong>
+                            <strong>${parseAndFixDecimal(row[valCol]).toFixed(3)} m</strong>
                         </div>
                     `;
                         mobileListContainer.appendChild(card);
@@ -6425,9 +6408,9 @@
 
                     data.forEach((row, index) => {
                         let tr = tableBody.insertRow();
-                        const val = parseAndFixDecimal(row[singleCol]);
+                        const val = parseAndFixDecimal(row[valCol]);
                         tr.innerHTML = `
-                        <td>${row['Timestamp Previsione']}</td>
+                        <td>${row[timeCol]}</td>
                         <td>${val.toFixed(3)}</td>
                         <td>${val.toFixed(3)}</td>
                         <td>${val.toFixed(3)}</td>
@@ -6439,13 +6422,17 @@
             async function fetchForecastDataBettolelle3h() {
                 try {
                     const data = await fetchDataWithTimeout(CONFIG.urls.forecastBettolelle3h);
-                    const filteredData = data.filter(row => row && row['Timestamp Previsione']);
-                    STATE.forecastDataBettolelle3h = filteredData;
-                    const labels = filteredData.map(row => row['Timestamp Previsione']);
+                    if (!data || data.length === 0) return;
 
-                    // New TFT model outputs single prediction, not quantiles
-                    const singleCol = 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
-                    const predictions = filteredData.map(row => parseAndFixDecimal(row[singleCol]));
+                    const headers = Object.keys(data[0]);
+                    const timeCol = findColumn(headers, ['Timestamp', 'Previsione']) || 'Timestamp Previsione';
+                    const valCol = findColumn(headers, ['Previsto', '1112', 'Bettolelle']) || 'Previsto: Livello Idrometrico Sensore 1112 [m] (Bettolelle)';
+
+                    const filteredData = data.filter(row => row && row[timeCol]);
+                    STATE.forecastDataBettolelle3h = filteredData;
+                    const labels = filteredData.map(row => row[timeCol]);
+
+                    const predictions = filteredData.map(row => parseAndFixDecimal(row[valCol]));
 
                     // Use same prediction for all quantile params (chart will show single line)
                     updateForecastTableBettolelle3h(filteredData);
@@ -6582,40 +6569,41 @@
             }
 
             function updateForecastTablePonteGaribaldi6h(data) {
+                if (!data || data.length === 0) return;
                 const isMobile = utils.isMobile();
-                const singleCol = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
+                const headers = Object.keys(data[0]);
+                const timeCol = findColumn(headers, ['Timestamp', 'Previsione']) || 'Timestamp Previsione';
+                const valCol = findColumn(headers, ['Previsto', '3405', 'Garibaldi']) || 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
 
                 const desktopTableContainer = document.getElementById('desktop-forecast-table-ponte-garibaldi-6h');
                 const mobileListContainer = document.getElementById('mobile-forecast-list-ponte-garibaldi-6h');
 
                 if (isMobile) {
                     desktopTableContainer.style.display = 'none';
-                    // mobileListContainer.style.display = 'block'; // Keep user state
                     mobileListContainer.innerHTML = '';
 
                     data.forEach((row, index) => {
                         const card = document.createElement('div');
                         card.className = 'table-mobile-item';
                         card.innerHTML = `
-                        <div class="timestamp">${row['Timestamp Previsione']}</div>
+                        <div class="timestamp">${row[timeCol]}</div>
                         <div class="data-row">
                             <span>Previsto:</span>
-                            <strong>${parseAndFixDecimal(row[singleCol]).toFixed(3)} m</strong>
+                            <strong>${parseAndFixDecimal(row[valCol]).toFixed(3)} m</strong>
                         </div>
                     `;
                         mobileListContainer.appendChild(card);
                     });
                 } else {
-                    // desktopTableContainer.style.display = 'block'; // Keep user state
                     mobileListContainer.style.display = 'none';
                     const tableBody = document.getElementById('dataTablePonteGaribaldi6h').getElementsByTagName('tbody')[0];
                     tableBody.innerHTML = '';
 
                     data.forEach((row, index) => {
                         let tr = tableBody.insertRow();
-                        const val = parseAndFixDecimal(row[singleCol]);
+                        const val = parseAndFixDecimal(row[valCol]);
                         tr.innerHTML = `
-                        <td>${row['Timestamp Previsione']}</td>
+                        <td>${row[timeCol]}</td>
                         <td>${val.toFixed(3)}</td>
                         <td>${val.toFixed(3)}</td>
                         <td>${val.toFixed(3)}</td>
@@ -6640,12 +6628,18 @@
             async function fetchForecastDataPonteGaribaldi6h() {
                 try {
                     const data = await fetchDataWithTimeout(CONFIG.urls.forecastPonteGaribaldi6h);
-                    const filteredData = data.filter(row => row && row['Timestamp Previsione']);
-                    STATE.forecastDataPonteGaribaldi6h = filteredData;
-                    const labels = filteredData.map(row => row['Timestamp Previsione']);
+                    if (!data || data.length === 0) return;
 
-                    const singleCol = 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
-                    const prediction = filteredData.map(row => parseAndFixDecimal(row[singleCol]));
+                    const headers = Object.keys(data[0]);
+                    const timeCol = findColumn(headers, ['Timestamp', 'Previsione']) || 'Timestamp Previsione';
+                    // Ponte Garibaldi level sensor is 3405
+                    const valCol = findColumn(headers, ['Previsto', '3405', 'Garibaldi']) || 'Previsto: Livello Idrometrico Sensore 3405 [m] (Ponte Garibaldi)';
+
+                    const filteredData = data.filter(row => row && row[timeCol]);
+                    STATE.forecastDataPonteGaribaldi6h = filteredData;
+                    const labels = filteredData.map(row => row[timeCol]);
+
+                    const prediction = filteredData.map(row => parseAndFixDecimal(row[valCol]));
 
                     // Update table AND chart
                     updateForecastTablePonteGaribaldi6h(filteredData);
@@ -8058,6 +8052,7 @@
                         } else if (targetId === 'tab-garibaldi-6h') { // Ponte Garibaldi 3h
                             fetchForecastDataPonteGaribaldi6h();
                         } else if (targetId === 'tab-experimental') {
+                            calculateExperimentalForecasts();
                             drawExperimentalForecastChart();
                             drawExperimentalForecastFlowChart();
                         }
@@ -8095,6 +8090,7 @@
                                     fetchForecastData();
                                     fetchForecastDataBettolelle3h();
                                     fetchForecastDataPonteGaribaldi6h();
+                                    calculateExperimentalForecasts();
                                     handleResize(); // Ensure active tab charts are resized
                                     break;
                                 case 'idrometri':
@@ -8680,6 +8676,8 @@
                         loadFeatureImportance()
                     ]);
 
+                    calculateExperimentalForecasts();
+
                     // Aggiorna dati real-time
                     await updateAllLatestData();
 
@@ -8809,6 +8807,7 @@
                         executeWithRetry(() => fetchForecastData(), 'previsioni base'),
                         executeWithRetry(() => fetchForecastDataBettolelle3h(), 'previsioni Bettolelle 3h'),
                         executeWithRetry(() => fetchForecastDataPonteGaribaldi6h(), 'previsioni Ponte Garibaldi 3h'),
+                        executeWithRetry(() => { calculateExperimentalForecasts(); return Promise.resolve(); }, 'modello sperimentale'),
                         executeWithRetry(() => loadFeatureImportance(), 'feature importance TFT')
                     ]);
 
