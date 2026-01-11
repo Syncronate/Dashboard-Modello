@@ -6258,6 +6258,7 @@
 
             // New functions for Bettolelle 3h
             function drawForecastChartBettolelle3h(labels, prediction, _ignored1, _ignored2) {
+                console.log('📊 drawForecastChartBettolelle3h - labels:', labels.length, 'predictions:', prediction.length);
                 // --- 1. PREPARE DATA ---
                 // "prediction" is the single array of values (passed as q10/q50/q90 in fetch but all identical)
 
@@ -6354,7 +6355,10 @@
                         }
                     },
                     plugins: [nowLinePlugin]
-                }, 'forecastBettolelle3h');
+                });
+
+                STATE.charts.forecastBettolelle3h.canvas.id = 'forecastChartBettolelle3h'; // Ensure ID matches for resizing if needed, seemingly redundant but safe
+                console.log('✅ Chart Bettolelle 3h creato:', !!STATE.charts.forecastBettolelle3h);
 
                 // --- 4. DRAW FLOW CHART ---
                 const SENSOR_ID_BETTOLELLE = 1112;
@@ -6399,28 +6403,35 @@
                 const desktopTableContainer = document.getElementById('desktop-forecast-table-bettolelle-3h');
                 const mobileListContainer = document.getElementById('mobile-forecast-list-bettolelle-3h');
 
+                console.log('📋 updateForecastTableBettolelle3h - isMobile:', isMobile, 'data rows:', data.length);
+
                 if (isMobile) {
-                    desktopTableContainer.style.display = 'none';
-                    mobileListContainer.style.display = 'block';
-                    mobileListContainer.innerHTML = '';
+                    if (desktopTableContainer) desktopTableContainer.style.display = 'none';
+                    if (mobileListContainer) {
+                        mobileListContainer.style.display = 'block';
+                        mobileListContainer.innerHTML = '';
 
-                    data.forEach((row, index) => {
-                        const card = document.createElement('div');
-                        card.className = 'table-mobile-item';
-                        card.innerHTML = `
-                        <div class="timestamp">${row['Timestamp Previsione']}</div>
-                        <div class="data-row">
-                            <span>Previsto:</span>
-                            <strong>${parseAndFixDecimal(row[singleCol]).toFixed(3)} m</strong>
-                        </div>
-                    `;
-                        mobileListContainer.appendChild(card);
-                    });
+                        data.forEach((row, index) => {
+                            const card = document.createElement('div');
+                            card.className = 'table-mobile-item';
+                            card.innerHTML = `
+                            <div class="timestamp">${row['Timestamp Previsione']}</div>
+                            <div class="data-row">
+                                <span>Previsto:</span>
+                                <strong>${parseAndFixDecimal(row[singleCol]).toFixed(3)} m</strong>
+                            </div>
+                        `;
+                            mobileListContainer.appendChild(card);
+                        });
+                    }
                 } else {
-                    desktopTableContainer.style.display = 'block';
-                    mobileListContainer.style.display = 'none';
+                    if (mobileListContainer) mobileListContainer.style.display = 'none';
+                    // Ensure table is visible
+                    if (desktopTableContainer) {
+                        desktopTableContainer.style.display = 'block';
+                    }
 
-                    // Aggiorna header per singola colonna
+                    // Update header for single column
                     const tableHead = document.querySelector('#dataTableBettolelle3h thead tr');
                     if (tableHead) {
                         tableHead.innerHTML = `
@@ -6430,16 +6441,19 @@
                     }
 
                     const tableBody = document.getElementById('dataTableBettolelle3h').getElementsByTagName('tbody')[0];
-                    tableBody.innerHTML = '';
+                    if (tableBody) {
+                        tableBody.innerHTML = '';
 
-                    data.forEach((row, index) => {
-                        let tr = tableBody.insertRow();
-                        const val = parseAndFixDecimal(row[singleCol]);
-                        tr.innerHTML = `
-                        <td>${row['Timestamp Previsione']}</td>
-                        <td>${val.toFixed(3)}</td>
-                    `;
-                    });
+                        data.forEach((row, index) => {
+                            let tr = tableBody.insertRow();
+                            const val = parseAndFixDecimal(row[singleCol]);
+                            tr.innerHTML = `
+                            <td>${row['Timestamp Previsione']}</td>
+                            <td><strong>${val.toFixed(3)}</strong></td>
+                        `;
+                        });
+                        console.log('✅ Tabella Bettolelle 3h popolata con', data.length, 'righe');
+                    }
                 }
             }
 
@@ -8068,6 +8082,7 @@
 
             // ==================== NAVIGATION & INTERACTIONS ====================
             function initForecastTabs() {
+                console.log('🎛️ Forecast tab init');
                 const tabs = document.querySelectorAll('.forecast-tab-btn');
                 const contents = document.querySelectorAll('.forecast-tab-content');
 
