@@ -1856,15 +1856,6 @@
         }
 
         /* === FORECAST PAGE === */
-        .forecast-tab-content {
-            display: none;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        .forecast-tab-content.active {
-            display: block;
-        }
-
         .header {
             text-align: center;
             margin-bottom: 25px;
@@ -3494,6 +3485,8 @@
                                             </tr>
                                             <tr>
                                                 <td>Valore Minimo</td>
+                                                <td id="q10-min-ponte-garibaldi-6h">--</td>
+                                                <td id="q50-min-ponte-garibaldi-6h">--</td>
                                                 <td id="q90-min-ponte-garibaldi-6h">--</td>
                                             </tr>
                                         </tbody>
@@ -3506,7 +3499,7 @@
                                     <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">
                                         Peso attribuito dal modello a ciascuna feature per questa previsione
                                     </p>
-                                    <table class="stats-table" id="feature-importance-table-ponte-garibaldi-6h">
+                                    <table class="stats-table" id="feature-importance-table-garibaldi-3h">
                                         <thead>
                                             <tr>
                                                 <th>Rank</th>
@@ -4590,8 +4583,8 @@
                     forecastBettolelle3h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=879704541&single=true&output=csv',
                     forecastPonteGaribaldi6h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=2110898760&single=true&output=csv',
                     featureImportance3h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=478627545&single=true&output=csv',
-                    featureImportancePonteGaribaldi3h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=987158782&single=true&output=csv',
                     featureImportance6h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=1313611757&single=true&output=csv',
+                    featureImportancePonteGaribaldi3h: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=637803389&single=true&output=csv',
                     regionLatest: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=754529338&single=true&output=csv',
                     weatherlinkLatest: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=377471478&single=true&output=csv',
                     regionHistory: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQRYZz5cm8M6XWpz9aFh62Pw-2q-7pIpViKFV_Zv4qlJMWYTQwg2zMW9L1U_s3QfPdrQtNPvmD8cBUx/pub?gid=164189198&single=true&output=csv',
@@ -5619,7 +5612,7 @@
 
                 // Se onlyActiveChart è false, chiama la funzione per rigenerare tutto
                 if (!CONFIG.chartUpdates.onlyActiveChart) {
-                    regenerateAllCharts(); // Questa ora contiene la logica corretta
+                    regenerateAllCharts();
                     return;
                 }
 
@@ -5629,31 +5622,34 @@
 
                 switch (activeSection.id) {
                     case 'idrometri':
-                        // Simula il click sul filtro attivo per ricalcolare l'intervallo di tempo
                         document.querySelector('#quick-filters-hydro .quick-filter-btn.active')?.click();
                         break;
-
                     case 'pluviometri':
                         document.querySelector('#quick-filters-rain .quick-filter-btn.active')?.click();
                         break;
-
                     case 'anemometri':
                         document.querySelector('#quick-filters-wind .quick-filter-btn.active')?.click();
                         break;
-
-                    // Per overview e analisi, la logica esistente va bene
                     case 'overview':
-                        console.log('🔄 Aggiornamento grafici overview...');
                         drawOverviewCharts();
                         break;
                     case 'previsioni':
-                        console.log('🔄 Aggiornamento grafici previsioni sperimentali...');
-                        if (!STATE.charts.forecast) fetchForecastData();
-                        drawExperimentalForecastChart();
-                        drawExperimentalForecastFlowChart();
+                        // Identify which forecast tab is active
+                        const activeTab = document.querySelector('.forecast-tab-btn.active');
+                        const targetId = activeTab ? activeTab.dataset.tab : 'tab-bettolelle';
+
+                        if (targetId === 'tab-bettolelle-3h') {
+                            fetchForecastDataBettolelle3h();
+                        } else if (targetId === 'tab-bettolelle') {
+                            fetchForecastData();
+                        } else if (targetId === 'tab-garibaldi-6h') { // Actually 3h
+                            fetchForecastDataPonteGaribaldi6h();
+                        } else if (targetId === 'tab-experimental') {
+                            drawExperimentalForecastChart();
+                            drawExperimentalForecastFlowChart();
+                        }
                         break;
                     case 'analisi':
-                        console.log('🔄 Aggiornamento statistiche...');
                         updateStatisticsTables();
                         break;
                 }
@@ -6078,8 +6074,8 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 6h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, borderDash: [5, 5], fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Storico 6h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                            { label: 'Previsione 6h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
                         ]
                     },
                     options: {
@@ -6245,44 +6241,6 @@
                 });
             }
 
-            async function loadFeatureImportanceGeneric(url, tableId) {
-                try {
-                    const data = await fetchDataWithTimeout(url);
-                    const tableBody = document.querySelector(`#${tableId} tbody`);
-                    if (!tableBody) return;
-
-                    if (!data || data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Dati non disponibili</td></tr>';
-                        return;
-                    }
-
-                    // Sort by importance (descending)
-                    data.sort((a, b) => parseFloat(b.Importance) - parseFloat(a.Importance));
-
-                    tableBody.innerHTML = data.slice(0, 10).map((row, index) => `
-                        <tr>
-                            <td><strong>#${index + 1}</strong></td>
-                            <td>${row.Feature || row.feature}</td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                                        <div style="width: ${(parseFloat(row.Importance) * 100).toFixed(1)}%; height: 100%; background: var(--primary-color);"></div>
-                                    </div>
-                                    <span>${(parseFloat(row.Importance) * 100).toFixed(1)}%</span>
-                                </div>
-                            </td>
-                        </tr>
-                    `).join('');
-
-                } catch (error) {
-                    console.error(`Error loading feature importance for ${tableId}:`, error);
-                    const tableBody = document.querySelector(`#${tableId} tbody`);
-                    if (tableBody) {
-                        tableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--danger-color);">Errore caricamento</td></tr>';
-                    }
-                }
-            }
-
             async function fetchForecastData() {
                 try {
                     const data = await fetchDataWithTimeout(CONFIG.urls.forecast);
@@ -6296,7 +6254,6 @@
                     // Update table AND chart
                     updateForecastTable(filteredData);
                     drawForecastChart(labels, prediction, prediction, prediction);
-                    loadFeatureImportanceGeneric(CONFIG.urls.featureImportance, 'feature-importance-table-6h');
                 } catch (error) {
                     console.error('Error fetching forecast data:', error);
                 }
@@ -6377,8 +6334,8 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, borderDash: [5, 5], fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                            { label: 'Previsione 3h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
                         ]
                     },
                     options: {
@@ -6413,7 +6370,7 @@
                         labels: mergedLabels,
                         datasets: [
                             { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastFlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Previsione 3h', data: forecastFlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
                         ]
                     },
                     options: {
@@ -6493,7 +6450,6 @@
                     // Use same prediction for all quantile params (chart will show single line)
                     updateForecastTableBettolelle3h(filteredData);
                     drawForecastChartBettolelle3h(labels, predictions, predictions, predictions);
-                    loadFeatureImportanceGeneric(CONFIG.urls.featureImportance3h, 'feature-importance-table-3h');
                 } catch (error) {
                     console.error('Error fetching Bettolelle 3h forecast data:', error);
                 }
@@ -6564,8 +6520,8 @@
                     data: {
                         labels: mergedLabels,
                         datasets: [
-                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: 'rgba(255, 205, 86, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, borderDash: [5, 5], fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Storico 3h', data: historicalLevelDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
+                            { label: 'Previsione 3h', data: forecastDataset, borderColor: '#f59e0b', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
                         ]
                     },
                     options: {
@@ -6600,7 +6556,7 @@
                         labels: mergedLabels,
                         datasets: [
                             { label: 'Storico 3h', data: historicalFlowDataset, borderColor: 'rgba(0, 188, 212, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 },
-                            { label: 'Previsione 3h', data: forecastFlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4 }
+                            { label: 'Previsione 3h', data: forecastFlowDataset, borderColor: 'rgba(76, 175, 80, 1)', borderWidth: 3, fill: false, pointRadius: 0, tension: 0.4, borderDash: [5, 5] }
                         ]
                     },
                     options: {
@@ -6694,7 +6650,6 @@
                     // Update table AND chart
                     updateForecastTablePonteGaribaldi6h(filteredData);
                     drawForecastChartPonteGaribaldi6h(labels, prediction, prediction, prediction);
-                    loadFeatureImportanceGeneric(CONFIG.urls.featureImportancePonteGaribaldi3h, 'feature-importance-table-ponte-garibaldi-6h');
                 } catch (error) {
                     console.error('Error fetching Ponte Garibaldi 3h forecast data:', error);
                 }
@@ -8090,10 +8045,25 @@
                         // Activate clicked
                         tab.classList.add('active');
                         const targetId = tab.dataset.tab;
-                        document.getElementById(targetId).classList.add('active');
+                        const targetPanel = document.getElementById(targetId);
+                        if (targetPanel) {
+                            targetPanel.classList.add('active');
+                        }
 
-                        // Force resize of charts in the new tab
-                        handleResize();
+                        // Trigger specific data fetch or redraw for the newly active tab
+                        if (targetId === 'tab-bettolelle-3h') {
+                            fetchForecastDataBettolelle3h();
+                        } else if (targetId === 'tab-bettolelle') {
+                            fetchForecastData();
+                        } else if (targetId === 'tab-garibaldi-6h') { // Ponte Garibaldi 3h
+                            fetchForecastDataPonteGaribaldi6h();
+                        } else if (targetId === 'tab-experimental') {
+                            drawExperimentalForecastChart();
+                            drawExperimentalForecastFlowChart();
+                        }
+
+                        // Force resize of charts in the new tab after a short delay
+                        setTimeout(handleResize, 100);
                     });
                 });
             }
@@ -8765,11 +8735,10 @@
 
                 try {
                     // Load Ponte Garibaldi 3h feature importance
-                    const dataPG = await fetchDataWithTimeout(CONFIG.urls.featureImportancePonteGaribaldi3h);
-                    // Nota: Usiamo l'ID esistente che potrebbe avere "6h" nel nome se non è stato rinominato nell'HTML
-                    const tbodyPG = document.querySelector('#feature-importance-table-ponte-garibaldi-6h tbody');
-                    if (tbodyPG && dataPG && dataPG.length > 0) {
-                        tbodyPG.innerHTML = dataPG.slice(0, 10).map(row => {
+                    const dataGaribaldi3h = await fetchDataWithTimeout(CONFIG.urls.featureImportancePonteGaribaldi3h);
+                    const tbodyGaribaldi3h = document.querySelector('#feature-importance-table-garibaldi-3h tbody');
+                    if (tbodyGaribaldi3h && dataGaribaldi3h && dataGaribaldi3h.length > 0) {
+                        tbodyGaribaldi3h.innerHTML = dataGaribaldi3h.slice(0, 10).map(row => {
                             const rank = row['Rank'] || row['rank'] || '-';
                             const feature = row['Feature'] || row['feature'] || '-';
                             const peso = row['Peso (%)'] || row['peso'] || row['Peso'] || '-';
@@ -8777,7 +8746,7 @@
                         }).join('');
                     }
                 } catch (e) {
-                    console.warn('Errore caricamento feature importance Ponte Garibaldi:', e);
+                    console.warn('Errore caricamento feature importance Ponte Garibaldi 3h:', e);
                 }
             }
 
