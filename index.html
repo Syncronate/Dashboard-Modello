@@ -8343,6 +8343,11 @@
                             switch (targetSection.id) {
                                 case 'overview':
                                     drawOverviewCharts();
+                                    if (STATE.dashboardMap) {
+                                        setTimeout(() => {
+                                            STATE.dashboardMap.invalidateSize();
+                                        }, 100);
+                                    }
                                     break;
                                 case 'mappa':
                                     if (!STATE.map) initMap(); else STATE.map.invalidateSize();
